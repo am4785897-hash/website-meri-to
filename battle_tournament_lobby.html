@@ -1,0 +1,76 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Tournaments · Code Battle Arena{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/code-battle-arena.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <a href="{{ url_for('code_battle_arena') }}" class="tv-arena-admin-link">← Back to Arena</a>
+  <h1>🏆 Tournaments</h1>
+  <p class="tv-text-dim">Bracketed single elimination. Champion takes 1,000 coins, runner-up 500, third place 250 — on top of whatever you already earn per match.</p>
+</section>
+
+{% macro tournament_card(t) %}
+<div class="tv-card tv-arena-mode-card tv-tourney-card">
+  <div class="tv-tourney-card__head">
+    <h3>{{ t.title }}</h3>
+    <span class="tv-pill tv-pill--{{ 'success' if t.difficulty == 'easy' else ('warning' if t.difficulty == 'medium' else '') }}">{{ t.difficulty|title }}</span>
+  </div>
+  <div class="tv-arena-mode-card__meta">
+    {% if t.status == 'registration' %}
+    <span class="tv-pill">{{ participant_counts.get(t.id, 0) }}/{{ t.max_participants }} registered</span>
+    <span class="tv-pill">Starts {{ t.starts_at.strftime('%b %d, %H:%M') }} UTC</span>
+    {% elif t.status == 'active' %}
+    <span class="tv-pill tv-pill--warning">⚔️ Live · {{ participant_counts.get(t.id, 0) }} players</span>
+    {% elif t.status == 'completed' %}
+    <span class="tv-pill tv-pill--success">🏁 Completed</span>
+    {% else %}
+    <span class="tv-pill tv-pill--locked">Cancelled</span>
+    {% endif %}
+  </div>
+  {% if t.status == 'completed' and t.champion %}
+  <p class="tv-text-dim">🥇 {{ t.champion.username }}{% if t.runner_up %} · 🥈 {{ t.runner_up.username }}{% endif %}{% if t.third_place %} · 🥉 {{ t.third_place.username }}{% endif %}</p>
+  {% endif %}
+  <div class="tv-admin-form__actions" style="width:100%;">
+    <a href="{{ url_for('battle.tournament_detail', tournament_id=t.id) }}" class="tv-btn tv-btn--primary tv-arena-mode-card__cta">
+      {% if t.id in my_registrations and t.status == 'registration' %}You're In · View{% else %}View Bracket{% endif %}
+    </a>
+  </div>
+</div>
+{% endmacro %}
+
+{% set open_tournaments = tournaments|selectattr('status', 'equalto', 'registration')|list %}
+{% set live_tournaments = tournaments|selectattr('status', 'equalto', 'active')|list %}
+{% set past_tournaments = tournaments|rejectattr('status', 'equalto', 'registration')|rejectattr('status', 'equalto', 'active')|list %}
+
+{% if open_tournaments %}
+<div class="tv-section-header tv-animate-in"><h2>Open for Registration</h2></div>
+<div class="tv-arena-grid tv-animate-in">
+  {% for t in open_tournaments %}{{ tournament_card(t) }}{% endfor %}
+</div>
+{% endif %}
+
+{% if live_tournaments %}
+<div class="tv-section-header tv-animate-in"><h2>Live Now</h2></div>
+<div class="tv-arena-grid tv-animate-in">
+  {% for t in live_tournaments %}{{ tournament_card(t) }}{% endfor %}
+</div>
+{% endif %}
+
+{% if past_tournaments %}
+<div class="tv-section-header tv-animate-in"><h2>Past Tournaments</h2></div>
+<div class="tv-arena-grid tv-animate-in">
+  {% for t in past_tournaments %}{{ tournament_card(t) }}{% endfor %}
+</div>
+{% endif %}
+
+{% if not tournaments %}
+<div class="tv-card tv-animate-in">
+  <p class="tv-text-dim">No tournaments scheduled yet — check back soon.</p>
+</div>
+{% endif %}
+
+{% endblock %}

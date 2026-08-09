@@ -1,0 +1,139 @@
+{% extends "base_dashboard.html" %}
+{% block title %}{{ tournament.title }} · Tournament{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/code-battle-arena.css">
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <a href="{{ url_for('battle.tournament_lobby') }}" class="tv-arena-admin-link">← All Tournaments</a>
+  <h1>🏆 {{ tournament.title }}</h1>
+  <div class="tv-arena-mode-card__meta">
+    <span class="tv-pill tv-pill--{{ 'success' if tournament.difficulty == 'easy' else ('warning' if tournament.difficulty == 'medium' else '') }}">{{ tournament.difficulty|title }}</span>
+    {% if tournament.status == 'registration' %}
+    <span class="tv-pill">Starts {{ tournament.starts_at.strftime('%b %d, %H:%M') }} UTC</span>
+    <span class="tv-pill">{{ participants|length }}/{{ tournament.max_participants }} registered</span>
+    {% elif tournament.status == 'active' %}
+    <span class="tv-pill tv-pill--warning">⚔️ Live</span>
+    {% elif tournament.status == 'completed' %}
+    <span class="tv-pill tv-pill--success">🏁 Completed</span>
+    {% else %}
+    <span class="tv-pill tv-pill--locked">Cancelled</span>
+    {% endif %}
+  </div>
+</section>
+
+{% if tournament.status == 'registration' %}
+<div class="tv-card tv-animate-in tv-flex-col tv-gap-3">
+  {% if is_registered %}
+  <p class="tv-text-dim">✅ You're registered — the bracket locks in and round 1 starts at {{ tournament.starts_at.strftime('%b %d, %H:%M') }} UTC.</p>
+  <form method="POST" action="{{ url_for('battle.tournament_unregister', tournament_id=tournament.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <button type="submit" class="tv-btn tv-btn--ghost">Drop Out</button>
+  </form>
+  {% elif spots_left > 0 %}
+  <p class="tv-text-dim">{{ spots_left }} spot{{ '' if spots_left == 1 }} left. Seeding is random once registration closes.</p>
+  <form method="POST" action="{{ url_for('battle.tournament_register', tournament_id=tournament.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <button type="submit" class="tv-btn tv-btn--primary">Register</button>
+  </form>
+  {% else %}
+  <p class="tv-text-dim">This tournament is full.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if tournament.status == 'active' and my_active_match %}
+<div class="tv-card tv-battle-result-card is-correct tv-animate-in">
+  <h2>⚔️ Your match is live</h2>
+  <div class="tv-admin-form__actions">
+    <a href="{{ url_for('battle.tournament_match_room', tournament_id=tournament.id, match_id=my_active_match.id) }}" class="tv-btn tv-btn--primary">Go to Match</a>
+  </div>
+</div>
+{% endif %}
+
+{% if tournament.status == 'completed' %}
+<div class="tv-card tv-animate-in tv-flex-col tv-gap-2">
+  <h2>Final Results</h2>
+  <ul class="tv-arena-earn-list">
+    {% if tournament.champion %}<li><span>🥇 Champion</span><strong>{{ tournament.champion.username }}</strong></li>{% endif %}
+    {% if tournament.runner_up %}<li><span>🥈 Runner-up</span><strong>{{ tournament.runner_up.username }}</strong></li>{% endif %}
+    {% if tournament.third_place %}<li><span>🥉 Third Place</span><strong>{{ tournament.third_place.username }}</strong></li>{% endif %}
+  </ul>
+</div>
+{% endif %}
+
+{% if rounds %}
+<div class="tv-section-header tv-animate-in"><h2>Bracket</h2></div>
+<div class="tv-bracket tv-animate-in" id="bracket-container">
+  {% for round_number, matches in rounds.items() %}
+  <div class="tv-bracket-round">
+    <div class="tv-bracket-round__title">{% if round_number == tournament.total_rounds %}Final{% elif round_number == tournament.total_rounds - 1 %}Semifinal{% else %}Round {{ round_number }}{% endif %}</div>
+    {% for m in matches %}
+    <div class="tv-bracket-match {{ 'is-live' if m.status == 'active' }} {{ 'is-mine' if current_user.id in [m.player1_id, m.player2_id] }}">
+      <div class="tv-bracket-match__slot {{ 'is-winner' if m.winner_id and m.winner_id == m.player1_id }}">
+        {{ m.player1.username if m.player1 else '—' }}
+      </div>
+      <div class="tv-bracket-match__slot {{ 'is-winner' if m.winner_id and m.winner_id == m.player2_id }}">
+        {{ m.player2.username if m.player2 else ('BYE' if m.status == 'bye' else '—') }}
+      </div>
+      {% if m.status == 'active' and current_user.id in [m.player1_id, m.player2_id] %}
+      <a href="{{ url_for('battle.tournament_match_room', tournament_id=tournament.id, match_id=m.id) }}" class="tv-bracket-match__link">Play →</a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+  {% if third_place_match %}
+  <div class="tv-bracket-round">
+    <div class="tv-bracket-round__title">3rd Place</div>
+    <div class="tv-bracket-match {{ 'is-live' if third_place_match.status == 'active' }} {{ 'is-mine' if current_user.id in [third_place_match.player1_id, third_place_match.player2_id] }}">
+      <div class="tv-bracket-match__slot {{ 'is-winner' if third_place_match.winner_id and third_place_match.winner_id == third_place_match.player1_id }}">
+        {{ third_place_match.player1.username if third_place_match.player1 else '—' }}
+      </div>
+      <div class="tv-bracket-match__slot {{ 'is-winner' if third_place_match.winner_id and third_place_match.winner_id == third_place_match.player2_id }}">
+        {{ third_place_match.player2.username if third_place_match.player2 else ('BYE' if third_place_match.status == 'bye' else '—') }}
+      </div>
+      {% if third_place_match.status == 'active' and current_user.id in [third_place_match.player1_id, third_place_match.player2_id] %}
+      <a href="{{ url_for('battle.tournament_match_room', tournament_id=tournament.id, match_id=third_place_match.id) }}" class="tv-bracket-match__link">Play →</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if participants and tournament.status == 'registration' %}
+<div class="tv-section-header tv-animate-in"><h2>Registered</h2></div>
+<div class="tv-card tv-animate-in">
+  <div class="tv-arena-mode-card__meta" style="flex-wrap:wrap;">
+    {% for tp in participants %}
+    <span class="tv-pill">{{ tp.user.username }}</span>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+{% if tournament.status == 'active' %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+(function () {
+  // Live pages just reload on a bracket push rather than patching the
+  // DOM in place - a tournament detail view is cheap to re-render
+  // server-side and this keeps the client dead simple.
+  var socket = io();
+  socket.on('connect', function () {
+    socket.emit('tournament:join_room', { tournament_id: {{ tournament.id }} });
+  });
+  socket.on('tournament:bracket_updated', function () { window.location.reload(); });
+  socket.on('tournament:completed', function () { window.location.reload(); });
+})();
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base_dashboard.html" %}
+{% block title %}New Tournament · Admin · Coder Enchanté Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+{% macro field_value(name, default='') -%}
+{%- if form_data is not none -%}{{ form_data.get(name, default) }}{%- else -%}{{ default }}{%- endif -%}
+{%- endmacro %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <span class="tv-pill">🛠️ Admin</span>
+  <h1>New Tournament</h1>
+  <p class="tv-text-dim">Opens registration immediately. Round 1 generates automatically once the start time passes (or use "Start Now" from the list page).</p>
+</section>
+
+<form method="POST" class="tv-card tv-admin-form tv-animate-in">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+  <label class="tv-admin-form__field tv-admin-form__field--full">
+    <span>Title</span>
+    <input type="text" name="title" class="tv-select" value="{{ field_value('title') }}" placeholder="e.g. Weekly Showdown #1" required>
+  </label>
+
+  <div class="tv-admin-form__row">
+    <label class="tv-admin-form__field">
+      <span>Difficulty</span>
+      <select name="difficulty" class="tv-select" required>
+        {% for d in difficulties %}
+        <option value="{{ d }}" {{ 'selected' if field_value('difficulty', 'medium') == d }}>{{ d|title }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="tv-admin-form__field">
+      <span>Bracket Size</span>
+      <select name="max_participants" class="tv-select" required>
+        {% for s in sizes %}
+        <option value="{{ s }}" {{ 'selected' if field_value('max_participants', '8')|string == s|string }}>{{ s }} players</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="tv-admin-form__field">
+      <span>Starts At (UTC)</span>
+      <input type="datetime-local" name="starts_at" class="tv-select" value="{{ field_value('starts_at') }}" required>
+    </label>
+  </div>
+
+  <p class="tv-text-faint" style="margin: 0;">
+    Needs at least one active "tournament" mode question at this difficulty in the
+    <a href="{{ url_for('admin.questions_list') }}">Question Bank</a> before matches can be judged.
+  </p>
+
+  <div class="tv-admin-form__actions">
+    <a href="{{ url_for('admin.tournaments_list') }}" class="tv-btn tv-btn--ghost">Cancel</a>
+    <button type="submit" class="tv-btn tv-btn--primary">Create Tournament</button>
+  </div>
+</form>
+
+{% endblock %}

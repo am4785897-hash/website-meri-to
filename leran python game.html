@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PyQuest — Learn Python by Playing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10141c;
+    --bg-2: #0b0e14;
+    --surface: #1a2029;
+    --surface-2: #212936;
+    --border: #2b3342;
+    --text: #e9edf3;
+    --text-dim: #8b95a5;
+    --blue: #4B8BBE;
+    --blue-soft: #3a6f99;
+    --yellow: #FFD43B;
+    --green: #3ddc84;
+    --red: #ff5d6c;
+    --radius: 16px;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Space Grotesk', sans-serif;
+  }
+
+  *{ box-sizing: border-box; }
+  html,body{
+    margin:0; padding:0; min-height:100%;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(75,139,190,0.16), transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, rgba(255,212,59,0.08), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+  }
+  h1,h2,h3,.display{ font-family: var(--display); letter-spacing: -0.01em; }
+
+  ::selection{ background: var(--yellow); color: #10141c; }
+
+  button{ font-family: inherit; cursor:pointer; }
+  button:focus-visible, .node:focus-visible, input:focus-visible{
+    outline: 2px solid var(--yellow);
+    outline-offset: 3px;
+  }
+
+  .app{ max-width: 920px; margin: 0 auto; padding: 20px 20px 80px; }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content: space-between;
+    padding: 10px 4px 22px;
+    gap: 12px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand-mark{
+    width: 34px; height:34px; border-radius: 10px;
+    background: linear-gradient(145deg, var(--blue), var(--blue-soft));
+    display:flex; align-items:center; justify-content:center;
+    font-size: 18px; box-shadow: 0 3px 0 rgba(0,0,0,0.25);
+    flex: none;
+  }
+  .brand-name{ font-family: var(--display); font-weight:700; font-size: 19px; }
+  .brand-name span{ color: var(--yellow); }
+
+  .stats{ display:flex; align-items:center; gap: 16px; font-size: 14px; color: var(--text-dim); }
+  .stat{ display:flex; align-items:center; gap:6px; white-space:nowrap; }
+  .stat b{ color: var(--text); font-weight:600; }
+  .hearts{ display:flex; gap:3px; font-size:16px; letter-spacing:1px; }
+  .heart-lost{ opacity: 0.25; filter: grayscale(1); }
+
+  /* ---------- Screens ---------- */
+  .screen{ display:none; }
+  .screen.active{ display:block; animation: fadein .35s ease; }
+  @keyframes fadein{ from{ opacity:0; transform: translateY(6px);} to{opacity:1; transform:none;} }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    border:1px solid var(--border); border-radius: var(--radius);
+    background: linear-gradient(160deg, var(--surface), var(--bg-2));
+    padding: 28px; margin-bottom: 34px;
+    position: relative; overflow:hidden;
+  }
+  .hero-eyebrow{
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--yellow); font-weight:600; margin-bottom:10px;
+  }
+  .hero h1{ font-size: clamp(26px, 4vw, 38px); margin: 0 0 10px; line-height:1.15; }
+  .hero p{ color: var(--text-dim); max-width: 480px; margin: 0 0 18px; font-size:14.5px; line-height:1.6;}
+  .terminal{
+    background: #0c0f15; border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; font-size: 13px; line-height:1.7; color:#c8f7d4;
+    max-width: 480px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+  }
+  .terminal .dots{ display:flex; gap:6px; margin-bottom:10px; }
+  .terminal .dots span{ width:9px;height:9px;border-radius:50%; display:inline-block; }
+  .terminal .dots span:nth-child(1){ background:#ff5f56; }
+  .terminal .dots span:nth-child(2){ background:#ffbd2e; }
+  .terminal .dots span:nth-child(3){ background:#27c93f; }
+  .terminal .line{ color: var(--text-dim); }
+  .terminal .prompt{ color: var(--blue); }
+  #typed{ color: #c8f7d4; }
+  .cursor{ display:inline-block; width:7px; height:14px; background: var(--yellow); vertical-align:-2px; animation: blink 1s step-end infinite; }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  /* ---------- Snake map ---------- */
+  .map-wrap{ position: relative; }
+  .map-title{ display:flex; align-items:baseline; justify-content:space-between; margin: 0 4px 14px; }
+  .map-title h2{ font-size: 18px; margin:0; }
+  .map-title span{ font-size: 12.5px; color: var(--text-dim); }
+
+  .map-svg-holder{ position: relative; }
+  svg.map{ width: 100%; height: auto; display:block; }
+  .track{ fill:none; stroke: var(--border); stroke-width: 10; stroke-linecap: round; }
+  .track-dash{ fill:none; stroke: #333d4d; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 2 14; }
+
+  .node-group{ cursor: pointer; }
+  .node-group.locked{ cursor: not-allowed; }
+  .node-ring{ fill: none; stroke-width: 3; }
+  .node-circle{ transition: transform .15s ease; }
+  .node-group:not(.locked):hover .node-circle{ transform: scale(1.06); transform-origin: center; }
+  .node-label{ font-family: var(--display); font-weight:600; }
+  .node-sub{ font-family: var(--mono); }
+
+  .snake-marker{ font-size: 26px; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5)); }
+
+  @media (prefers-reduced-motion: no-preference){
+    .snake-marker{ animation: bob 2.2s ease-in-out infinite; }
+  }
+  @keyframes bob{ 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-6px);} }
+
+  /* ---------- Legend ---------- */
+  .legend{ display:flex; gap:18px; margin: 18px 4px 0; flex-wrap:wrap; font-size:12.5px; color: var(--text-dim); }
+  .legend .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:6px; vertical-align:-1px; }
+
+  /* ---------- Quiz screen ---------- */
+  .quiz-head{ display:flex; align-items:center; gap:14px; margin-bottom: 18px; }
+  .exit-btn{
+    background: var(--surface); border:1px solid var(--border); color: var(--text-dim);
+    border-radius: 8px; padding: 8px 10px; font-size: 13px;
+  }
+  .exit-btn:hover{ color: var(--text); border-color:#3a4354; }
+  .progress-track{ flex:1; height: 10px; background: var(--surface-2); border-radius: 6px; overflow:hidden; border:1px solid var(--border); }
+  .progress-fill{ height:100%; background: linear-gradient(90deg, var(--blue), var(--yellow)); transition: width .35s ease; }
+
+  .module-tag{
+    display:inline-flex; align-items:center; gap:8px; font-size: 12.5px; color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .module-tag .swatch{ width:9px; height:9px; border-radius:3px; }
+
+  .card{
+    background: var(--surface); border:1px solid var(--border); border-radius: var(--radius);
+    padding: 26px; margin-bottom: 18px;
+  }
+  .qkind{ font-size: 11.5px; text-transform: uppercase; letter-spacing:.1em; color: var(--yellow); font-weight:600; margin-bottom: 12px; }
+  .qprompt{ font-size: 17px; line-height:1.55; margin: 0 0 16px; font-family: var(--display); font-weight:600;}
+  pre.code-block{
+    background: #0c0f15; border:1px solid var(--border); border-radius:10px;
+    padding: 14px 16px; overflow-x:auto; font-size: 13.5px; line-height:1.65; color:#dbe6f0; margin: 0 0 18px;
+  }
+  pre.code-block .kw{ color:#ff9d6f; }
+  pre.code-block .fn{ color:#79c0ff; }
+  pre.code-block .str{ color:#a5d6a7; }
+  pre.code-block .cm{ color:#7a8496; font-style:italic;}
+  pre.code-block .num{ color:#f6c177; }
+
+  .options{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 560px){ .options{ grid-template-columns: 1fr; } }
+  .opt{
+    text-align:left; background: var(--surface-2); border:1px solid var(--border);
+    color: var(--text); border-radius: 10px; padding: 12px 14px; font-size: 14px;
+    transition: border-color .15s ease, background .15s ease, transform .1s ease;
+    display:flex; align-items:center; gap: 10px;
+  }
+  .opt:hover:not(:disabled){ border-color: var(--blue); transform: translateY(-1px); }
+  .opt .letter{
+    width:22px; height:22px; border-radius:6px; background:#182029; border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--text-dim); flex:none;
+  }
+  .opt.correct{ border-color: var(--green); background: rgba(61,220,132,0.10); }
+  .opt.correct .letter{ background: var(--green); color:#0b1a10; border-color: var(--green); }
+  .opt.wrong{ border-color: var(--red); background: rgba(255,93,108,0.10); }
+  .opt.wrong .letter{ background: var(--red); color:#2a0b0d; border-color: var(--red); }
+  .opt:disabled{ cursor: default; }
+  .opt:disabled:not(.correct):not(.wrong){ opacity:.5; }
+
+  .fill-row{ display:flex; gap: 10px; }
+  .fill-row input{
+    flex:1; background: var(--surface-2); border:1px solid var(--border); color: var(--text);
+    border-radius: 10px; padding: 12px 14px; font-size: 14px; font-family: var(--mono);
+  }
+  .fill-row input.correct{ border-color: var(--green); }
+  .fill-row input.wrong{ border-color: var(--red); }
+  .primary-btn{
+    background: linear-gradient(160deg, var(--blue), var(--blue-soft)); color:#fff; border:none;
+    border-radius: 10px; padding: 12px 18px; font-size:14px; font-weight:600;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.25);
+  }
+  .primary-btn:disabled{ opacity:.4; cursor: not-allowed; }
+  .primary-btn:hover:not(:disabled){ filter: brightness(1.08); }
+
+  .feedback{
+    margin-top: 16px; padding: 14px 16px; border-radius: 10px; font-size: 13.5px; line-height:1.6;
+    display:none; align-items:flex-start; gap:10px;
+  }
+  .feedback.show{ display:flex; }
+  .feedback.ok{ background: rgba(61,220,132,0.08); border:1px solid rgba(61,220,132,0.35); color:#cdeedb; }
+  .feedback.no{ background: rgba(255,93,108,0.08); border:1px solid rgba(255,93,108,0.35); color:#f6d4d7; }
+  .feedback b{ color: var(--text); }
+
+  .quiz-actions{ display:flex; justify-content:flex-end; gap:10px; }
+
+  /* ---------- Result screen ---------- */
+  .result-card{
+    text-align:center; padding: 40px 26px; background: var(--surface); border:1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .stars{ font-size: 40px; letter-spacing: 8px; margin: 6px 0 4px; }
+  .star-dim{ opacity:.25; filter:grayscale(1); }
+  .result-title{ font-size: 22px; margin: 6px 0 4px; }
+  .result-sub{ color: var(--text-dim); font-size: 14px; margin-bottom: 22px; }
+  .result-row{ display:flex; justify-content:center; gap: 26px; margin-bottom: 26px; flex-wrap:wrap; }
+  .result-stat{ text-align:center; }
+  .result-stat .num{ font-family: var(--display); font-size: 24px; font-weight:700; color: var(--yellow); }
+  .result-stat .lbl{ font-size: 11.5px; color: var(--text-dim); text-transform:uppercase; letter-spacing:.08em; }
+  .result-actions{ display:flex; justify-content:center; gap: 12px; flex-wrap:wrap; }
+  .secondary-btn{
+    background: transparent; border:1px solid var(--border); color: var(--text);
+    border-radius: 10px; padding: 12px 18px; font-size:14px; font-weight:600;
+  }
+  .secondary-btn:hover{ border-color: var(--blue); }
+
+  /* ---------- Overlay (out of hearts) ---------- */
+  .overlay{
+    position: fixed; inset:0; background: rgba(6,8,12,0.72); backdrop-filter: blur(3px);
+    display:none; align-items:center; justify-content:center; padding: 20px; z-index: 50;
+  }
+  .overlay.show{ display:flex; }
+  .overlay-card{
+    background: var(--surface); border:1px solid var(--border); border-radius: var(--radius);
+    padding: 30px; max-width: 340px; text-align:center;
+  }
+  .overlay-card .big{ font-size: 42px; margin-bottom: 6px; }
+  .overlay-card h3{ margin: 4px 0 8px; }
+  .overlay-card p{ color: var(--text-dim); font-size: 13.5px; line-height:1.6; margin-bottom: 20px; }
+
+  footer{ text-align:center; color: var(--text-dim); font-size: 12px; margin-top: 40px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">🐍</div>
+      <div class="brand-name">Py<span>Quest</span></div>
+    </div>
+    <div class="stats">
+      <div class="stat" title="Experience points">⚡ <b id="xp-count">0</b> XP</div>
+      <div class="stat" title="Current streak">🔥 <b id="streak-count">0</b></div>
+      <div class="stat hearts" id="hearts-display" title="Hearts"></div>
+    </div>
+  </div>
+
+  <!-- HOME SCREEN -->
+  <section id="screen-home" class="screen active">
+    <div class="hero">
+      <div class="hero-eyebrow">Beginner → Intermediate</div>
+      <h1>Learn Python by playing, one bite-sized level at a time.</h1>
+      <p>Six modules, thirty challenges — multiple choice, predict-the-output, and fill-in-the-blank. No signup, no server, just you and the interpreter.</p>
+      <div class="terminal">
+        <div class="dots"><span></span><span></span><span></span><span></div>
+        <div class="line"><span class="prompt">&gt;&gt;&gt; </span><span id="typed"></span><span class="cursor"></span></div>
+      </div>
+    </div>
+
+    <div class="map-wrap">
+      <div class="map-title">
+        <h2>Your path</h2>
+        <span id="map-progress-label">0 / 6 modules complete</span>
+      </div>
+      <div class="map-svg-holder">
+        <svg class="map" viewBox="0 0 400 940" xmlns="http://www.w3.org/2000/svg" id="map-svg" role="img" aria-label="Module map">
+          <path class="track" d="M100,100 C100,180 300,160 300,240 C300,320 100,300 100,380 C100,460 300,440 300,520 C300,600 100,580 100,660 C100,740 300,720 300,800"/>
+          <path class="track-dash" d="M100,100 C100,180 300,160 300,240 C300,320 100,300 100,380 C100,460 300,440 300,520 C300,600 100,580 100,660 C100,740 300,720 300,800"/>
+          <g id="nodes-layer"></g>
+          <text id="snake-marker" class="snake-marker" x="100" y="100"></text>
+        </svg>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </section>
+
+  <!-- QUIZ SCREEN -->
+  <section id="screen-quiz" class="screen">
+    <div class="quiz-head">
+      <button class="exit-btn" id="quiz-exit">← Exit</button>
+      <div class="progress-track"><div class="progress-fill" id="quiz-progress"></div></div>
+    </div>
+    <div class="module-tag"><span class="swatch" id="module-tag-swatch"></span><span id="module-tag-text"></span></div>
+
+    <div class="card">
+      <div class="qkind" id="q-kind"></div>
+      <div class="qprompt" id="q-prompt"></div>
+      <div id="q-code-holder"></div>
+      <div id="q-body"></div>
+      <div class="feedback" id="q-feedback"></div>
+    </div>
+
+    <div class="quiz-actions">
+      <button class="primary-btn" id="q-action-btn" disabled>Check</button>
+    </div>
+  </section>
+
+  <!-- RESULT SCREEN -->
+  <section id="screen-result" class="screen">
+    <div class="result-card">
+      <div class="stars" id="result-stars"></div>
+      <div class="result-title display" id="result-title"></div>
+      <div class="result-sub" id="result-sub"></div>
+      <div class="result-row">
+        <div class="result-stat"><div class="num" id="result-correct">0/0</div><div class="lbl">Correct</div></div>
+        <div class="result-stat"><div class="num" id="result-xp">+0</div><div class="lbl">XP earned</div></div>
+        <div class="result-stat"><div class="num" id="result-best-streak">0</div><div class="lbl">Best streak</div></div>
+      </div>
+      <div class="result-actions">
+        <button class="secondary-btn" id="result-retry">Try again</button>
+        <button class="primary-btn" id="result-continue">Continue</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>Built with plain HTML, CSS &amp; JavaScript — nothing leaves your browser, progress resets on reload.</footer>
+</div>
+
+<!-- Out-of-hearts overlay -->
+<div class="overlay" id="overlay">
+  <div class="overlay-card">
+    <div class="big">💔</div>
+    <h3>Out of hearts</h3>
+    <p>Even great Pythonistas hit exceptions. Refill your hearts and take the module again from the top.</p>
+    <button class="primary-btn" id="overlay-refill">Refill &amp; retry</button>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  /* ============================= DATA ============================= */
+
+  const MODULES = [
+    {
+      name: "Python Basics",
+      color: "#4B8BBE",
+      questions: [
+        {
+          type: "mcq",
+          prompt: "What does this print?",
+          code: `print(2 + 3 * 2)`,
+          options: ["10", "8", "12", "7"],
+          answer: 1,
+          explain: "Python follows order of operations: 3 * 2 is evaluated first (= 6), then 2 + 6 = 8."
+        },
+        {
+          type: "fill",
+          prompt: "Which keyword define a function",
+          code: `___ greet():\n    print("hi")`,
+          answer: "def",
+          explain: "`def` is the keyword used to define a function in Python."
+        },
+        {
+          type: "tf",
+          prompt: "True or false: indentation is optional in Python and only affects style.",
+          answer: false,
+          explain: "Indentation is not optional — Python uses it to define code blocks. Inconsistent indentation causes an IndentationError."
+        },
+        {
+          type: "mcq",
+          prompt: "Which of these is a valid Python variable name?",
+          options: ["2cool", "my-var", "_my_var", "class"],
+          answer: 2,
+          explain: "Variable names can start with a letter or underscore. `2cool` starts with a digit, `my-var` contains a hyphen, and `class` is a reserved keyword."
+        },
+        {
+          type: "mcq",
+          prompt: "What does this print?",
+          code: `x = "5"\ny = 5\nprint(x == y)`,
+          options: ["True", "False", "Error", "5"],
+          answer: 1,
+          explain: "`x` is a string and `y` is an integer. Python never considers a string equal to a number, so this is False."
+        }
+      ]
+    },
+    {
+      name: "Strings",
+      color: "#FFD43B",
+      questions: [
+        {
+          type: "mcq",
+          prompt: "What does this print?",
+          code: `print(len("Python"))`,
+          options: ["5", "6", "7", "4"],
+          answer: 1,
+          explain: "\"Python\" has 6 characters: P-y-t-h-o-n."
+        },
+        {
+          type: "mcq",
+          prompt: "What does this print?",
+          code: `word = "Python"\nprint(word[0])`,
+          options: ["P", "y", "n", "Error"],
+          answer: 0,
+          explain: "String indexing starts at 0, so word[0] is the first character, 'P'."
+        },
+        {
+          type: "mcq",
+          prompt: "What does this print?",
+          code: `print("abc" + "def")`,
+          options: ["abc def", "abcdef", "Error", "def abc"],
+          answer: 1,
+          explain: "The + operator concatenates strings directly with no added space: 'abcdef'."
+        },
+        {
+          type: "fill",
+          prompt: "Fill in the missing string method: makes a string fully uppercase.",
+          code: `name = "python"\nprint(name.___())`,
+          answer: "upper",
+          explain: "`.upper()` returns a new string with all characters converted to uppercase."
+        },
+        {
+          type: "tf",
+          prompt: "True or false: strings in Python are mutable, meaning you can change a character in place.",
+          answer: false,
+          explain: "Strings are immutable. Operations like .upper() or replace() always return a new string rather than modifying the original."
+        }
+      ]
+    },
+    {
+      name: "Control Flow",
+      color: "#3ddc84",
+      questions: [
+        {
+          type: "mcq",
+          prompt: "What does this print?",
+          code: `for i in range(3):\n    print(i)`,
+          options: ["1 2 3", "0 1 2", "0 1 2 3", "1 2"],
+          answer: 1,
+          explain: "range(3) produces 0, 1, 2 — it stops before reaching 3."
+        },
+        {
+          type: "fill",
+          prompt: "Which keyword immediately exits the nearest enclosing loop?",
+          code: `while True:\n    ___`,
+          answer: "break",
+          explain: "`break` stops the loop entirely, unlike `continue`, which just skips to the next iteration."
+        },
+        {
+          type: "mcq",
+          prompt: "Which operator checks if two values are equal (not assignment)?",
+          options: ["=", "==", "eq", "is"],
+          answer: 1,
+          explain: "A single `=` assigns a value; `==` compares two values for equality."
+        },
+        {
+          type: "tf",
+          prompt: "True or false: you can use `elif` in a chain without ever having an `if` before it.",
+          answer: false,
+          explain: "`elif` must follow an `if` (or another `elif`) — it can't start a conditional chain on its own."
+        },
+        {
+          type: "mcq",
+          prompt: "What does this print?",
+          code: `x = 5\nif x > 10:\n    print("big")\nelif x > 3:\n    print("medium")\nelse:\n    print("small")`,
+          options: ["big", "medium", "small", "Nothing"],
+          answer: 1,
+          explain: "x is 5, which fails x > 10 but passes x > 3, so the elif branch runs, printing 'medium'."
+        }
+      ]
+    },
+    {
+      name: "Lists & Dicts",
+      color: "#8b7bff",
+      questions: [
+        {
+          type: "mcq",
+          prompt: "What does .append(x) do to a list?",
+          options: [
+            "Removes x from the list",
+            "Adds x to the end of the list",
+            "Sorts the list",
+            "Adds x to the start of the list"
+          ],
+          answer: 1,
+          explain: "`.append(x)` adds a single item to the end of the list, growing its length by one."
+        },
+        {
+          type: "mcq",
+          prompt: "What does this print?",
+          code: `nums = [1, 2, 3]\nprint(nums[1])`,
+          options: ["1", "2", "3", "Error"],
+          answer: 1,
+          explain: "Indexing starts at 0, so nums[1] is the second item: 2."
+        },
+        {
+          type: "fill",
+          prompt: "Which built-in function returns how many items are in a list?",
+          code: `nums = [1, 2, 3, 4]\nprint(___(nums))`,
+          answer: "len",
+          explain: "`len()` works on lists, strings, dicts and more — it returns the number of items."
+        },
+        {
+          type: "tf",
+          prompt: "True or false: a dictionary stores data as key-value pairs.",
+          answer: true,
+          explain: "Dictionaries map unique keys to values, e.g. {'name': 'Ada'} — you look up values by key."
+        },
+        {
+          type: "mcq",
+          prompt: "Which of these creates an empty set (not an empty dictionary)?",
+          options: ["{}", "set()", "[]", "()"],
+          answer: 1,
+          explain: "{} creates an empty dict. To make an empty set you must use set() explicitly."
+        }
+      ]
+    },
+    {
+      name: "Functions",
+      color: "#ff9d6f",
+      questions: [
+        {
+          type: "fill",
+          prompt: "Which keyword is used to define a function?",
+          code: `___ square(n):\n    return n * n`,
+          answer: "def",
+          explain: "Every function definition in Python starts with the `def` keyword."
+        },
+        {
+          type: "mcq",
+          prompt: "What does this print?",
+          code: `def add(a, b):\n    return a + b\n\nprint(add(2, 3))`,
+          options: ["23", "5", "Error", "None"],
+          answer: 1,
+          explain: "add(2, 3) returns 2 + 3, which is 5."
+        },
+        {
+          type: "mcq",
+          prompt: "Which line correctly gives a function a default argument value?",
+          options: ["def f(x == 5):", "def f(x = 5):", "def f(x: 5):", "def f(default x = 5):"],
+          answer: 1,
+          explain: "Default parameter values are set with `=` inside the parentheses, e.g. `def f(x = 5):`."
+        },
+        {
+          type: "tf",
+          prompt: "True or false: a function with no `return` statement returns `None`.",
+          answer: true,
+          explain: "If a function never hits a return statement, Python implicitly returns None."
+        },
+        {
+          type: "mcq",
+          prompt: "What does `*args` let a function accept?",
+          options: [
+            "Exactly one argument",
+            "A variable number of positional arguments",
+            "Only keyword arguments",
+            "Only string arguments"
+          ],
+          answer: 1,
+          explain: "`*args` collects any number of extra positional arguments into a tuple inside the function."
+        }
+      ]
+    },
+    {
+      name: "Intermediate",
+      color: "#ff5d6c",
+      questions: [
+        {
+          type: "mcq",
+          prompt: "What does this print?",
+          code: `result = [x * 2 for x in range(3)]\nprint(result)`,
+          options: ["[0, 1, 2]", "[0, 2, 4]", "[2, 4, 6]", "Error"],
+          answer: 1,
+          explain: "This list comprehension doubles each value from range(3) (0, 1, 2), giving [0, 2, 4]."
+        },
+        {
+          type: "fill",
+          prompt: "Which keyword catches an exception inside a try block?",
+          code: `try:\n    1 / 0\n___ ZeroDivisionError:\n    print("caught")`,
+          answer: "except",
+          explain: "`except` follows `try` and defines what to do when a matching error is raised."
+        },
+        {
+          type: "mcq",
+          prompt: "`lambda x: x + 1` creates what kind of object?",
+          options: ["A class", "An anonymous (unnamed) function", "A dictionary", "A syntax error"],
+          answer: 1,
+          explain: "`lambda` defines a small, unnamed function inline — equivalent here to `def f(x): return x + 1`."
+        },
+        {
+          type: "tf",
+          prompt: "True or false: list comprehensions can include a conditional filter, like `[x for x in nums if x > 0]`.",
+          answer: true,
+          explain: "Adding `if condition` at the end of a comprehension filters which items are included."
+        },
+        {
+          type: "mcq",
+          prompt: "What does this print?",
+          code: `try:\n    1 / 0\nexcept ZeroDivisionError:\n    print("caught")`,
+          options: ["0", "Error traceback", "caught", "Nothing"],
+          answer: 2,
+          explain: "Dividing by zero raises ZeroDivisionError, which is caught by the except block, printing 'caught'."
+        }
+      ]
+    }
+  ];
+
+  /* ============================= STATE ============================= */
+
+  const state = {
+    xp: 0,
+    hearts: 5,
+    streak: 0,
+    bestStreakThisModule: 0,
+    unlockedModule: 0,      // highest module index the player may play
+    moduleStars: MODULES.map(() => 0),
+    currentModule: null,
+    qIndex: 0,
+    correctInModule: 0,
+    answered: false
+  };
+
+  /* ============================= DOM refs ============================= */
+
+  const $ = (id) => document.getElementById(id);
+  const screens = {
+    home: $('screen-home'),
+    quiz: $('screen-quiz'),
+    result: $('screen-result')
+  };
+
+  function showScreen(name){
+    Object.values(screens).forEach(s => s.classList.remove('active'));
+    screens[name].classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  /* ============================= Header stats ============================= */
+
+  function renderHearts(){
+    const el = $('hearts-display');
+    el.innerHTML = '';
+    for(let i=0;i<5;i++){
+      const span = document.createElement('span');
+      span.textContent = '❤️';
+      if(i >= state.hearts) span.classList.add('heart-lost');
+      el.appendChild(span);
+    }
+  }
+
+  function renderTopStats(){
+    $('xp-count').textContent = state.xp;
+    $('streak-count').textContent = state.streak;
+    renderHearts();
+  }
+
+  /* ============================= Snake map ============================= */
+
+  const nodeCoords = [
+    {x:100,y:100}, {x:300,y:240}, {x:100,y:380},
+    {x:300,y:520}, {x:100,y:660}, {x:300,y:800}
+  ];
+
+  function renderMap(){
+    const layer = $('nodes-layer');
+    layer.innerHTML = '';
+    let completedCount = 0;
+
+    MODULES.forEach((mod, i) => {
+      const {x,y} = nodeCoords[i];
+      const locked = i > state.unlockedModule;
+      const stars = state.moduleStars[i];
+      if(stars > 0) completedCount++;
+
+      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      g.setAttribute('class', 'node-group' + (locked ? ' locked' : ''));
+      g.setAttribute('tabindex', locked ? '-1' : '0');
+      g.setAttribute('role','button');
+      g.setAttribute('aria-label', mod.name + (locked ? ' (locked)' : ''));
+
+      const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      ring.setAttribute('cx', x); ring.setAttribute('cy', y); ring.setAttribute('r', 40);
+      ring.setAttribute('class','node-ring');
+      ring.setAttribute('stroke', locked ? '#2b3342' : mod.color);
+      ring.setAttribute('opacity', locked ? '0.5' : '1');
+
+      const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      circle.setAttribute('cx', x); circle.setAttribute('cy', y); circle.setAttribute('r', 32);
+      circle.setAttribute('class','node-circle');
+      circle.setAttribute('fill', locked ? '#1a2029' : mod.color);
+      circle.setAttribute('fill-opacity', locked ? '0.9' : '1');
+
+      const icon = document.createElementNS('http://www.w3.org/2000/svg','text');
+      icon.setAttribute('x', x); icon.setAttribute('y', y+7);
+      icon.setAttribute('text-anchor','middle');
+      icon.setAttribute('font-size', '20');
+      icon.textContent = locked ? '🔒' : (stars>0 ? '✓' : (i+1));
+      icon.setAttribute('fill', locked ? '#8b95a5' : '#0b0e14');
+      icon.setAttribute('font-weight', '700');
+      if (!locked && stars === 0){ icon.setAttribute('fill', '#0b0e14'); }
+
+      const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+      label.setAttribute('x', x); label.setAttribute('y', y + 58);
+      label.setAttribute('text-anchor','middle');
+      label.setAttribute('class','node-label');
+      label.setAttribute('font-size','13.5');
+      label.setAttribute('fill', locked ? '#5b6472' : '#e9edf3');
+      label.textContent = mod.name;
+
+      const sub = document.createElementNS('http://www.w3.org/2000/svg','text');
+      sub.setAttribute('x', x); sub.setAttribute('y', y + 74);
+      sub.setAttribute('text-anchor','middle');
+      sub.setAttribute('class','node-sub');
+      sub.setAttribute('font-size','11');
+      sub.setAttribute('fill', '#5b6472');
+      sub.textContent = stars > 0 ? '★'.repeat(stars) + '☆'.repeat(3-stars) : mod.questions.length + ' Qs';
+
+      g.appendChild(ring); g.appendChild(circle); g.appendChild(icon); g.appendChild(label); g.appendChild(sub);
+
+      if(!locked){
+        g.addEventListener('click', () => startModule(i));
+        g.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); startModule(i);} });
+      }
+      layer.appendChild(g);
+    });
+
+    // snake marker sits at the next playable node
+    const markerIdx = Math.min(state.unlockedModule, MODULES.length - 1);
+    const mp = nodeCoords[markerIdx];
+    const marker = $('snake-marker');
+    marker.setAttribute('x', mp.x + 46);
+    marker.setAttribute('y', mp.y + 8);
+    marker.textContent = '🐍';
+
+    $('map-progress-label').textContent = `${completedCount} / ${MODULES.length} modules complete`;
+
+    // legend
+    const legend = $('legend');
+    legend.innerHTML = '';
+    MODULES.forEach(mod => {
+      const item = document.createElement('span');
+      item.innerHTML = `<span class="dot" style="background:${mod.color}"></span>${mod.name}`;
+      legend.appendChild(item);
+    });
+  }
+
+  /* ============================= Typing terminal ============================= */
+
+  function typeTerminal(){
+    const lines = [
+      'import antigravity',
+      'print("Let us fly.")'
+    ];
+    const target = $('typed');
+    let li = 0, ci = 0;
+    target.textContent = '';
+
+    function step(){
+      if(li >= lines.length){ return; }
+      const line = lines[li];
+      if(ci <= line.length){
+        target.textContent = line.slice(0, ci);
+        ci++;
+        setTimeout(step, 45);
+      } else {
+        setTimeout(() => {
+          li++; ci = 0;
+          target.textContent = '';
+          step();
+        }, 900);
+      }
+    }
+    step();
+  }
+
+  /* ============================= Quiz flow ============================= */
+
+  function startModule(index){
+    state.currentModule = index;
+    state.qIndex = 0;
+    state.correctInModule = 0;
+    state.bestStreakThisModule = 0;
+    state.hearts = 5;
+    renderTopStats();
+    showScreen('quiz');
+    renderQuestion();
+  }
+
+  function currentQuestion(){
+    return MODULES[state.currentModule].questions[state.qIndex];
+  }
+
+  function highlightCode(code){
+    // very light, safe syntax highlighting for the small snippets used here
+    let escaped = code
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    escaped = escaped
+      .replace(/(#.*)$/gm, '<span class="cm">$1</span>')
+      .replace(/("(?:[^"\\]|\\.)*")/g, '<span class="str">$1</span>')
+      .replace(/\b(def|if|elif|else|for|while|in|return|try|except|import|True|False|None|break|continue|lambda)\b/g, '<span class="kw">$1</span>')
+      .replace(/\b(\d+)\b/g, '<span class="num">$1</span>')
+      .replace(/\b([a-zA-Z_]\w*)(?=\()/g, '<span class="fn">$1</span>');
+    return escaped;
+  }
+
+  function renderQuestion(){
+    state.answered = false;
+    const mod = MODULES[state.currentModule];
+    const q = currentQuestion();
+
+    // header bits
+    $('module-tag-swatch').style.background = mod.color;
+    $('module-tag-text').textContent = `${mod.name} · Question ${state.qIndex+1} of ${mod.questions.length}`;
+    $('quiz-progress').style.width = `${(state.qIndex / mod.questions.length) * 100}%`;
+
+    $('q-kind').textContent = q.type === 'fill' ? 'Fill in the blank' : (q.type === 'tf' ? 'True or false' : 'Multiple choice');
+    $('q-prompt').textContent = q.prompt;
+
+    const codeHolder = $('q-code-holder');
+    codeHolder.innerHTML = '';
+    if(q.code){
+      const pre = document.createElement('pre');
+      pre.className = 'code-block';
+      pre.innerHTML = highlightCode(q.code);
+      codeHolder.appendChild(pre);
+    }
+
+    const body = $('q-body');
+    body.innerHTML = '';
+    const feedback = $('q-feedback');
+    feedback.className = 'feedback';
+    feedback.innerHTML = '';
+
+    const actionBtn = $('q-action-btn');
+    actionBtn.textContent = 'Check';
+    actionBtn.disabled = true;
+    actionBtn.onclick = null;
+
+    if(q.type === 'mcq' || q.type === 'tf'){
+      const options = q.type === 'tf' ? ['True', 'False'] : q.options;
+      const answerIdx = q.type === 'tf' ? (q.answer ? 0 : 1) : q.answer;
+      const wrap = document.createElement('div');
+      wrap.className = 'options';
+      let selected = null;
+
+      options.forEach((optText, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'opt';
+        btn.innerHTML = `<span class="letter">${String.fromCharCode(65+i)}</span><span>${optText}</span>`;
+        btn.addEventListener('click', () => {
+          if(state.answered) return;
+          selected = i;
+          wrap.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+          [...wrap.children].forEach((c,idx) => {
+            c.style.borderColor = idx === i ? 'var(--blue)' : 'var(--border)';
+          });
+          actionBtn.disabled = false;
+        });
+        wrap.appendChild(btn);
+      });
+      body.appendChild(wrap);
+
+      actionBtn.onclick = () => {
+        if(selected === null || state.answered) return;
+        state.answered = true;
+        const correct = selected === answerIdx;
+        [...wrap.children].forEach((c, idx) => {
+          c.disabled = true;
+          if(idx === answerIdx) c.classList.add('correct');
+          else if(idx === selected && !correct) c.classList.add('wrong');
+        });
+        handleResult(correct, q.explain);
+      };
+
+    } else if(q.type === 'fill'){
+      const row = document.createElement('div');
+      row.className = 'fill-row';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = 'Type your answer…';
+      input.autocomplete = 'off';
+      input.spellcheck = false;
+      row.appendChild(input);
+      body.appendChild(row);
+
+      input.addEventListener('input', () => {
+        actionBtn.disabled = input.value.trim().length === 0;
+      });
+      input.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' && !actionBtn.disabled) actionBtn.click();
+      });
+      setTimeout(() => input.focus(), 50);
+
+      actionBtn.onclick = () => {
+        if(state.answered) return;
+        state.answered = true;
+        const given = input.value.trim().toLowerCase().replace(/["'()]/g,'');
+        const expected = String(q.answer).toLowerCase();
+        const correct = given === expected;
+        input.disabled = true;
+        input.classList.add(correct ? 'correct' : 'wrong');
+        handleResult(correct, q.explain, expected);
+      };
+    }
+  }
+
+  function handleResult(correct, explain, expectedIfFill){
+    const feedback = $('q-feedback');
+    feedback.classList.add('show', correct ? 'ok' : 'no');
+    if(correct){
+      state.streak++;
+      state.bestStreakThisModule = Math.max(state.bestStreakThisModule, state.streak);
+      state.correctInModule++;
+      const gained = 10;
+      state.xp += gained;
+      feedback.innerHTML = `<span>✅</span><span><b>Correct.</b> ${explain}</span>`;
+    } else {
+      state.streak = 0;
+      state.hearts = Math.max(0, state.hearts - 1);
+      const extra = expectedIfFill ? ` The expected answer was <b>${expectedIfFill}</b>.` : '';
+      feedback.innerHTML = `<span>❌</span><span><b>Not quite.</b> ${explain}${extra}</span>`;
+    }
+    renderTopStats();
+
+    const actionBtn = $('q-action-btn');
+    if(state.hearts <= 0 && !correct){
+      actionBtn.textContent = 'Continue';
+      actionBtn.disabled = false;
+      actionBtn.onclick = () => { $('overlay').classList.add('show'); };
+    } else {
+      const mod = MODULES[state.currentModule];
+      const isLast = state.qIndex >= mod.questions.length - 1;
+      actionBtn.textContent = isLast ? 'See results' : 'Continue';
+      actionBtn.disabled = false;
+      actionBtn.onclick = () => {
+        if(isLast){ finishModule(); }
+        else { state.qIndex++; renderQuestion(); }
+      };
+    }
+  }
+
+  function finishModule(){
+    const mod = MODULES[state.currentModule];
+    $('quiz-progress').style.width = '100%';
+    const total = mod.questions.length;
+    const correct = state.correctInModule;
+    const pct = correct / total;
+    let stars = 0;
+    if(pct === 1) stars = 3;
+    else if(pct >= 0.7) stars = 2;
+    else if(pct >= 0.4) stars = 1;
+
+    state.moduleStars[state.currentModule] = Math.max(state.moduleStars[state.currentModule], stars);
+
+    const passed = stars > 0;
+    if(passed && state.currentModule === state.unlockedModule && state.currentModule < MODULES.length - 1){
+      state.unlockedModule = state.currentModule + 1;
+    }
+
+    // render result screen
+    const starsEl = $('result-stars');
+    starsEl.innerHTML = '';
+    for(let i=0;i<3;i++){
+      const s = document.createElement('span');
+      s.textContent = '★';
+      if(i >= stars) s.classList.add('star-dim');
+      starsEl.appendChild(s);
+    }
+
+    $('result-title').textContent = passed
+      ? (stars === 3 ? 'Flawless run!' : 'Module complete')
+      : 'So close — try again';
+    $('result-sub').textContent = passed
+      ? `You cleared ${mod.name} with ${correct}/${total} correct.`
+      : `You need at least 2/${total} correct to unlock the next module.`;
+    $('result-correct').textContent = `${correct}/${total}`;
+    $('result-xp').textContent = `+${correct * 10}`;
+    $('result-best-streak').textContent = state.bestStreakThisModule;
+
+    const retryBtn = $('result-retry');
+    const continueBtn = $('result-continue');
+    retryBtn.onclick = () => startModule(state.currentModule);
+
+    const isLastModule = state.currentModule === MODULES.length - 1;
+    if(passed){
+      continueBtn.textContent = isLastModule ? 'Back to map' : 'Next module';
+      continueBtn.onclick = () => {
+        if(!isLastModule) { /* already unlocked above */ }
+        renderMap();
+        showScreen('home');
+      };
+    } else {
+      continueBtn.textContent = 'Back to map';
+      continueBtn.onclick = () => { renderMap(); showScreen('home'); };
+    }
+
+    renderMap();
+    showScreen('result');
+  }
+
+  /* ============================= Overlay / exit ============================= */
+
+  $('overlay-refill').addEventListener('click', () => {
+    state.hearts = 5;
+    state.qIndex = 0;
+    state.correctInModule = 0;
+    state.streak = 0;
+    renderTopStats();
+    $('overlay').classList.remove('show');
+    renderQuestion();
+  });
+
+  $('quiz-exit').addEventListener('click', () => {
+    renderMap();
+    showScreen('home');
+  });
+
+  /* ============================= Init ============================= */
+
+  renderTopStats();
+  renderMap();
+  typeTerminal();
+
+})();
+</script>
+</body>
+</html>

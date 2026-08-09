@@ -1,0 +1,72 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Tournaments · Admin · Coder Enchanté Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <span class="tv-pill">🛠️ Admin</span>
+  <h1>Tournaments</h1>
+  <p class="tv-text-dim">{{ tournaments|length }} tournament{{ 's' if tournaments|length != 1 }} scheduled.</p>
+</section>
+
+<div class="tv-admin-toolbar tv-animate-in">
+  <div class="tv-filter-row"></div>
+  <a href="{{ url_for('admin.tournament_new') }}" class="tv-btn tv-btn--primary">+ New Tournament</a>
+</div>
+
+<div class="tv-card tv-admin-table-card tv-animate-in">
+  {% if tournaments %}
+  <table class="tv-admin-table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Difficulty</th>
+        <th>Bracket Size</th>
+        <th>Registered</th>
+        <th>Starts</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in tournaments %}
+      <tr class="{{ 'is-inactive' if t.status in ('completed', 'cancelled') }}">
+        <td><a href="{{ url_for('battle.tournament_detail', tournament_id=t.id) }}">{{ t.title }}</a></td>
+        <td><span class="tv-pill tv-pill--{{ 'success' if t.difficulty == 'easy' else ('warning' if t.difficulty == 'medium' else '') }}">{{ t.difficulty|title }}</span></td>
+        <td>{{ t.max_participants }}</td>
+        <td>{{ participant_counts.get(t.id, 0) }}</td>
+        <td>{{ t.starts_at.strftime('%b %d, %H:%M') }} UTC</td>
+        <td>
+          {% if t.status == 'registration' %}<span class="tv-pill">Registration</span>
+          {% elif t.status == 'active' %}<span class="tv-pill tv-pill--warning">Active</span>
+          {% elif t.status == 'completed' %}<span class="tv-pill tv-pill--success">Completed</span>
+          {% else %}<span class="tv-pill tv-pill--locked">Cancelled</span>{% endif %}
+        </td>
+        <td class="tv-admin-table__actions">
+          {% if t.status == 'registration' %}
+          <form method="POST" action="{{ url_for('admin.tournament_start_now', tournament_id=t.id) }}" class="tv-admin-inline-form" onsubmit="return confirm('Start \'{{ t.title }}\' now with whoever has registered so far?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button type="submit" class="tv-btn tv-btn--ghost tv-btn--sm">Start Now</button>
+          </form>
+          {% endif %}
+          {% if t.status in ('registration', 'active') %}
+          <form method="POST" action="{{ url_for('admin.tournament_cancel', tournament_id=t.id) }}" class="tv-admin-inline-form" onsubmit="return confirm('Cancel \'{{ t.title }}\'? This cannot be undone.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button type="submit" class="tv-btn tv-btn--ghost tv-btn--sm tv-admin-danger">Cancel</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="tv-text-dim">No tournaments yet - create the first one to open registration.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

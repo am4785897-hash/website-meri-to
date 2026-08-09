@@ -1,0 +1,82 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Question Bank · Admin · Coder Enchanté Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <span class="tv-pill">🛠️ Admin</span>
+  <h1>Question Bank</h1>
+  <p class="tv-text-dim">{{ total_count }} question{{ 's' if total_count != 1 }} across {{ modes|length }} battle modes.</p>
+</section>
+
+<div class="tv-admin-toolbar tv-animate-in">
+  <div class="tv-filter-row">
+    <a href="{{ url_for('admin.questions_list', mode='all') }}" class="tv-filter-pill {{ 'is-active' if mode_filter == 'all' }}">All</a>
+    {% for mode in modes %}
+    <a href="{{ url_for('admin.questions_list', mode=mode) }}" class="tv-filter-pill {{ 'is-active' if mode_filter == mode }}">
+      {{ mode.replace('_', ' ')|title }} ({{ counts_by_mode[mode] }})
+    </a>
+    {% endfor %}
+  </div>
+  <a href="{{ url_for('admin.question_new') }}" class="tv-btn tv-btn--primary">+ New Question</a>
+</div>
+
+<div class="tv-card tv-admin-table-card tv-animate-in">
+  {% if questions %}
+  <table class="tv-admin-table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Mode</th>
+        <th>Difficulty</th>
+        <th>Time Limit</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for q in questions %}
+      <tr class="{{ 'is-inactive' if not q.is_active }}">
+        <td>{{ q.title }}</td>
+        <td><span class="tv-pill">{{ q.mode.replace('_', ' ')|title }}</span></td>
+        <td><span class="tv-pill tv-pill--{{ 'success' if q.difficulty == 'easy' else ('warning' if q.difficulty == 'medium' else '') }}">{{ q.difficulty|title }}</span></td>
+        <td>{{ q.time_limit_seconds }}s</td>
+        <td>
+          {% if q.is_active %}
+          <span class="tv-pill tv-pill--success">Active</span>
+          {% else %}
+          <span class="tv-pill tv-pill--locked">Inactive</span>
+          {% endif %}
+        </td>
+        <td class="tv-admin-table__actions">
+          <a href="{{ url_for('admin.question_edit', question_id=q.id) }}" class="tv-btn tv-btn--ghost tv-btn--sm">Edit</a>
+          <form method="POST" action="{{ url_for('admin.question_toggle_active', question_id=q.id) }}" class="tv-admin-inline-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="hidden" name="mode_filter" value="{{ mode_filter }}"/>
+            <button type="submit" class="tv-btn tv-btn--ghost tv-btn--sm">{{ 'Deactivate' if q.is_active else 'Activate' }}</button>
+          </form>
+          <form method="POST" action="{{ url_for('admin.question_delete', question_id=q.id) }}" class="tv-admin-inline-form" onsubmit="return confirm('Delete \'{{ q.title }}\'? This cannot be undone.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button type="submit" class="tv-btn tv-btn--ghost tv-btn--sm tv-admin-danger">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="tv-text-dim">
+    {% if mode_filter == 'all' %}
+    No questions yet - add the first one to start building the arena's question bank.
+    {% else %}
+    No questions in this mode yet.
+    {% endif %}
+  </p>
+  {% endif %}
+</div>
+
+{% endblock %}

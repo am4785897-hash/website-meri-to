@@ -1,0 +1,87 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Blind Coding · Code Battle Arena{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/code-battle-arena.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <a href="{{ url_for('code_battle_arena') }}" class="tv-arena-admin-link">← Back to Arena</a>
+  <h1>🙈 Blind Coding</h1>
+  <p class="tv-text-dim">Write your solution with no test feedback and no do-overs - one submission each, results revealed only once both of you have locked in. Win +100 coins &amp; 20 XP, draw +40 coins, just showing up +5 coins.</p>
+</section>
+
+<div class="tv-card tv-animate-in tv-flex-col tv-gap-3" id="bc-lobby-card">
+
+  <div id="bc-picker" class="tv-flex-col tv-gap-3">
+    <label class="tv-admin-form__field">
+      <span>Difficulty</span>
+      <select id="bc-difficulty" class="tv-select">
+        {% for d, count in difficulty_counts.items() %}
+        <option value="{{ d }}" {{ 'disabled' if count == 0 }}>{{ d|title }} ({{ count }} question{{ '' if count == 1 else 's' }})</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button id="bc-find-btn" class="tv-btn tv-btn--primary" type="button">Find Match</button>
+  </div>
+
+  <div id="bc-searching" class="tv-flex-col tv-gap-3" style="display:none;">
+    <p class="tv-text-dim">🔎 Searching for an opponent…</p>
+    <button id="bc-cancel-btn" class="tv-btn tv-btn--ghost" type="button">Cancel</button>
+  </div>
+
+  <div id="bc-error" class="tv-text-faint" style="display:none;"></div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+(function () {
+  var socket = io();
+
+  var pickerEl = document.getElementById('bc-picker');
+  var searchingEl = document.getElementById('bc-searching');
+  var errorEl = document.getElementById('bc-error');
+  var difficultySelect = document.getElementById('bc-difficulty');
+
+  function showError(message) {
+    errorEl.textContent = message;
+    errorEl.style.display = '';
+  }
+
+  document.getElementById('bc-find-btn').addEventListener('click', function () {
+    errorEl.style.display = 'none';
+    socket.emit('battle:find_match', { difficulty: difficultySelect.value, mode: 'blind_coding' });
+  });
+
+  document.getElementById('bc-cancel-btn').addEventListener('click', function () {
+    socket.emit('battle:cancel_match');
+  });
+
+  socket.on('battle:searching', function () {
+    pickerEl.style.display = 'none';
+    searchingEl.style.display = '';
+  });
+
+  socket.on('battle:cancelled', function () {
+    pickerEl.style.display = '';
+    searchingEl.style.display = 'none';
+  });
+
+  socket.on('battle:match_found', function (data) {
+    window.location.href = '/battle/blind-coding/room/' + data.battle_id;
+  });
+
+  socket.on('battle:error', function (data) {
+    showError(data.message || 'Something went wrong finding a match.');
+    pickerEl.style.display = '';
+    searchingEl.style.display = 'none';
+  });
+})();
+</script>
+{% endblock %}

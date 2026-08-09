@@ -1,0 +1,38 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Output Prediction · Code Battle Arena{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/code-battle-arena.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <a href="{{ url_for('code_battle_arena') }}" class="tv-arena-admin-link">← Back to Arena</a>
+  <h1>🔮 Output Prediction</h1>
+  <p class="tv-text-dim">Read the code, predict the exact output. First correct answer on a question earns 100 coins + 20 XP; a miss still earns 5 coins for trying. Replays after that are practice only.</p>
+</section>
+
+<div class="tv-arena-grid tv-animate-in">
+  {% if questions %}
+    {% for q in questions %}
+    <div class="tv-card tv-arena-mode-card">
+      <div class="tv-arena-mode-card__icon tv-arena-mode-card__icon--predict">🔮</div>
+      <h3>{{ q.title }}</h3>
+      <div class="tv-arena-mode-card__meta">
+        <span class="tv-pill tv-pill--{{ 'success' if q.difficulty == 'easy' else ('warning' if q.difficulty == 'medium' else '') }}">{{ q.difficulty|title }}</span>
+        {% if q.id in solved_ids %}
+        <span class="tv-pill tv-pill--success">✓ Solved</span>
+        {% endif %}
+      </div>
+      <a href="{{ url_for('battle.output_prediction_question', question_id=q.id) }}" class="tv-btn tv-btn--primary tv-arena-mode-card__cta">
+        {{ 'Play Again' if q.id in solved_ids else 'Start' }}
+      </a>
+    </div>
+    {% endfor %}
+  {% else %}
+    <p class="tv-text-dim">No Output Prediction questions yet - check back soon.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

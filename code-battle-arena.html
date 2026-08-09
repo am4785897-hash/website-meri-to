@@ -1,0 +1,200 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Code Battle Arena · Coder Enchanté Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/code-battle-arena.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <div class="tv-arena-hero__badge">⚔️ New</div>
+  <h1>Code Battle Arena</h1>
+  <p class="tv-text-dim">Duel other coders in real time, earn Student Coins, and climb the ranks. Battles are opening in waves — queue up to be first in.</p>
+  {% if current_user.is_authenticated and current_user.is_admin %}
+  <a href="{{ url_for('admin.questions_list') }}" class="tv-arena-admin-link">🛠️ Manage Question Bank</a>
+  {% endif %}
+</section>
+
+<!-- ===================== STAT ROW ===================== -->
+<div class="tv-stat-row tv-arena-stat-row tv-animate-in">
+  <div class="tv-card tv-stat-card tv-stat-card--coins">
+    <div class="tv-stat-card__icon">
+      <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v8M7.8 8.2c0-1.1 1-2 2.2-2s2.2.7 2.2 1.7c0 2.3-4.4 1.2-4.4 3.4 0 1 1 1.8 2.2 1.8s2.2-.8 2.2-1.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    </div>
+    <div>
+      <div class="tv-stat-card__value">{{ current_user.total_coins|default(0) }}</div>
+      <div class="tv-stat-card__label">Student Coins</div>
+    </div>
+  </div>
+  <div class="tv-card tv-stat-card tv-stat-card--xp">
+    <div class="tv-stat-card__icon">
+      <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2.5l1.8 3.7 4 .6-2.9 2.9.7 4-3.6-1.9-3.6 1.9.7-4L4.2 6.8l4-.6L10 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    </div>
+    <div>
+      <div class="tv-stat-card__value">0</div>
+      <div class="tv-stat-card__label">Battles Won</div>
+    </div>
+  </div>
+  <div class="tv-card tv-stat-card tv-stat-card--level">
+    <div class="tv-stat-card__icon">
+      <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M4 18V10M10 18V3M16 18v-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <div>
+      <div class="tv-stat-card__value">Unranked</div>
+      <div class="tv-stat-card__label">Arena Rank</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== TOURNAMENT BANNER ===================== -->
+<div class="tv-card tv-arena-tournament tv-animate-in">
+  <div class="tv-arena-tournament__text">
+    {% if next_tournament %}
+    <span class="tv-pill tv-pill--warning">🏆 {{ next_tournament.title }}</span>
+    <h2>Registration open — starts {{ next_tournament.starts_at.strftime('%b %d, %H:%M') }} UTC</h2>
+    <p class="tv-text-dim">Single elimination bracket. Champion takes 1,000 coins, runner-up 500, third place 250.</p>
+    {% else %}
+    <span class="tv-pill tv-pill--warning">🏆 Tournaments</span>
+    <h2>No bracket open right now</h2>
+    <p class="tv-text-dim">Single elimination. Champion takes 1,000 coins, runner-up 500, third place 250. Check back for the next one.</p>
+    {% endif %}
+  </div>
+  <a href="{{ url_for('battle.tournament_lobby') }}" class="tv-btn tv-btn--primary">{{ 'Register' if next_tournament else 'View Tournaments' }}</a>
+</div>
+
+<!-- ===================== BATTLE MODES ===================== -->
+<div class="tv-section-header tv-animate-in">
+  <h2>Battle Modes</h2>
+  <span class="tv-text-faint">8 modes · more added over time</span>
+</div>
+
+<div class="tv-arena-grid tv-animate-in">
+
+  <div class="tv-card tv-arena-mode-card">
+    <div class="tv-arena-mode-card__icon tv-arena-mode-card__icon--speed">⚡</div>
+    <h3>Speed Battle</h3>
+    <p class="tv-text-dim">Race an opponent to a correct, working solution. Fastest pass wins.</p>
+    <div class="tv-arena-mode-card__meta">
+      <span class="tv-pill">1v1</span>
+      <span class="tv-pill">Timed</span>
+    </div>
+    <a href="{{ url_for('battle.speed_battle_lobby') }}" class="tv-btn tv-btn--primary tv-arena-mode-card__cta">Play Now</a>
+  </div>
+
+  <div class="tv-card tv-arena-mode-card">
+    <div class="tv-arena-mode-card__icon tv-arena-mode-card__icon--bug">🐛</div>
+    <h3>Bug Hunt</h3>
+    <p class="tv-text-dim">Find and fix the bug hiding in broken code before your opponent does.</p>
+    <div class="tv-arena-mode-card__meta">
+      <span class="tv-pill">1v1</span>
+      <span class="tv-pill">Timed</span>
+    </div>
+    <button class="tv-btn tv-btn--ghost tv-arena-mode-card__cta" type="button" disabled>Coming Soon</button>
+  </div>
+
+  <div class="tv-card tv-arena-mode-card">
+    <div class="tv-arena-mode-card__icon tv-arena-mode-card__icon--predict">🔮</div>
+    <h3>Output Prediction</h3>
+    <p class="tv-text-dim">Read the code, predict the exact output. No running it — just reasoning.</p>
+    <div class="tv-arena-mode-card__meta">
+      <span class="tv-pill">Solo</span>
+      <span class="tv-pill">Quick</span>
+    </div>
+    <a href="{{ url_for('battle.output_prediction_list') }}" class="tv-btn tv-btn--primary tv-arena-mode-card__cta">Play Now</a>
+  </div>
+
+  <div class="tv-card tv-arena-mode-card">
+    <div class="tv-arena-mode-card__icon tv-arena-mode-card__icon--complete">🧩</div>
+    <h3>Code Completion</h3>
+    <p class="tv-text-dim">Fill in the missing piece of a snippet to make it pass every test.</p>
+    <div class="tv-arena-mode-card__meta">
+      <span class="tv-pill">Solo</span>
+      <span class="tv-pill">Timed</span>
+    </div>
+    <a href="{{ url_for('battle.code_completion_list') }}" class="tv-btn tv-btn--primary tv-arena-mode-card__cta">Play Now</a>
+  </div>
+
+  <div class="tv-card tv-arena-mode-card">
+    <div class="tv-arena-mode-card__icon tv-arena-mode-card__icon--blind">🕶️</div>
+    <h3>Blind Coding</h3>
+    <p class="tv-text-dim">Race a live opponent with zero test feedback and one shot each. Results reveal only once you've both locked in.</p>
+    <div class="tv-arena-mode-card__meta">
+      <span class="tv-pill">1v1 Live</span>
+      <span class="tv-pill">Hardcore</span>
+    </div>
+    <a href="{{ url_for('battle.blind_coding_lobby') }}" class="tv-btn tv-btn--primary tv-arena-mode-card__cta">Play Now</a>
+  </div>
+
+  <div class="tv-card tv-arena-mode-card">
+    <div class="tv-arena-mode-card__icon tv-arena-mode-card__icon--ai">🤖</div>
+    <h3>AI Battle</h3>
+    <p class="tv-text-dim">No human opponent online? Duel the AI referee itself, scaled to your level.</p>
+    <div class="tv-arena-mode-card__meta">
+      <span class="tv-pill">1v1</span>
+      <span class="tv-pill">Always On</span>
+    </div>
+    <a href="{{ url_for('battle.ai_battle_lobby') }}" class="tv-btn tv-btn--primary tv-arena-mode-card__cta">Play Now</a>
+  </div>
+
+  <div class="tv-card tv-arena-mode-card">
+    <div class="tv-arena-mode-card__icon tv-arena-mode-card__icon--team">🛡️</div>
+    <h3>Team Battle</h3>
+    <p class="tv-text-dim">Squad up and take on another team. Combined scores decide the winner.</p>
+    <div class="tv-arena-mode-card__meta">
+      <span class="tv-pill">Team</span>
+      <span class="tv-pill">Timed</span>
+    </div>
+    <button class="tv-btn tv-btn--ghost tv-arena-mode-card__cta" type="button" disabled>Coming Soon</button>
+  </div>
+
+  <div class="tv-card tv-arena-mode-card">
+    <div class="tv-arena-mode-card__icon tv-arena-mode-card__icon--tournament">🏆</div>
+    <h3>Tournament</h3>
+    <p class="tv-text-dim">Scheduled single-elimination bracket. Last coder standing takes the crown.</p>
+    <div class="tv-arena-mode-card__meta">
+      <span class="tv-pill">Bracket</span>
+      <span class="tv-pill">Scheduled</span>
+    </div>
+    <a href="{{ url_for('battle.tournament_lobby') }}" class="tv-btn tv-btn--primary tv-arena-mode-card__cta">Play Now</a>
+  </div>
+
+</div>
+
+<!-- ===================== EARN & SPEND COINS ===================== -->
+<div class="tv-section-header tv-animate-in">
+  <h2>Student Coins</h2>
+  <span class="tv-text-faint">earn in battle, spend in the shop</span>
+</div>
+
+<div class="tv-arena-coins-row tv-animate-in">
+
+  <div class="tv-card tv-arena-earn-card">
+    <h3>Ways to Earn</h3>
+    <ul class="tv-arena-earn-list">
+      <li><span>Battle Win</span><strong>+100</strong></li>
+      <li><span>Participation</span><strong>+5</strong></li>
+      <li><span>Draw</span><strong>+40</strong></li>
+      <li><span>Tournament Champion</span><strong>+1,000</strong></li>
+      <li><span>Tournament Runner-up</span><strong>+500</strong></li>
+      <li><span>Tournament Third Place</span><strong>+250</strong></li>
+    </ul>
+  </div>
+
+  <div class="tv-card tv-arena-shop-card">
+    <h3>Coin Shop Preview</h3>
+    <div class="tv-arena-shop-grid">
+      {% for item in shop_preview_items %}
+      <div class="tv-arena-shop-item{% if item.id in shop_owned_ids %} tv-arena-shop-item--owned{% endif %}" style="opacity: 1;">
+        <span class="tv-arena-shop-item__icon">{{ item.icon }}</span>
+        <span class="tv-arena-shop-item__name">{{ item.name }}</span>
+        <span class="tv-arena-shop-item__price">{% if item.id in shop_owned_ids %}✅ owned{% else %}🪙 {{ item.price }}{% endif %}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <a href="{{ url_for('shop') }}" class="tv-btn tv-btn--primary tv-arena-mode-card__cta" style="margin-top: var(--tv-space-2); display: inline-flex;">Open Coin Shop</a>
+  </div>
+
+</div>
+
+{% endblock %}

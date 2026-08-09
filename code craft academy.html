@@ -1,0 +1,1560 @@
+
+Codecraft academy · HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeCraft Academy — Learn to Code</title>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg:#0B0E14;
+  --surface:#121722;
+  --surface-2:#1A2130;
+  --surface-3:#212a3d;
+  --border:#242c3d;
+  --border-soft:#1b2230;
+  --text:#E6E8EE;
+  --text-dim:#8B95A8;
+  --text-faint:#5B6478;
+  --teal:#5FD9C4;
+  --teal-dim:#2c8f7b;
+  --violet:#B693F5;
+  --violet-dim:#7d5cc4;
+  --amber:#F2B155;
+  --red:#F2686D;
+  --font-display:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --font-mono:ui-monospace,'SFMono-Regular','Cascadia Code','Consolas','Liberation Mono',monospace;
+  --font-body:-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --radius:8px;
+  --sidebar-w:280px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--teal);color:#04241d;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:var(--surface);}
+::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:5px;}
+::-webkit-scrollbar-thumb:hover{background:var(--border);}
+a{color:var(--teal);}
+button{font-family:inherit;cursor:pointer;}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+code,pre{font-family:var(--font-mono);}
+ 
+/* ============ TITLE BAR (signature) ============ */
+.titlebar{
+  height:44px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  padding:0 14px;
+  gap:14px;
+  position:sticky;top:0;z-index:50;
+}
+.tl-dots{display:flex;gap:7px;flex-shrink:0;}
+.tl-dot{width:11px;height:11px;border-radius:50%;}
+.tl-dot.red{background:var(--red);}
+.tl-dot.amber{background:var(--amber);}
+.tl-dot.teal{background:var(--teal);}
+.tl-file{
+  font-family:var(--font-mono);
+  font-size:12.5px;
+  color:var(--text-dim);
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-bottom:none;
+  padding:6px 14px 5px;
+  border-radius:6px 6px 0 0;
+  display:flex;align-items:center;gap:8px;
+}
+.tl-file .dot-unsaved{width:6px;height:6px;border-radius:50%;background:var(--amber);}
+.tl-menu-btn{
+  display:none;
+  margin-left:auto;
+  background:transparent;border:1px solid var(--border);
+  color:var(--text);border-radius:6px;
+  width:32px;height:32px;align-items:center;justify-content:center;
+  font-size:16px;
+}
+.tl-right{margin-left:auto;font-family:var(--font-mono);font-size:11.5px;color:var(--text-faint);display:flex;align-items:center;gap:16px;}
+ 
+/* ============ APP SHELL ============ */
+.shell{display:flex;min-height:calc(100vh - 44px);}
+ 
+/* ============ SIDEBAR (file explorer signature) ============ */
+.sidebar{
+  width:var(--sidebar-w);
+  flex-shrink:0;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  padding:18px 0 24px;
+  position:sticky;
+  top:44px;
+  height:calc(100vh - 44px);
+  overflow-y:auto;
+}
+.sb-section-label{
+  font-family:var(--font-mono);
+  font-size:10.5px;
+  letter-spacing:.12em;
+  color:var(--text-faint);
+  text-transform:uppercase;
+  padding:0 18px;
+  margin:4px 0 8px;
+}
+.sb-item{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 18px;
+  font-size:13.5px;
+  color:var(--text-dim);
+  cursor:pointer;
+  border-left:2px solid transparent;
+  white-space:nowrap;
+}
+.sb-item:hover{background:var(--surface-2);color:var(--text);}
+.sb-item.active{background:var(--surface-2);color:var(--text);border-left-color:var(--teal);}
+.sb-item .ico{width:15px;text-align:center;flex-shrink:0;font-size:13px;}
+.sb-folder{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 18px;
+  font-size:13.5px;font-weight:500;
+  color:var(--text);
+  cursor:pointer;
+}
+.sb-folder .chev{
+  font-size:10px;color:var(--text-faint);
+  transition:transform .15s ease;
+  width:10px;
+}
+.sb-folder.collapsed .chev{transform:rotate(-90deg);}
+.sb-folder .folder-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.sb-lessons{overflow:hidden;}
+.sb-lessons.collapsed{display:none;}
+.sb-lesson{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 18px 7px 40px;
+  font-size:13px;
+  color:var(--text-dim);
+  cursor:pointer;
+  border-left:2px solid transparent;
+}
+.sb-lesson:hover{background:var(--surface-2);color:var(--text);}
+.sb-lesson.active{background:var(--surface-2);color:var(--text);border-left-color:var(--violet);}
+.sb-lesson .check{
+  width:14px;height:14px;border-radius:3px;
+  border:1.5px solid var(--border);
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:var(--bg);
+}
+.sb-lesson.done .check{background:var(--teal);border-color:var(--teal);}
+.sb-footer{
+  margin-top:14px;
+  padding:14px 18px 0;
+  border-top:1px solid var(--border-soft);
+}
+.diffbar{display:flex;gap:2px;height:6px;border-radius:3px;overflow:hidden;margin:8px 0;}
+.diffbar span{display:block;height:100%;}
+.diffbar .fill{background:var(--teal);}
+.diffbar .empty{background:var(--surface-3);}
+.diffstat{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);display:flex;justify-content:space-between;}
+.diffstat .plus{color:var(--teal);}
+.reset-link{
+  margin-top:12px;font-family:var(--font-mono);font-size:11px;
+  color:var(--text-faint);background:none;border:none;padding:0;
+  text-decoration:underline;text-underline-offset:2px;
+}
+.reset-link:hover{color:var(--red);}
+ 
+/* ============ MAIN ============ */
+.main{flex:1;min-width:0;padding:40px 48px 80px;max-width:900px;margin:0 auto;width:100%;}
+.eyebrow{
+  font-family:var(--font-mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--teal);margin:0 0 10px;
+}
+h1.page-title{
+  font-family:var(--font-display);font-weight:600;font-size:32px;
+  margin:0 0 6px;letter-spacing:-.01em;
+}
+.subtitle{color:var(--text-dim);font-size:15px;margin:0 0 32px;line-height:1.6;max-width:640px;}
+ 
+/* ============ DASHBOARD ============ */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:36px;}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px 18px;
+}
+.stat-card .num{font-family:var(--font-display);font-size:26px;font-weight:600;}
+.stat-card .lbl{font-size:12px;color:var(--text-dim);margin-top:4px;font-family:var(--font-mono);}
+.stat-card.teal .num{color:var(--teal);}
+.stat-card.violet .num{color:var(--violet);}
+.stat-card.amber .num{color:var(--amber);}
+ 
+.course-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
+.course-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:20px;cursor:pointer;transition:border-color .15s ease,transform .1s ease;
+  display:flex;flex-direction:column;gap:12px;
+}
+.course-card:hover{border-color:var(--surface-3);transform:translateY(-2px);}
+.course-card .top{display:flex;align-items:center;gap:10px;}
+.course-card .badge{
+  font-family:var(--font-mono);font-size:18px;font-weight:700;
+  width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+}
+.course-card h3{margin:0;font-family:var(--font-display);font-size:16px;font-weight:600;}
+.course-card p{margin:0;font-size:13px;color:var(--text-dim);line-height:1.5;}
+.course-card .cprog-track{height:5px;background:var(--surface-3);border-radius:3px;overflow:hidden;}
+.course-card .cprog-fill{height:100%;border-radius:3px;}
+.course-card .cprog-txt{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);}
+ 
+.exam-cta{
+  margin-top:36px;border:1px dashed var(--border);border-radius:10px;padding:24px;
+  display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+  background:var(--surface);
+}
+.exam-cta.ready{border-style:solid;border-color:var(--violet-dim);}
+.exam-cta h3{margin:0 0 6px;font-family:var(--font-display);font-size:17px;}
+.exam-cta p{margin:0;color:var(--text-dim);font-size:13px;max-width:420px;}
+ 
+/* ============ BUTTONS ============ */
+.btn{
+  font-family:var(--font-mono);font-size:13px;font-weight:500;
+  padding:10px 18px;border-radius:6px;border:1px solid var(--border);
+  background:transparent;color:var(--text);
+  display:inline-flex;align-items:center;gap:8px;
+  transition:background .12s ease,border-color .12s ease;
+  white-space:nowrap;
+}
+.btn:hover:not(:disabled){background:var(--surface-2);border-color:var(--surface-3);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-primary{background:var(--teal);border-color:var(--teal);color:#04241d;font-weight:600;}
+.btn-primary:hover:not(:disabled){background:#7ce6d4;border-color:#7ce6d4;}
+.btn-violet{background:var(--violet);border-color:var(--violet);color:#211238;font-weight:600;}
+.btn-violet:hover:not(:disabled){background:#c8a9fa;}
+.btn-ghost{border-color:transparent;}
+.btn-ghost:hover{background:var(--surface-2);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+ 
+/* ============ BREADCRUMB / NAV ============ */
+.crumb{font-family:var(--font-mono);font-size:12px;color:var(--text-faint);margin-bottom:14px;}
+.crumb .sep{margin:0 6px;}
+.crumb .cur{color:var(--text-dim);}
+ 
+/* ============ LESSON ============ */
+.lesson-body{font-size:15.5px;line-height:1.75;color:var(--text);}
+.lesson-body h2{
+  font-family:var(--font-display);font-size:20px;font-weight:600;margin:32px 0 12px;
+  color:var(--text);
+}
+.lesson-body h2:first-child{margin-top:0;}
+.lesson-body p{margin:0 0 16px;color:#c7cbd6;}
+.lesson-body ul{margin:0 0 16px;padding-left:20px;color:#c7cbd6;}
+.lesson-body li{margin-bottom:6px;}
+.lesson-body code.inline{
+  background:var(--surface-2);border:1px solid var(--border);color:var(--amber);
+  padding:1px 6px;border-radius:4px;font-size:.88em;
+}
+.code-block{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  margin:18px 0 22px;overflow:hidden;
+}
+.code-block .cb-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;border-bottom:1px solid var(--border);
+  font-family:var(--font-mono);font-size:11px;color:var(--text-faint);
+}
+.code-block pre{margin:0;padding:16px;overflow-x:auto;font-size:13px;line-height:1.6;}
+.code-block .tag{color:var(--violet);}
+.code-block .attr{color:var(--amber);}
+.code-block .str{color:var(--teal);}
+.code-block .kw{color:var(--violet);}
+.code-block .cm{color:var(--text-faint);}
+.code-block .fn{color:var(--amber);}
+ 
+.callout{
+  border-left:3px solid var(--teal);background:var(--surface);
+  padding:12px 16px;border-radius:0 8px 8px 0;margin:18px 0;font-size:14px;color:#c7cbd6;
+}
+.lesson-nav{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:44px;padding-top:24px;border-top:1px solid var(--border);gap:12px;flex-wrap:wrap;
+}
+ 
+/* ============ QUIZ ============ */
+.quiz-wrap{
+  margin-top:36px;border:1px solid var(--border);border-radius:10px;
+  background:var(--surface);overflow:hidden;
+}
+.quiz-head{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+}
+.quiz-head h3{margin:0;font-family:var(--font-display);font-size:16px;display:flex;align-items:center;gap:8px;}
+.quiz-body{padding:20px;}
+.q-block{margin-bottom:26px;}
+.q-block:last-child{margin-bottom:0;}
+.q-prompt{font-size:14.5px;font-weight:500;margin-bottom:12px;display:flex;gap:8px;}
+.q-prompt .qnum{font-family:var(--font-mono);color:var(--text-faint);flex-shrink:0;}
+.q-options{display:flex;flex-direction:column;gap:8px;}
+.q-opt{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;border:1px solid var(--border);border-radius:7px;
+  font-size:13.5px;color:var(--text-dim);
+  background:var(--surface-2);
+}
+.q-opt:hover{border-color:var(--surface-3);}
+.q-opt input{accent-color:var(--teal);}
+.q-opt.selected{border-color:var(--violet-dim);color:var(--text);}
+.q-opt.correct{border-color:var(--teal);background:rgba(95,217,196,.08);color:var(--teal);}
+.q-opt.wrong{border-color:var(--red);background:rgba(242,104,109,.08);color:var(--red);}
+.quiz-result{
+  padding:16px 20px;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+}
+.quiz-result .score-txt{font-family:var(--font-mono);font-size:14px;}
+.quiz-result.pass .score-txt{color:var(--teal);}
+.quiz-result.fail .score-txt{color:var(--red);}
+ 
+.locked-note{
+  display:flex;align-items:center;gap:8px;color:var(--text-faint);font-size:12px;
+  font-family:var(--font-mono);
+}
+ 
+/* ============ EXAM ============ */
+.exam-progress-track{height:8px;background:var(--surface-3);border-radius:4px;overflow:hidden;margin:16px 0 28px;}
+.exam-progress-fill{height:100%;background:linear-gradient(90deg,var(--violet),var(--teal));border-radius:4px;transition:width .2s ease;}
+ 
+/* ============ CERTIFICATE ============ */
+.cert-form{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:24px;margin-bottom:32px;display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;
+}
+.field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:220px;}
+.field label{font-family:var(--font-mono);font-size:11.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em;}
+.field input{
+  background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  padding:10px 12px;border-radius:6px;font-size:14px;font-family:var(--font-body);
+}
+.field input:focus-visible{outline:2px solid var(--teal);outline-offset:1px;}
+ 
+.cert-stage{display:flex;justify-content:center;padding:20px 0;}
+#certificate{
+  width:900px;max-width:100%;aspect-ratio:1.414/1;
+  background:#0d1016;
+  border:1px solid #2a3346;
+  position:relative;
+  padding:36px;
+  font-family:var(--font-mono);
+  color:#e6e8ee;
+  display:flex;flex-direction:column;
+}
+#certificate .cert-border{
+  position:absolute;inset:14px;border:2px solid #2c3648;pointer-events:none;
+}
+#certificate .cert-border::before{
+  content:"";position:absolute;inset:6px;border:1px solid #1e2636;
+}
+#certificate .cert-inner{position:relative;flex:1;display:flex;flex-direction:column;padding:22px;}
+#certificate .cert-topline{font-size:11px;color:var(--text-faint);display:flex;justify-content:space-between;}
+#certificate .cert-prompt{color:var(--teal);}
+#certificate .cert-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;}
+#certificate .cert-kicker{font-size:11px;letter-spacing:.25em;color:var(--text-faint);text-transform:uppercase;margin-bottom:6px;}
+#certificate .cert-name{
+  font-family:var(--font-display);font-size:40px;font-weight:700;color:#fff;
+  border-bottom:2px solid var(--teal);padding-bottom:10px;margin-bottom:14px;
+  letter-spacing:.01em;
+}
+#certificate .cert-desc{font-size:13px;color:#c7cbd6;max-width:520px;line-height:1.7;}
+#certificate .cert-course{color:var(--violet);font-weight:600;}
+#certificate .cert-bottom{
+  display:flex;justify-content:space-between;align-items:flex-end;font-size:11px;color:var(--text-faint);
+  margin-top:20px;
+}
+#certificate .cert-sig{text-align:center;}
+#certificate .cert-sig .line{width:150px;border-top:1px solid #3a4358;margin-bottom:6px;}
+#certificate .cert-score{
+  font-size:12px;color:var(--teal);
+}
+.blink{animation:blink 1s step-start infinite;}
+@keyframes blink{50%{opacity:0;}}
+ 
+.cert-actions{display:flex;gap:12px;justify-content:center;margin-top:26px;flex-wrap:wrap;}
+ 
+.locked-panel{
+  border:1px solid var(--border);border-radius:10px;background:var(--surface);
+  padding:40px 24px;text-align:center;color:var(--text-dim);
+}
+.locked-panel .ico{font-size:28px;margin-bottom:12px;color:var(--text-faint);}
+ 
+/* ============ TOAST ============ */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  padding:12px 20px;border-radius:8px;font-size:13px;font-family:var(--font-mono);
+  opacity:0;pointer-events:none;transition:all .25s ease;z-index:200;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+ 
+/* ============ RESPONSIVE ============ */
+@media (max-width:880px){
+  .sidebar{
+    position:fixed;left:0;top:44px;z-index:100;
+    transform:translateX(-100%);
+    transition:transform .2s ease;
+    box-shadow:20px 0 40px rgba(0,0,0,.4);
+  }
+  .sidebar.open{transform:translateX(0);}
+  .tl-menu-btn{display:flex;}
+  .main{padding:28px 20px 60px;}
+  h1.page-title{font-size:24px;}
+  #certificate{padding:18px;}
+  #certificate .cert-name{font-size:26px;}
+  #certificate .cert-bottom{flex-direction:column;gap:14px;align-items:center;text-align:center;}
+  .cert-form{flex-direction:column;align-items:stretch;}
+}
+@media (max-width:480px){
+  .stat-row{grid-template-columns:1fr 1fr;}
+  .course-grid{grid-template-columns:1fr;}
+}
+.sb-overlay{
+  display:none;position:fixed;inset:0;top:44px;background:rgba(0,0,0,.5);z-index:90;
+}
+.sb-overlay.show{display:block;}
+</style>
+</head>
+<body>
+ 
+<div class="titlebar">
+  <div class="tl-dots"><span class="tl-dot red"></span><span class="tl-dot amber"></span><span class="tl-dot teal"></span></div>
+  <div class="tl-file"><span class="dot-unsaved" id="unsavedDot" style="display:none;"></span><span id="tlFileName">dashboard.js</span></div>
+  <div class="tl-right"><span id="clockTxt"></span></div>
+  <button class="tl-menu-btn" id="menuBtn" aria-label="Toggle menu">☰</button>
+</div>
+ 
+<div class="shell">
+  <div class="sb-overlay" id="sbOverlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-section-label">navigator</div>
+    <div class="sb-item" data-route="dashboard"><span class="ico">▤</span> Dashboard</div>
+ 
+    <div id="courseNav"></div>
+ 
+    <div class="sb-section-label" style="margin-top:14px;">assessment</div>
+    <div class="sb-item" data-route="exam"><span class="ico">✓</span> Final Exam</div>
+    <div class="sb-item" data-route="certificate"><span class="ico">◈</span> Certificate</div>
+ 
+    <div class="sb-footer">
+      <div class="sb-section-label" style="padding:0;margin-bottom:6px;">overall progress</div>
+      <div class="diffbar" id="sbDiffbar"></div>
+      <div class="diffstat"><span class="plus" id="sbDiffText">+0</span><span id="sbDiffPct">0%</span></div>
+      <button class="reset-link" id="resetBtn">reset all progress</button>
+    </div>
+  </aside>
+ 
+  <main class="main" id="mainContent"></main>
+</div>
+ 
+<div id="toast"></div>
+ 
+<script>
+/* =========================================================
+   CODECRAFT ACADEMY — single-file learning platform
+   ========================================================= */
+ 
+/* ---------- DATA ---------- */
+const COURSES = [
+  {
+    id:'html', title:'HTML Foundations', short:'HTML', color:'var(--teal)', dotBg:'rgba(95,217,196,.14)',
+    desc:'Learn the basic building blocks of every web page, one simple step at a time.',
+    lessons:[
+      {
+        id:'html-1', title:'Structure & Semantic Tags',
+        content:`
+          <h2>What is HTML?</h2>
+          <p>HTML stands for <strong>HyperText Markup Language</strong>. It's the code used to build every web page. Think of it like the skeleton of a house — it gives the page its basic shape.</p>
+          <p>Every HTML page has the same simple shape: a <code class="inline">&lt;head&gt;</code> (info about the page) and a <code class="inline">&lt;body&gt;</code> (what people actually see).</p>
+          <h2>Tags that describe parts of a page</h2>
+          <p>HTML uses "tags" to label different parts of the page, so both browsers and people know what each part is for. Here are the main ones, in plain words:</p>
+          <ul>
+            <li><code class="inline">&lt;header&gt;</code> — the top part, usually with a title or menu</li>
+            <li><code class="inline">&lt;nav&gt;</code> — the menu links people click to move around</li>
+            <li><code class="inline">&lt;main&gt;</code> — the main content of the page</li>
+            <li><code class="inline">&lt;footer&gt;</code> — the bottom part, like copyright text</li>
+          </ul>
+          <div class="code-block">
+            <div class="cb-head"><span>page.html</span><span>html</span></div>
+            <pre>&lt;<span class="tag">body</span>&gt;
+  &lt;<span class="tag">header</span>&gt;
+    &lt;<span class="tag">h1</span>&gt;My Blog&lt;/<span class="tag">h1</span>&gt;
+  &lt;/<span class="tag">header</span>&gt;
+  &lt;<span class="tag">main</span>&gt;
+    &lt;<span class="tag">p</span>&gt;Hello, world!&lt;/<span class="tag">p</span>&gt;
+  &lt;/<span class="tag">main</span>&gt;
+  &lt;<span class="tag">footer</span>&gt;&copy; 2026&lt;/<span class="tag">footer</span>&gt;
+&lt;/<span class="tag">body</span>&gt;</pre>
+          </div>
+          <div class="callout">Simple tip: use these named tags instead of a plain <code class="inline">&lt;div&gt;</code> whenever you can. It makes your page easier to understand.</div>
+        `,
+        quiz:[
+          {q:'What does HTML stand for?', options:['HyperText Markup Language','Home Tool Markup Language','High Text Machine Language','Hyper Transfer Markup Line'], answer:0},
+          {q:'Which tag holds the main content people read on the page?', options:['<header>','<main>','<footer>','<nav>'], answer:1},
+          {q:'Which tag is normally used for a page title or menu at the top?', options:['<header>','<footer>','<main>','<body>'], answer:0},
+          {q:'Which tag is used for the bottom of a page, like copyright text?', options:['<top>','<end>','<footer>','<bottom>'], answer:2}
+        ]
+      },
+      {
+        id:'html-2', title:'Forms & Input Elements',
+        content:`
+          <h2>Getting information from people</h2>
+          <p>A <code class="inline">&lt;form&gt;</code> is how a web page collects information, like a name or an email address. Inside a form, you use <code class="inline">&lt;input&gt;</code> boxes for people to type into.</p>
+          <div class="code-block">
+            <div class="cb-head"><span>signup.html</span><span>html</span></div>
+            <pre>&lt;<span class="tag">form</span>&gt;
+  &lt;<span class="tag">label</span>&gt;Email&lt;/<span class="tag">label</span>&gt;
+  &lt;<span class="tag">input</span> <span class="attr">type</span>=<span class="str">"email"</span>&gt;
+ 
+  &lt;<span class="tag">button</span>&gt;Sign up&lt;/<span class="tag">button</span>&gt;
+&lt;/<span class="tag">form</span>&gt;</pre>
+          </div>
+          <h2>Labels help people know what to type</h2>
+          <p>A <code class="inline">&lt;label&gt;</code> is a little bit of text that tells someone what a box is for — like "Email" or "Password". Every input box should have a label next to it.</p>
+          <h2>Different input types</h2>
+          <p>The <code class="inline">type</code> attribute changes what kind of box you get:</p>
+          <ul>
+            <li><code class="inline">type="text"</code> — a normal typing box</li>
+            <li><code class="inline">type="email"</code> — a box made for email addresses</li>
+            <li><code class="inline">type="password"</code> — hides what you type with dots</li>
+            <li><code class="inline">type="checkbox"</code> — a box you can tick</li>
+          </ul>
+          <div class="callout">Simple tip: always add a label to your input boxes. It helps everyone, including people using screen readers, know what to type.</div>
+        `,
+        quiz:[
+          {q:'What tag do you use to collect information from a user?', options:['<form>','<collect>','<data>','<box>'], answer:0},
+          {q:'What is a <label> used for?', options:['To tell someone what an input box is for','To make text bold','To create a link','To add a picture'], answer:0},
+          {q:'Which input type hides what you type with dots?', options:['type="text"','type="password"','type="hidden"','type="secret"'], answer:1},
+          {q:'Which input type is a small box you can tick on or off?', options:['type="tick"','type="checkbox"','type="switch"','type="select"'], answer:1}
+        ]
+      },
+      {
+        id:'html-3', title:'Media, Links & Accessibility',
+        content:`
+          <h2>Adding pictures</h2>
+          <p>You add a picture to a page with the <code class="inline">&lt;img&gt;</code> tag. It always needs an <code class="inline">alt</code> attribute — a short bit of text describing the picture.</p>
+          <div class="code-block">
+            <div class="cb-head"><span>media.html</span><span>html</span></div>
+            <pre>&lt;<span class="tag">img</span> <span class="attr">src</span>=<span class="str">"cat.jpg"</span> <span class="attr">alt</span>=<span class="str">"A sleepy orange cat"</span>&gt;
+ 
+&lt;<span class="tag">a</span> <span class="attr">href</span>=<span class="str">"https://example.com"</span>&gt;
+  Visit example
+&lt;/<span class="tag">a</span>&gt;</pre>
+          </div>
+          <h2>Adding links</h2>
+          <p>The <code class="inline">&lt;a&gt;</code> tag makes a clickable link. The <code class="inline">href</code> attribute tells the browser where the link should go.</p>
+          <h2>Why "alt" text matters</h2>
+          <p>If a picture doesn't load, or if someone is using a screen reader, the <code class="inline">alt</code> text is what they see or hear instead. It should describe the picture in a few simple words.</p>
+          <div class="callout">Simple tip: always describe your pictures with alt text. Imagine you're explaining the picture to a friend on the phone who can't see it.</div>
+        `,
+        quiz:[
+          {q:'Which tag is used to add a picture to a page?', options:['<pic>','<img>','<photo>','<image>'], answer:1},
+          {q:'What does the "alt" attribute on an image do?', options:['Makes the image bigger','Describes the image in words','Changes the image color','Adds a border'], answer:1},
+          {q:'Which tag do you use to create a clickable link?', options:['<link>','<a>','<go>','<url>'], answer:1},
+          {q:'Which attribute tells a link where to go?', options:['src','href','to','link'], answer:1}
+        ]
+      }
+    ]
+  },
+  {
+    id:'css', title:'CSS Styling', short:'CSS', color:'var(--violet)', dotBg:'rgba(182,147,245,.14)',
+    desc:'Learn how to make web pages look good, with easy-to-follow examples.',
+    lessons:[
+      {
+        id:'css-1', title:'Selectors & the Box Model',
+        content:`
+          <h2>What is CSS?</h2>
+          <p>CSS stands for <strong>Cascading Style Sheets</strong>. If HTML is the skeleton of a page, CSS is the paint, colors and spacing — it makes things look nice.</p>
+          <div class="code-block">
+            <div class="cb-head"><span>style.css</span><span>css</span></div>
+            <pre><span class="tag">p</span> {
+  <span class="attr">color</span>: blue;
+  <span class="attr">font-size</span>: 18px;
+}</pre>
+          </div>
+          <p>This simple rule says: "make every paragraph blue, with a font size of 18 pixels."</p>
+          <h2>Every box has 4 layers</h2>
+          <p>Every element on a page is like a little box. It has 4 parts, from the inside out:</p>
+          <ul>
+            <li><strong>Content</strong> — the text or image itself</li>
+            <li><strong>Padding</strong> — space inside the box, around the content</li>
+            <li><strong>Border</strong> — a line around the box</li>
+            <li><strong>Margin</strong> — space outside the box, between it and other boxes</li>
+          </ul>
+          <div class="code-block">
+            <div class="cb-head"><span>box.css</span><span>css</span></div>
+            <pre><span class="tag">.card</span> {
+  <span class="attr">padding</span>: 16px;
+  <span class="attr">border</span>: 1px solid gray;
+  <span class="attr">margin</span>: 12px;
+}</pre>
+          </div>
+          <div class="callout">Simple tip: if your box looks too cramped, increase the padding. If boxes are too close together, increase the margin.</div>
+        `,
+        quiz:[
+          {q:'What does CSS mainly control on a web page?', options:['How the page looks (colors, spacing, fonts)','What the words on the page mean','How fast the page loads','Whether the page has a form'], answer:0},
+          {q:'Which part of the box model is the space INSIDE the box, around the content?', options:['Margin','Padding','Border','Outline'], answer:1},
+          {q:'Which part of the box model is the space OUTSIDE the box, between boxes?', options:['Padding','Content','Margin','Border'], answer:2},
+          {q:'What does this rule do? p { color: blue; }', options:['Makes every paragraph blue','Makes every link blue','Makes the background blue','Makes every button blue'], answer:0}
+        ]
+      },
+      {
+        id:'css-2', title:'Flexbox & Grid Layout',
+        content:`
+          <h2>Lining things up with Flexbox</h2>
+          <p>Flexbox is an easy way to line up boxes in a row or column. It's great for menus, toolbars, or centering something on the page.</p>
+          <div class="code-block">
+            <div class="cb-head"><span>flex.css</span><span>css</span></div>
+            <pre><span class="tag">.toolbar</span> {
+  <span class="attr">display</span>: flex;
+  <span class="attr">justify-content</span>: center;
+  <span class="attr">gap</span>: 12px;
+}</pre>
+          </div>
+          <p><code class="inline">display: flex</code> turns on Flexbox. <code class="inline">justify-content: center</code> centers everything inside. <code class="inline">gap</code> adds space between items.</p>
+          <h2>Building layouts with Grid</h2>
+          <p>CSS Grid is great when you want rows AND columns, like a photo gallery.</p>
+          <div class="code-block">
+            <div class="cb-head"><span>grid.css</span><span>css</span></div>
+            <pre><span class="tag">.gallery</span> {
+  <span class="attr">display</span>: grid;
+  <span class="attr">grid-template-columns</span>: 1fr 1fr 1fr;
+  <span class="attr">gap</span>: 16px;
+}</pre>
+          </div>
+          <p>This creates 3 equal columns with space between them.</p>
+          <div class="callout">Simple tip: use Flexbox for a single row or column of items. Use Grid when you need a full grid of rows and columns.</div>
+        `,
+        quiz:[
+          {q:'Which CSS property turns on Flexbox?', options:['display: flex','flex: on','layout: flex','position: flex'], answer:0},
+          {q:'What does justify-content: center do in Flexbox?', options:['Makes text bold','Centers items inside the box','Deletes extra space','Adds a border'], answer:1},
+          {q:'Which CSS property turns on Grid layout?', options:['display: grid','grid: on','layout: grid','position: grid'], answer:0},
+          {q:'What is Flexbox best used for?', options:['A single row or column of items','3D animations','Only images','Only text colors'], answer:0}
+        ]
+      },
+      {
+        id:'css-3', title:'Responsive Design & Media Queries',
+        content:`
+          <h2>Making pages work on any screen</h2>
+          <p>Responsive design just means your page looks good on a phone, a tablet, and a computer — not just one size of screen.</p>
+          <h2>Media queries</h2>
+          <p>A media query is a simple rule that says "only use this style when the screen is a certain size."</p>
+          <div class="code-block">
+            <div class="cb-head"><span>responsive.css</span><span>css</span></div>
+            <pre><span class="tag">.box</span> {
+  <span class="attr">width</span>: 100%;
+}
+ 
+<span class="cm">/* on wider screens, make the box narrower */</span>
+<span class="tag">@media</span> (min-width: 768px) {
+  <span class="tag">.box</span> { <span class="attr">width</span>: 50%; }
+}</pre>
+          </div>
+          <p>This says: "normally the box is full width, but on screens 768px or wider, make it half width."</p>
+          <h2>Don't forget the viewport tag</h2>
+          <p>Add this line to every page so phones display it at the right size instead of zoomed out:</p>
+          <div class="code-block">
+            <div class="cb-head"><span>index.html</span><span>html</span></div>
+            <pre>&lt;<span class="tag">meta</span> <span class="attr">name</span>=<span class="str">"viewport"</span> <span class="attr">content</span>=<span class="str">"width=device-width, initial-scale=1"</span>&gt;</pre>
+          </div>
+          <div class="callout">Simple tip: build your page for a small phone screen first, then add extra styles for bigger screens.</div>
+        `,
+        quiz:[
+          {q:'What does "responsive design" mean?', options:['The page looks good on phones, tablets and computers','The page loads fast','The page uses only one color','The page has no images'], answer:0},
+          {q:'What does a media query let you do?', options:['Apply styles only at certain screen sizes','Add music to a page','Delete old CSS','Make text a link'], answer:0},
+          {q:'Why do we add the viewport meta tag?', options:['So phones show the page at the right size, not zoomed out','So the page loads faster','So links turn a different color','So images are compressed'], answer:0},
+          {q:'A good habit is to design for which screen size first?', options:['Small phone screens first','Large TV screens first','Only desktop monitors','Only tablets'], answer:0}
+        ]
+      }
+    ]
+  },
+  {
+    id:'js', title:'JavaScript Essentials', short:'JS', color:'var(--amber)', dotBg:'rgba(242,177,85,.14)',
+    desc:'Learn how to make web pages interactive, explained in plain, simple language.',
+    lessons:[
+      {
+        id:'js-1', title:'Variables, Functions & Data Types',
+        content:`
+          <h2>What is JavaScript?</h2>
+          <p>JavaScript is the code that makes a web page do things — like respond to a click, show a message, or update text on the screen.</p>
+          <h2>Storing information with variables</h2>
+          <p>A variable is just a labeled box that holds a value. Use <code class="inline">let</code> for values that can change, and <code class="inline">const</code> for values that stay the same.</p>
+          <div class="code-block">
+            <div class="cb-head"><span>basics.js</span><span>js</span></div>
+            <pre><span class="kw">const</span> name = <span class="str">"Ada"</span>;
+<span class="kw">let</span> age = 30;
+age = age + 1;
+console.log(name, age);</pre>
+          </div>
+          <h2>Simple types of data</h2>
+          <ul>
+            <li><strong>string</strong> — text, like "hello"</li>
+            <li><strong>number</strong> — numbers, like 30 or 3.5</li>
+            <li><strong>boolean</strong> — true or false</li>
+          </ul>
+          <h2>Functions: reusable blocks of code</h2>
+          <p>A function is a named block of code you can run whenever you need it.</p>
+          <div class="code-block">
+            <div class="cb-head"><span>greet.js</span><span>js</span></div>
+            <pre><span class="kw">function</span> <span class="fn">greet</span>(name) {
+  <span class="kw">return</span> <span class="str">"Hello, "</span> + name;
+}
+ 
+greet(<span class="str">"Sam"</span>); <span class="cm">// "Hello, Sam"</span></pre>
+          </div>
+          <div class="callout">Simple tip: think of a function like a recipe — you give it ingredients (called "parameters"), and it gives you back a result.</div>
+        `,
+        quiz:[
+          {q:'What is a variable used for?', options:['Storing a value, like a name or number','Only for making pages colorful','Only for links','Only for pictures'], answer:0},
+          {q:'Which word is used for a value that should NOT change?', options:['let','const','var','change'], answer:1},
+          {q:'Which of these is an example of a "string"?', options:['42','true','"hello"','null'], answer:2},
+          {q:'What is a function?', options:['A reusable block of code that does a task','A type of picture','A CSS color','A kind of HTML tag'], answer:0}
+        ]
+      },
+      {
+        id:'js-2', title:'DOM Manipulation & Events',
+        content:`
+          <h2>What is the DOM?</h2>
+          <p>The DOM is just the page's content, seen by JavaScript. When you change the DOM, the page updates right in front of you.</p>
+          <h2>Finding something on the page</h2>
+          <p>Use <code class="inline">document.querySelector()</code> to find an element, then change it.</p>
+          <div class="code-block">
+            <div class="cb-head"><span>dom.js</span><span>js</span></div>
+            <pre><span class="kw">const</span> title = document.<span class="fn">querySelector</span>(<span class="str">"h1"</span>);
+title.textContent = <span class="str">"New title!"</span>;</pre>
+          </div>
+          <p>This finds the first <code class="inline">&lt;h1&gt;</code> on the page and changes its text.</p>
+          <h2>Responding to clicks</h2>
+          <p>Use <code class="inline">addEventListener</code> to run some code when something happens, like a click.</p>
+          <div class="code-block">
+            <div class="cb-head"><span>events.js</span><span>js</span></div>
+            <pre><span class="kw">const</span> button = document.<span class="fn">querySelector</span>(<span class="str">"#save"</span>);
+button.<span class="fn">addEventListener</span>(<span class="str">"click"</span>, () => {
+  console.log(<span class="str">"Button clicked!"</span>);
+});</pre>
+          </div>
+          <div class="callout">Simple tip: "click" is the most common event, but there are others too, like "input" (typing) and "submit" (a form being sent).</div>
+        `,
+        quiz:[
+          {q:'What does document.querySelector() do?', options:['Finds an element on the page','Deletes the whole page','Changes the page color scheme','Adds a new HTML file'], answer:0},
+          {q:'Which method lets you run code when a button is clicked?', options:['addEventListener','onClickRun','runOnClick','clickListener'], answer:0},
+          {q:'What does title.textContent = "New title!" do?', options:['Changes the text shown for that element','Deletes the element','Changes the element color','Adds a new button'], answer:0},
+          {q:'Which of these is an example of an "event"?', options:['A user clicking a button','A CSS color','A variable name','An HTML tag'], answer:0}
+        ]
+      },
+      {
+        id:'js-3', title:'Async JS, Fetch & APIs',
+        content:`
+          <h2>Waiting for things without freezing the page</h2>
+          <p>Some tasks, like loading data from the internet, take a little time. JavaScript can wait for them without freezing the whole page. This is called "asynchronous" code.</p>
+          <h2>Fetching data</h2>
+          <p><code class="inline">fetch()</code> is used to ask a server for information, like loading data from an API.</p>
+          <div class="code-block">
+            <div class="cb-head"><span>fetch.js</span><span>js</span></div>
+            <pre><span class="kw">async function</span> <span class="fn">loadUser</span>() {
+  <span class="kw">const</span> response = <span class="kw">await</span> fetch(<span class="str">"/api/user"</span>);
+  <span class="kw">const</span> data = <span class="kw">await</span> response.json();
+  console.log(data);
+}</pre>
+          </div>
+          <p>The word <code class="inline">await</code> just means "wait here until this finishes, then continue." You can only use <code class="inline">await</code> inside a function marked <code class="inline">async</code>.</p>
+          <h2>Handling problems</h2>
+          <p>Wrap risky code in <code class="inline">try</code> and <code class="inline">catch</code> so that if something goes wrong, your page doesn't break.</p>
+          <div class="code-block">
+            <div class="cb-head"><span>safe.js</span><span>js</span></div>
+            <pre><span class="kw">try</span> {
+  <span class="kw">await</span> fetch(<span class="str">"/api/user"</span>);
+} <span class="kw">catch</span> (err) {
+  console.log(<span class="str">"Something went wrong"</span>);
+}</pre>
+          </div>
+          <div class="callout">Simple tip: think of "async/await" as a polite way of saying "please wait for this step before moving to the next one."</div>
+        `,
+        quiz:[
+          {q:'What is fetch() mainly used for?', options:['Getting data from a server','Changing text color','Deleting a variable','Creating an HTML tag'], answer:0},
+          {q:'What does the word "await" mean in simple terms?', options:['Wait here until this step finishes, then continue','Skip this step completely','Delete this line of code','Repeat this step forever'], answer:0},
+          {q:'What is a try/catch block used for?', options:['Handling errors so the page does not break','Making text bold','Adding a picture','Changing page layout'], answer:0},
+          {q:'Where can you use the "await" keyword?', options:['Only inside a function marked "async"','Anywhere in any file','Only inside HTML','Only inside CSS'], answer:0}
+        ]
+      }
+    ]
+  }
+];
+ 
+const PASS_THRESHOLD = 60;
+const STORAGE_KEY = 'codecraft_academy_state_v1';
+ 
+/* ---------- STATE ---------- */
+function defaultState(){
+  return { completed:{}, examResult:null, certName:'' };
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    return Object.assign(defaultState(), parsed);
+  }catch(e){ return defaultState(); }
+}
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  flashUnsaved();
+}
+let state = loadState();
+ 
+function flashUnsaved(){
+  const dot = document.getElementById('unsavedDot');
+  dot.style.display='inline-block';
+  setTimeout(()=>{ dot.style.display='none'; }, 700);
+}
+ 
+function totalLessons(){
+  return COURSES.reduce((sum,c)=>sum+c.lessons.length,0);
+}
+function completedCount(){
+  return Object.values(state.completed).filter(v=>v && v.done).length;
+}
+function courseCompletedCount(course){
+  return course.lessons.filter(l=>state.completed[l.id] && state.completed[l.id].done).length;
+}
+function allLessonsDone(){
+  return completedCount() === totalLessons();
+}
+function findLesson(id){
+  for(const c of COURSES){
+    const l = c.lessons.find(x=>x.id===id);
+    if(l) return {course:c, lesson:l};
+  }
+  return null;
+}
+ 
+/* ---------- ROUTER ---------- */
+function currentRoute(){
+  const hash = location.hash.replace(/^#\/?/,'') || 'dashboard';
+  return hash;
+}
+window.addEventListener('hashchange', render);
+ 
+/* ---------- TOAST ---------- */
+let toastTimer=null;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'), 2400);
+}
+ 
+/* ---------- CLOCK ---------- */
+function tickClock(){
+  const now=new Date();
+  document.getElementById('clockTxt').textContent = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+}
+tickClock(); setInterval(tickClock,1000*20);
+ 
+/* ---------- SIDEBAR ---------- */
+let collapsedFolders = {};
+function renderSidebar(){
+  const nav = document.getElementById('courseNav');
+  nav.innerHTML = COURSES.map(course=>{
+    const done = courseCompletedCount(course);
+    const isCollapsed = !!collapsedFolders[course.id];
+    const lessonsHtml = course.lessons.map(l=>{
+      const isDone = state.completed[l.id] && state.completed[l.id].done;
+      return `<div class="sb-lesson ${isDone?'done':''}" data-route="lesson/${l.id}">
+        <span class="check">${isDone?'✓':''}</span><span>${l.title}</span>
+      </div>`;
+    }).join('');
+    return `
+      <div class="sb-folder ${isCollapsed?'collapsed':''}" data-folder="${course.id}">
+        <span class="chev">▾</span>
+        <span class="folder-dot" style="background:${course.color}"></span>
+        <span>${course.title}</span>
+        <span style="margin-left:auto;font-family:var(--font-mono);font-size:10.5px;color:var(--text-faint);">${done}/${course.lessons.length}</span>
+      </div>
+      <div class="sb-lessons ${isCollapsed?'collapsed':''}">${lessonsHtml}</div>
+    `;
+  }).join('');
+ 
+  const route = currentRoute();
+  document.querySelectorAll('.sb-item, .sb-lesson').forEach(el=>{
+    el.classList.toggle('active', el.dataset.route === route);
+  });
+ 
+  const done = completedCount();
+  const total = totalLessons();
+  const pct = total ? Math.round((done/total)*100) : 0;
+  const bar = document.getElementById('sbDiffbar');
+  bar.innerHTML='';
+  for(let i=0;i<total;i++){
+    const span=document.createElement('span');
+    span.className = i<done ? 'fill' : 'empty';
+    span.style.flex='1';
+    bar.appendChild(span);
+  }
+  document.getElementById('sbDiffText').textContent = `+${done}`;
+  document.getElementById('sbDiffPct').textContent = `${pct}%`;
+}
+ 
+document.addEventListener('click', (e)=>{
+  const folder = e.target.closest('.sb-folder');
+  if(folder){
+    const id = folder.dataset.folder;
+    collapsedFolders[id] = !collapsedFolders[id];
+    renderSidebar();
+    return;
+  }
+  const navItem = e.target.closest('[data-route]');
+  if(navItem){
+    location.hash = '#/'+navItem.dataset.route;
+    closeMobileSidebar();
+  }
+});
+ 
+/* mobile sidebar toggle */
+function closeMobileSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sbOverlay').classList.remove('show');
+}
+document.getElementById('menuBtn').addEventListener('click', ()=>{
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sbOverlay').classList.toggle('show');
+});
+document.getElementById('sbOverlay').addEventListener('click', closeMobileSidebar);
+ 
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(confirm('Reset all progress? This clears completed lessons, quiz scores, exam results and your certificate name.')){
+    state = defaultState();
+    saveState();
+    toast('Progress reset');
+    location.hash = '#/dashboard';
+    render();
+  }
+});
+ 
+/* ---------- RENDER: DASHBOARD ---------- */
+function viewDashboard(){
+  document.getElementById('tlFileName').textContent = 'dashboard.js';
+  const done = completedCount();
+  const total = totalLessons();
+  const pct = total ? Math.round((done/total)*100) : 0;
+  const examPassed = state.examResult && state.examResult.passed;
+ 
+  const courseCards = COURSES.map(course=>{
+    const cdone = courseCompletedCount(course);
+    const cpct = Math.round((cdone/course.lessons.length)*100);
+    return `
+    <div class="course-card" data-route="course/${course.id}">
+      <div class="top">
+        <div class="badge" style="background:${course.dotBg};color:${course.color}">${course.short}</div>
+        <h3>${course.title}</h3>
+      </div>
+      <p>${course.desc}</p>
+      <div class="cprog-track"><div class="cprog-fill" style="width:${cpct}%;background:${course.color}"></div></div>
+      <div class="cprog-txt">${cdone}/${course.lessons.length} lessons complete</div>
+    </div>`;
+  }).join('');
+ 
+  const examReady = allLessonsDone();
+ 
+  return `
+    <div class="eyebrow">$ whoami --student</div>
+    <h1 class="page-title">Welcome back</h1>
+    <p class="subtitle">Easy, beginner-friendly lessons on HTML, CSS and JavaScript. Work through each course at your own pace, then take the final exam to earn your certificate.</p>
+ 
+    <div class="stat-row">
+      <div class="stat-card teal"><div class="num">${done}/${total}</div><div class="lbl">LESSONS COMPLETE</div></div>
+      <div class="stat-card violet"><div class="num">${pct}%</div><div class="lbl">OVERALL PROGRESS</div></div>
+      <div class="stat-card amber"><div class="num">${examPassed ? 'PASSED' : (state.examResult ? state.examResult.score+'%' : '—')}</div><div class="lbl">FINAL EXAM</div></div>
+    </div>
+ 
+    <div class="course-grid">${courseCards}</div>
+ 
+    <div class="exam-cta ${examReady?'ready':''}">
+      <div>
+        <h3>${examPassed ? 'Certificate unlocked' : 'Final exam'}</h3>
+        <p>${examPassed ? 'You passed the final exam — generate your certificate whenever you are ready.' : (examReady ? 'All lessons are complete. You can now attempt the final exam.' : 'Complete every lesson quiz to unlock the final exam.')}</p>
+      </div>
+      <button class="btn ${examReady?'btn-violet':''}" ${examReady?'':'disabled'} data-route="${examPassed?'certificate':'exam'}">
+        ${examPassed ? 'Get certificate →' : 'Go to final exam →'}
+      </button>
+    </div>
+  `;
+}
+ 
+/* ---------- RENDER: COURSE ---------- */
+function viewCourse(courseId){
+  const course = COURSES.find(c=>c.id===courseId);
+  if(!course) return viewNotFound();
+  document.getElementById('tlFileName').textContent = course.id+'.js';
+  const lessonsHtml = course.lessons.map((l,i)=>{
+    const isDone = state.completed[l.id] && state.completed[l.id].done;
+    const score = state.completed[l.id] ? state.completed[l.id].score : null;
+    return `
+    <div class="course-card" data-route="lesson/${l.id}">
+      <div class="top">
+        <div class="badge" style="background:${course.dotBg};color:${course.color};font-size:14px;">${i+1}</div>
+        <h3>${l.title}</h3>
+      </div>
+      <p>${isDone ? 'Completed — quiz score '+score+'%' : 'Not started yet'}</p>
+      <div class="cprog-track"><div class="cprog-fill" style="width:${isDone?100:0}%;background:${course.color}"></div></div>
+    </div>`;
+  }).join('');
+ 
+  return `
+    <div class="crumb"><span data-route="dashboard" style="cursor:pointer;">dashboard</span><span class="sep">/</span><span class="cur">${course.title}</span></div>
+    <div class="eyebrow">course</div>
+    <h1 class="page-title">${course.title}</h1>
+    <p class="subtitle">${course.desc}</p>
+    <div class="course-grid">${lessonsHtml}</div>
+  `;
+}
+ 
+/* ---------- RENDER: LESSON ---------- */
+function viewLesson(lessonId){
+  const found = findLesson(lessonId);
+  if(!found) return viewNotFound();
+  const {course, lesson} = found;
+  document.getElementById('tlFileName').textContent = lesson.id+'.html';
+ 
+  const idx = course.lessons.findIndex(l=>l.id===lesson.id);
+  const prev = course.lessons[idx-1];
+  const next = course.lessons[idx+1];
+  const savedResult = state.completed[lesson.id];
+ 
+  return `
+    <div class="crumb"><span data-route="dashboard" style="cursor:pointer;">dashboard</span><span class="sep">/</span><span data-route="course/${course.id}" style="cursor:pointer;">${course.title}</span><span class="sep">/</span><span class="cur">${lesson.title}</span></div>
+    <div class="eyebrow">lesson ${idx+1} of ${course.lessons.length}</div>
+    <h1 class="page-title">${lesson.title}</h1>
+    <div class="lesson-body">${lesson.content}</div>
+ 
+    <div class="quiz-wrap" id="quizWrap" data-lesson="${lesson.id}">
+      <div class="quiz-head">
+        <h3><span>■</span> Knowledge check</h3>
+        <span class="locked-note">${savedResult ? 'best score: '+savedResult.score+'%' : PASS_THRESHOLD+'% required to pass'}</span>
+      </div>
+      <div class="quiz-body" id="quizBody"></div>
+    </div>
+ 
+    <div class="lesson-nav">
+      <button class="btn" ${prev?'':'disabled'} data-route="${prev?('lesson/'+prev.id):''}">← Previous lesson</button>
+      <button class="btn" data-route="course/${course.id}">Course overview</button>
+      <button class="btn" ${next?'':'disabled'} data-route="${next?('lesson/'+next.id):''}">Next lesson →</button>
+    </div>
+  `;
+}
+ 
+function renderQuiz(lessonId){
+  const found = findLesson(lessonId);
+  if(!found) return;
+  const {lesson} = found;
+  const body = document.getElementById('quizBody');
+  if(!body) return;
+ 
+  const selections = new Array(lesson.quiz.length).fill(null);
+ 
+  function draw(submitted, results){
+    body.innerHTML = lesson.quiz.map((q,qi)=>{
+      const optsHtml = q.options.map((opt,oi)=>{
+        let cls='q-opt';
+        if(!submitted && selections[qi]===oi) cls+=' selected';
+        if(submitted){
+          if(oi===q.answer) cls+=' correct';
+          else if(selections[qi]===oi && oi!==q.answer) cls+=' wrong';
+        }
+        return `<label class="${cls}">
+          <input type="radio" name="q${qi}" value="${oi}" ${selections[qi]===oi?'checked':''} ${submitted?'disabled':''}>
+          <span>${escapeHtml(opt)}</span>
+        </label>`;
+      }).join('');
+      return `<div class="q-block">
+        <div class="q-prompt"><span class="qnum">Q${qi+1}.</span><span>${escapeHtml(q.q)}</span></div>
+        <div class="q-options">${optsHtml}</div>
+      </div>`;
+    }).join('') + (submitted ? '' : `<button class="btn btn-primary" id="submitQuizBtn" style="margin-top:6px;">Submit answers</button>`);
+ 
+    if(!submitted){
+      body.querySelectorAll('input[type=radio]').forEach(inp=>{
+        inp.addEventListener('change', (e)=>{
+          const qi = parseInt(e.target.name.replace('q',''));
+          selections[qi] = parseInt(e.target.value);
+          draw(false);
+        });
+      });
+      const btn = document.getElementById('submitQuizBtn');
+      if(btn){
+        btn.disabled = selections.includes(null);
+        btn.addEventListener('click', ()=>{
+          let correct=0;
+          lesson.quiz.forEach((q,qi)=>{ if(selections[qi]===q.answer) correct++; });
+          const score = Math.round((correct/lesson.quiz.length)*100);
+          const passed = score >= PASS_THRESHOLD;
+          if(passed || !state.completed[lesson.id] || score > state.completed[lesson.id].score){
+            state.completed[lesson.id] = { done:passed, score: Math.max(score, (state.completed[lesson.id]&&state.completed[lesson.id].score)||0) };
+            if(passed) state.completed[lesson.id].done = true;
+            saveState();
+          }
+          renderSidebar();
+          draw(true, {correct, score, passed});
+          const resultBar = document.createElement('div');
+          resultBar.className = 'quiz-result ' + (passed?'pass':'fail');
+          resultBar.innerHTML = `
+            <span class="score-txt">${correct}/${lesson.quiz.length} correct — ${score}%${passed?' · lesson complete':' · try again to pass'}</span>
+            <button class="btn btn-sm" id="retryQuizBtn">${passed?'Retake quiz':'Retry quiz'}</button>
+          `;
+          body.after(resultBar);
+          document.getElementById('retryQuizBtn').addEventListener('click', ()=>{
+            resultBar.remove();
+            selections.fill(null);
+            draw(false);
+          });
+          if(passed) toast('Lesson complete — nice work!');
+        });
+      }
+    }
+  }
+  draw(false);
+}
+ 
+/* ---------- RENDER: EXAM ---------- */
+function buildExamQuestions(){
+  const pool=[];
+  COURSES.forEach(course=>{
+    course.lessons.forEach(lesson=>{
+      lesson.quiz.slice(0,2).forEach(q=>{
+        pool.push({ q:q.q, options:q.options, answer:q.answer, course:course.short });
+      });
+    });
+  });
+  return pool;
+}
+const EXAM_QUESTIONS = buildExamQuestions();
+ 
+function viewExam(){
+  document.getElementById('tlFileName').textContent = 'final-exam.js';
+  const ready = allLessonsDone();
+  if(!ready){
+    const done = completedCount(), total = totalLessons();
+    return `
+      <div class="eyebrow">assessment</div>
+      <h1 class="page-title">Final exam</h1>
+      <p class="subtitle">Complete every lesson quiz first to unlock the final exam.</p>
+      <div class="locked-panel">
+        <div class="ico">◍</div>
+        <div style="font-family:var(--font-mono);font-size:14px;margin-bottom:6px;">${done}/${total} lessons complete</div>
+        <div style="font-size:13px;">Finish the remaining lessons, then come back here.</div>
+      </div>
+    `;
+  }
+ 
+  return `
+    <div class="eyebrow">assessment</div>
+    <h1 class="page-title">Final exam</h1>
+    <p class="subtitle">${EXAM_QUESTIONS.length} easy review questions covering HTML, CSS and JavaScript. Score ${PASS_THRESHOLD}% or higher to pass and unlock your certificate.</p>
+    <div id="examArea"></div>
+  `;
+}
+ 
+function renderExam(){
+  const area = document.getElementById('examArea');
+  if(!area) return;
+  const selections = new Array(EXAM_QUESTIONS.length).fill(null);
+ 
+  function updateProgress(){
+    const answered = selections.filter(s=>s!==null).length;
+    const fill = document.getElementById('examProgFill');
+    if(fill) fill.style.width = Math.round((answered/EXAM_QUESTIONS.length)*100)+'%';
+  }
+ 
+  function draw(submitted, summary){
+    let html = `<div class="exam-progress-track"><div class="exam-progress-fill" id="examProgFill" style="width:0%"></div></div>`;
+    html += `<div class="quiz-wrap"><div class="quiz-body">`;
+    html += EXAM_QUESTIONS.map((q,qi)=>{
+      const optsHtml = q.options.map((opt,oi)=>{
+        let cls='q-opt';
+        if(!submitted && selections[qi]===oi) cls+=' selected';
+        if(submitted){
+          if(oi===q.answer) cls+=' correct';
+          else if(selections[qi]===oi && oi!==q.answer) cls+=' wrong';
+        }
+        return `<label class="${cls}">
+          <input type="radio" name="e${qi}" value="${oi}" ${selections[qi]===oi?'checked':''} ${submitted?'disabled':''}>
+          <span>${escapeHtml(opt)}</span>
+        </label>`;
+      }).join('');
+      return `<div class="q-block">
+        <div class="q-prompt"><span class="qnum">Q${qi+1} <span style="color:var(--text-faint);">[${q.course}]</span></span><span>${escapeHtml(q.q)}</span></div>
+        <div class="q-options">${optsHtml}</div>
+      </div>`;
+    }).join('');
+    html += `</div>`;
+    if(!submitted){
+      html += `<div class="quiz-result"><span class="locked-note" id="examCounter">0/${EXAM_QUESTIONS.length} answered</span><button class="btn btn-violet" id="submitExamBtn" disabled>Submit exam</button></div>`;
+    }
+    html += `</div>`;
+    area.innerHTML = html;
+ 
+    if(!submitted){
+      area.querySelectorAll('input[type=radio]').forEach(inp=>{
+        inp.addEventListener('change',(e)=>{
+          const qi=parseInt(e.target.name.replace('e',''));
+          selections[qi]=parseInt(e.target.value);
+          const answered = selections.filter(s=>s!==null).length;
+          document.getElementById('examCounter').textContent = `${answered}/${EXAM_QUESTIONS.length} answered`;
+          document.getElementById('submitExamBtn').disabled = answered !== EXAM_QUESTIONS.length;
+          updateProgress();
+        });
+      });
+      const submitBtn = document.getElementById('submitExamBtn');
+      submitBtn.addEventListener('click', ()=>{
+        let correct=0;
+        EXAM_QUESTIONS.forEach((q,qi)=>{ if(selections[qi]===q.answer) correct++; });
+        const score = Math.round((correct/EXAM_QUESTIONS.length)*100);
+        const passed = score >= PASS_THRESHOLD;
+        state.examResult = { score, passed, correct, totalQ:EXAM_QUESTIONS.length, date:new Date().toISOString() };
+        saveState();
+        renderSidebar();
+        draw(true);
+        const resultBar = document.createElement('div');
+        resultBar.className = 'quiz-result ' + (passed?'pass':'fail');
+        resultBar.innerHTML = `
+          <span class="score-txt">${correct}/${EXAM_QUESTIONS.length} correct — ${score}% — ${passed?'PASSED':'not passed'}</span>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-sm" id="retryExamBtn">Retake exam</button>
+            ${passed?'<button class="btn btn-sm btn-violet" data-route="certificate">Get certificate →</button>':''}
+          </div>
+        `;
+        area.querySelector('.quiz-wrap').appendChild(resultBar);
+        toast(passed ? 'Exam passed! Certificate unlocked.' : 'Not quite — review the material and try again.');
+        const retry = document.getElementById('retryExamBtn');
+        if(retry) retry.addEventListener('click', ()=>{
+          selections.fill(null);
+          draw(false);
+        });
+      });
+    }
+  }
+  draw(false);
+}
+ 
+/* ---------- RENDER: CERTIFICATE ---------- */
+function viewCertificate(){
+  document.getElementById('tlFileName').textContent = 'certificate.pdf';
+  const passed = state.examResult && state.examResult.passed;
+  if(!passed){
+    return `
+      <div class="eyebrow">assessment</div>
+      <h1 class="page-title">Certificate</h1>
+      <p class="subtitle">Pass the final exam to unlock your certificate of completion.</p>
+      <div class="locked-panel">
+        <div class="ico">◈</div>
+        <div style="font-family:var(--font-mono);font-size:14px;margin-bottom:6px;">Locked</div>
+        <div style="font-size:13px;margin-bottom:20px;">${state.examResult ? 'Your last exam score was '+state.examResult.score+'%. You need '+PASS_THRESHOLD+'%.' : 'You have not attempted the final exam yet.'}</div>
+        <button class="btn btn-violet" data-route="exam">Go to final exam →</button>
+      </div>
+    `;
+  }
+ 
+  const name = state.certName || '';
+  const dateStr = new Date(state.examResult.date).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+ 
+  return `
+    <div class="eyebrow">assessment</div>
+    <h1 class="page-title">Your certificate</h1>
+    <p class="subtitle">Enter your name exactly as you'd like it to appear, then download a PDF copy for your records.</p>
+ 
+    <div class="cert-form">
+      <div class="field">
+        <label for="certNameInput">Full name</label>
+        <input id="certNameInput" type="text" placeholder="e.g. Ada Lovelace" value="${escapeHtml(name)}" maxlength="60">
+      </div>
+      <button class="btn btn-primary" id="applyNameBtn">Apply to certificate</button>
+    </div>
+ 
+    <div class="cert-stage">
+      <div id="certificate">
+        <div class="cert-border"></div>
+        <div class="cert-inner">
+          <div class="cert-topline">
+            <span>codecraft_academy@certify <span class="blink">_</span></span>
+            <span>ID #${(name||'guest').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,8) || 'guest'}-${new Date(state.examResult.date).getFullYear()}</span>
+          </div>
+          <div class="cert-main">
+            <div class="cert-kicker">Certificate of Completion</div>
+            <div class="cert-name" id="certNameDisplay">${escapeHtml(name) || '— your name —'}</div>
+            <div class="cert-desc">has successfully completed the <span class="cert-course">Full-Stack Web Fundamentals</span> program on CodeCraft Academy, covering HTML, CSS and JavaScript, and passed the final exam with a score of <strong style="color:#fff;">${state.examResult.score}%</strong>.</div>
+          </div>
+          <div class="cert-bottom">
+            <div class="cert-sig"><div class="line"></div>Program Director anuj kumar mishra</div>
+            <div class="cert-score">exit_code: 0 — PASS</div>
+            <div class="cert-sig"><div class="line"></div>${dateStr}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <div class="cert-actions">
+      <button class="btn btn-primary" id="downloadCertBtn">⬇ Download as PDF</button>
+    </div>
+  `;
+}
+ 
+function escapeHtml(str){
+  const div=document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+ 
+/* ---------- PDF GENERATION (pure JS, no external libraries) ---------- */
+function wrapCanvasText(ctx, text, maxWidth){
+  const words = text.split(' ');
+  const lines = [];
+  let cur = '';
+  words.forEach(word=>{
+    const test = cur ? cur+' '+word : word;
+    if(ctx.measureText(test).width > maxWidth && cur){
+      lines.push(cur);
+      cur = word;
+    }else{
+      cur = test;
+    }
+  });
+  if(cur) lines.push(cur);
+  return lines;
+}
+ 
+function drawCertificateCanvas(){
+  const W = 1600, H = 1131; // ~1.414 ratio, high-res for crisp PDF
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+ 
+  const name = state.certName || 'Student';
+  const score = state.examResult.score;
+  const dateStr = new Date(state.examResult.date).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+  const idStr = (name||'guest').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,8) || 'guest';
+  const year = new Date(state.examResult.date).getFullYear();
+ 
+  const bg='#0d1016', border='#2c3648', innerBorder='#1e2636', faint='#5B6478',
+        text='#e6e8ee', teal='#5fd9c4', violet='#b693f5', muted='#c7cbd6';
+ 
+  ctx.fillStyle = bg;
+  ctx.fillRect(0,0,W,H);
+ 
+  ctx.strokeStyle = border; ctx.lineWidth = 3;
+  ctx.strokeRect(24,24,W-48,H-48);
+  ctx.strokeStyle = innerBorder; ctx.lineWidth = 1.5;
+  ctx.strokeRect(34,34,W-68,H-68);
+ 
+  const pad = 70;
+  ctx.font = '20px ui-monospace, monospace';
+  ctx.fillStyle = teal;
+  ctx.textAlign = 'left'; ctx.textBaseline='top';
+  ctx.fillText('codecraft_academy@certify _', pad, pad);
+  ctx.fillStyle = faint;
+  ctx.textAlign = 'right';
+  ctx.fillText(`ID #${idStr}-${year}`, W-pad, pad);
+ 
+  ctx.textAlign = 'center';
+  ctx.fillStyle = faint;
+  ctx.font = '18px ui-monospace, monospace';
+  ctx.fillText('C E R T I F I C A T E   O F   C O M P L E T I O N', W/2, H*0.28);
+ 
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 64px -apple-system, Segoe UI, Arial, sans-serif';
+  ctx.fillText(name, W/2, H*0.36);
+  const nameWidth = ctx.measureText(name).width;
+  ctx.strokeStyle = teal; ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(W/2 - nameWidth/2 - 10, H*0.36 + 90);
+  ctx.lineTo(W/2 + nameWidth/2 + 10, H*0.36 + 90);
+  ctx.stroke();
+ 
+  ctx.font = '22px ui-monospace, monospace';
+  ctx.fillStyle = muted;
+  const desc1 = 'has successfully completed the Full-Stack Web Fundamentals program on';
+  const desc2 = 'CodeCraft Academy, covering HTML, CSS and JavaScript, and passed the final';
+  const desc3 = `exam with a score of ${score}%.`;
+  ctx.fillText(desc1, W/2, H*0.36 + 140);
+  ctx.fillText(desc2, W/2, H*0.36 + 172);
+  ctx.fillStyle = text;
+  ctx.font = 'bold 22px ui-monospace, monospace';
+  ctx.fillText(desc3, W/2, H*0.36 + 204);
+ 
+  ctx.font = '17px ui-monospace, monospace';
+  ctx.fillStyle = faint;
+  ctx.textAlign = 'left';
+  ctx.strokeStyle = '#3a4358'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad, H-140); ctx.lineTo(pad+220, H-140); ctx.stroke();
+  ctx.fillText('Program Director', pad, H-128);
+ 
+  ctx.textAlign = 'center';
+  ctx.fillStyle = teal;
+  ctx.fillText('exit_code: 0 — PASS', W/2, H-120);
+ 
+  ctx.textAlign = 'right';
+  ctx.fillStyle = faint;
+  ctx.beginPath(); ctx.moveTo(W-pad-220, H-140); ctx.lineTo(W-pad, H-140); ctx.stroke();
+  ctx.fillText(dateStr, W-pad, H-128);
+ 
+  return canvas;
+}
+ 
+function buildMinimalPdf(canvas){
+  const W = 842, H = 595; // A4 landscape, in points
+  const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+  const base64 = jpegDataUrl.split(',')[1];
+  const binary = atob(base64);
+  const jpegBytes = new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) jpegBytes[i] = binary.charCodeAt(i);
+ 
+  const enc = (s)=> new TextEncoder().encode(s);
+  const parts = [];
+  let offset = 0;
+  const xrefOffsets = [0,0,0,0,0,0];
+  function push(bytes){ parts.push(bytes); offset += bytes.length; }
+ 
+  push(enc('%PDF-1.4\n'));
+ 
+  xrefOffsets[1] = offset;
+  push(enc('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n'));
+ 
+  xrefOffsets[2] = offset;
+  push(enc('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n'));
+ 
+  xrefOffsets[3] = offset;
+  push(enc(`3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>\nendobj\n`));
+ 
+  xrefOffsets[4] = offset;
+  push(enc(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpegBytes.length} >>\nstream\n`));
+  push(jpegBytes);
+  push(enc('\nendstream\nendobj\n'));
+ 
+  xrefOffsets[5] = offset;
+  const contentStr = `q\n${W} 0 0 ${H} 0 0 cm\n/Im0 Do\nQ`;
+  const contentBytes = enc(contentStr);
+  push(enc(`5 0 obj\n<< /Length ${contentBytes.length} >>\nstream\n`));
+  push(contentBytes);
+  push(enc('\nendstream\nendobj\n'));
+ 
+  const xrefStart = offset;
+  let xref = 'xref\n0 6\n0000000000 65535 f \n';
+  for(let i=1;i<=5;i++){
+    xref += String(xrefOffsets[i]).padStart(10,'0') + ' 00000 n \n';
+  }
+  push(enc(xref));
+  push(enc(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF`));
+ 
+  let total = 0;
+  parts.forEach(p=>total+=p.length);
+  const full = new Uint8Array(total);
+  let pos = 0;
+  parts.forEach(p=>{ full.set(p,pos); pos += p.length; });
+  return full;
+}
+ 
+function wireCertificate(){
+  const applyBtn = document.getElementById('applyNameBtn');
+  const input = document.getElementById('certNameInput');
+  if(applyBtn && input){
+    applyBtn.addEventListener('click', ()=>{
+      const val = input.value.trim();
+      if(!val){ toast('Enter your name first'); return; }
+      state.certName = val;
+      saveState();
+      render();
+      toast('Certificate updated');
+    });
+    input.addEventListener('keydown',(e)=>{
+      if(e.key==='Enter') applyBtn.click();
+    });
+  }
+  const dlBtn = document.getElementById('downloadCertBtn');
+  if(dlBtn){
+    dlBtn.addEventListener('click', ()=>{
+      if(!state.certName){ toast('Enter your name and click "Apply to certificate" first'); return; }
+      dlBtn.disabled = true;
+      const original = dlBtn.textContent;
+      dlBtn.textContent = 'Generating…';
+      try{
+        const canvas = drawCertificateCanvas();
+        const pdfBytes = buildMinimalPdf(canvas);
+        const blob = new Blob([pdfBytes], {type:'application/pdf'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `CodeCraft-Certificate-${state.certName.replace(/\s+/g,'_')}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url), 2000);
+        toast('Certificate downloaded');
+      }catch(err){
+        console.error(err);
+        toast('Could not generate PDF — please try again');
+      }finally{
+        dlBtn.disabled = false;
+        dlBtn.textContent = original;
+      }
+    });
+  }
+}
+ 
+/* ---------- RENDER: NOT FOUND ---------- */
+function viewNotFound(){
+  return `
+    <div class="eyebrow">404</div>
+    <h1 class="page-title">Nothing here</h1>
+    <p class="subtitle">That page doesn't exist.</p>
+    <button class="btn btn-primary" data-route="dashboard">Back to dashboard</button>
+  `;
+}
+ 
+/* ---------- MAIN RENDER ---------- */
+function render(){
+  const route = currentRoute();
+  const main = document.getElementById('mainContent');
+  const parts = route.split('/');
+ 
+  if(parts[0]==='course' && parts[1]){
+    main.innerHTML = viewCourse(parts[1]);
+  }else if(parts[0]==='lesson' && parts[1]){
+    main.innerHTML = viewLesson(parts[1]);
+    renderQuiz(parts[1]);
+  }else if(parts[0]==='exam'){
+    main.innerHTML = viewExam();
+    if(allLessonsDone()) renderExam();
+  }else if(parts[0]==='certificate'){
+    main.innerHTML = viewCertificate();
+    wireCertificate();
+  }else{
+    main.innerHTML = viewDashboard();
+  }
+  renderSidebar();
+  window.scrollTo({top:0, behavior:'instant'});
+}
+ 
+/* ---------- INIT ---------- */
+if(!location.hash) location.hash = '#/dashboard';
+render();
+</script>
+</body>
+</html>
+ 

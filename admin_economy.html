@@ -1,0 +1,76 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Economy · Admin · Coder Enchanté Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <span class="tv-pill">🛠️ Admin</span>
+  <h1>Economy</h1>
+  <p class="tv-text-dim">Read-only view of the Student Coins ledger (CoinEvent). Adjust payout amounts on the <a href="{{ url_for('admin.rewards') }}">Rewards</a> page.</p>
+</section>
+
+<div class="tv-stat-grid tv-animate-in">
+  <div class="tv-card tv-stat-tile">
+    <div class="tv-stat-tile__value">{{ "{:,}".format(minted) }}</div>
+    <div class="tv-stat-tile__label">Coins Minted</div>
+  </div>
+  <div class="tv-card tv-stat-tile">
+    <div class="tv-stat-tile__value">{{ "{:,}".format(spent) }}</div>
+    <div class="tv-stat-tile__label">Coins Spent</div>
+  </div>
+  <div class="tv-card tv-stat-tile">
+    <div class="tv-stat-tile__value">{{ "{:,}".format(in_circulation) }}</div>
+    <div class="tv-stat-tile__label">In Circulation</div>
+  </div>
+</div>
+
+<div class="tv-section-header tv-animate-in"><h2>By Source</h2></div>
+<div class="tv-card tv-admin-table-card tv-animate-in">
+  <table class="tv-admin-table">
+    <thead><tr><th>Source</th><th>Net Coins</th><th>Events</th></tr></thead>
+    <tbody>
+      {% for source, total, count in by_source %}
+      <tr>
+        <td>{{ source }}</td>
+        <td class="{{ 'tv-text-dim' if total < 0 }}">{{ "{:+,}".format(total) }}</td>
+        <td>{{ count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="tv-section-header tv-animate-in"><h2>Top Balances</h2></div>
+<div class="tv-card tv-admin-table-card tv-animate-in">
+  <table class="tv-admin-table">
+    <thead><tr><th>#</th><th>User</th><th>Coins</th></tr></thead>
+    <tbody>
+      {% for u in top_earners %}
+      <tr><td>{{ loop.index }}</td><td>{{ u.username }}</td><td>{{ "{:,}".format(u.total_coins) }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="tv-section-header tv-animate-in"><h2>Recent Activity</h2></div>
+<div class="tv-card tv-admin-table-card tv-animate-in">
+  <table class="tv-admin-table">
+    <thead><tr><th>When</th><th>User</th><th>Source</th><th>Amount</th></tr></thead>
+    <tbody>
+      {% for e in recent_events %}
+      <tr>
+        <td>{{ e.created_at.strftime('%b %d, %H:%M') }}</td>
+        <td>{{ recent_users.get(e.user_id).username if recent_users.get(e.user_id) else 'deleted user' }}</td>
+        <td>{{ e.source }}</td>
+        <td class="{{ 'tv-text-dim' if e.amount < 0 }}">{{ "{:+,}".format(e.amount) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

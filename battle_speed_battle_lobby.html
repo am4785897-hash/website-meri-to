@@ -1,0 +1,87 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Speed Battle · Code Battle Arena{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/code-battle-arena.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <a href="{{ url_for('code_battle_arena') }}" class="tv-arena-admin-link">← Back to Arena</a>
+  <h1>⚡ Speed Battle</h1>
+  <p class="tv-text-dim">Race a live opponent to solve the same question first. Win +100 coins &amp; 20 XP, draw +40 coins, just showing up +5 coins.</p>
+</section>
+
+<div class="tv-card tv-animate-in tv-flex-col tv-gap-3" id="sb-lobby-card">
+
+  <div id="sb-picker" class="tv-flex-col tv-gap-3">
+    <label class="tv-admin-form__field">
+      <span>Difficulty</span>
+      <select id="sb-difficulty" class="tv-select">
+        {% for d, count in difficulty_counts.items() %}
+        <option value="{{ d }}" {{ 'disabled' if count == 0 }}>{{ d|title }} ({{ count }} question{{ '' if count == 1 else 's' }})</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button id="sb-find-btn" class="tv-btn tv-btn--primary" type="button">Find Match</button>
+  </div>
+
+  <div id="sb-searching" class="tv-flex-col tv-gap-3" style="display:none;">
+    <p class="tv-text-dim">🔎 Searching for an opponent…</p>
+    <button id="sb-cancel-btn" class="tv-btn tv-btn--ghost" type="button">Cancel</button>
+  </div>
+
+  <div id="sb-error" class="tv-text-faint" style="display:none;"></div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+(function () {
+  var socket = io();
+
+  var pickerEl = document.getElementById('sb-picker');
+  var searchingEl = document.getElementById('sb-searching');
+  var errorEl = document.getElementById('sb-error');
+  var difficultySelect = document.getElementById('sb-difficulty');
+
+  function showError(message) {
+    errorEl.textContent = message;
+    errorEl.style.display = '';
+  }
+
+  document.getElementById('sb-find-btn').addEventListener('click', function () {
+    errorEl.style.display = 'none';
+    socket.emit('battle:find_match', { difficulty: difficultySelect.value });
+  });
+
+  document.getElementById('sb-cancel-btn').addEventListener('click', function () {
+    socket.emit('battle:cancel_match');
+  });
+
+  socket.on('battle:searching', function () {
+    pickerEl.style.display = 'none';
+    searchingEl.style.display = '';
+  });
+
+  socket.on('battle:cancelled', function () {
+    pickerEl.style.display = '';
+    searchingEl.style.display = 'none';
+  });
+
+  socket.on('battle:match_found', function (data) {
+    window.location.href = '/battle/speed-battle/room/' + data.battle_id;
+  });
+
+  socket.on('battle:error', function (data) {
+    showError(data.message || 'Something went wrong finding a match.');
+    pickerEl.style.display = '';
+    searchingEl.style.display = 'none';
+  });
+})();
+</script>
+{% endblock %}

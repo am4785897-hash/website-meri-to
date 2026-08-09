@@ -1,0 +1,60 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Leaderboard · TechVerse Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/leaderboard.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <h1>Leaderboard</h1>
+  <p class="tv-text-dim">Ranked by real XP earned - no placeholder numbers.</p>
+</section>
+
+<!-- Period tabs - real links (?period=week/month/all), each a genuine
+     page render since week/month totals come from a different query
+     than all-time, not a client-side re-sort of the same data. -->
+<div class="tv-filter-row tv-animate-in">
+  <a href="{{ url_for('leaderboard', period='week') }}" class="tv-filter-pill {{ 'is-active' if period == 'week' }}">This Week</a>
+  <a href="{{ url_for('leaderboard', period='month') }}" class="tv-filter-pill {{ 'is-active' if period == 'month' }}">This Month</a>
+  <a href="{{ url_for('leaderboard', period='all') }}" class="tv-filter-pill {{ 'is-active' if period == 'all' }}">All Time</a>
+</div>
+
+<div class="tv-card tv-leaderboard-card tv-animate-in">
+  {% if rows %}
+  <div class="tv-leaderboard-list">
+    {% for row in rows %}
+    <div class="tv-leaderboard-row {{ 'is-you' if row.is_current_user }} {{ 'tv-leaderboard-row--top3' if row.rank <= 3 }}">
+      <span class="tv-leaderboard-row__rank tv-leaderboard-row__rank--{{ row.rank if row.rank <= 3 else 'default' }}">
+        {% if row.rank == 1 %}🥇{% elif row.rank == 2 %}🥈{% elif row.rank == 3 %}🥉{% else %}#{{ row.rank }}{% endif %}
+      </span>
+      <div class="tv-avatar tv-avatar--sm">{{ row.username[:1]|upper }}</div>
+      <span class="tv-leaderboard-row__name">{{ row.username }}{{ " (You)" if row.is_current_user }}</span>
+      <span class="tv-leaderboard-row__xp">{{ "{:,}".format(row.xp) }} XP</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if my_row %}
+  <div class="tv-leaderboard-divider">Your Rank</div>
+  <div class="tv-leaderboard-row is-you">
+    <span class="tv-leaderboard-row__rank tv-leaderboard-row__rank--default">#{{ my_row.rank }}</span>
+    <div class="tv-avatar tv-avatar--sm">{{ my_row.username[:1]|upper }}</div>
+    <span class="tv-leaderboard-row__name">{{ my_row.username }} (You)</span>
+    <span class="tv-leaderboard-row__xp">{{ "{:,}".format(my_row.xp) }} XP</span>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <p class="tv-text-dim">
+    {% if period == 'all' %}
+    No XP earned yet - be the first on the board.
+    {% else %}
+    Nobody's earned XP in this window yet - complete a lesson or the Daily Challenge to take the top spot.
+    {% endif %}
+  </p>
+  {% endif %}
+</div>
+
+{% endblock %}

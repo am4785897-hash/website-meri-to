@@ -1,0 +1,31 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Badges · TechVerse Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/badges.css">
+{% endblock %}
+
+{% block content %}
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <h1>Badges</h1>
+  <p class="tv-text-dim">Achievements you unlock automatically as you learn - no claiming required.</p>
+</section>
+
+<div class="tv-card tv-badges-summary tv-animate-in">
+  <span class="tv-badges-summary__count">{{ earned_count }} / {{ total_count }} unlocked</span>
+  <div class="tv-progress"><div class="tv-progress__fill" style="width: {{ (earned_count / total_count * 100) if total_count else 0 }}%"></div></div>
+</div>
+
+<div class="tv-badges-grid tv-animate-in">
+  {% for row in badge_rows %}
+  <div class="tv-badge-card {{ 'is-earned' if row.earned else 'is-locked' }}">
+    <span class="tv-badge-card__icon">{{ row.badge.icon }}</span>
+    <span class="tv-badge-card__title">{{ row.badge.title }}</span>
+    <span class="tv-badge-card__desc">{{ row.badge.description }}</span>
+    {% if row.earned and row.earned_at %}
+    <span class="tv-badge-card__date">Earned {{ row.earned_at.strftime('%d %b %Y') }}</span>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

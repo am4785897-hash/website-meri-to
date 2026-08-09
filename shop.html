@@ -1,0 +1,63 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Coin Shop · Coder Enchanté Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/code-battle-arena.css">
+<link rel="stylesheet" href="/assets/css/shop.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <div class="tv-arena-hero__badge">🛍️ Coin Shop</div>
+  <h1>Coin Shop</h1>
+  <p class="tv-text-dim">Spend the Student Coins you earn in the Code Battle Arena on themes, frames, avatars and more.</p>
+  <a href="{{ url_for('code_battle_arena') }}" class="tv-arena-admin-link">⚔️ Back to Code Battle Arena</a>
+</section>
+
+<!-- ===================== BALANCE ===================== -->
+<div class="tv-stat-row tv-arena-stat-row tv-animate-in">
+  <div class="tv-card tv-stat-card tv-stat-card--coins">
+    <div class="tv-stat-card__icon">
+      <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v8M7.8 8.2c0-1.1 1-2 2.2-2s2.2.7 2.2 1.7c0 2.3-4.4 1.2-4.4 3.4 0 1 1 1.8 2.2 1.8s2.2-.8 2.2-1.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    </div>
+    <div>
+      <div class="tv-stat-card__value">{{ current_user.total_coins|default(0) }}</div>
+      <div class="tv-stat-card__label">Student Coins available</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CATALOG ===================== -->
+{% for category in categories %}
+<div class="tv-section-header tv-animate-in">
+  <h2>{{ category }}</h2>
+</div>
+
+<div class="tv-shop-grid tv-animate-in">
+  {% for item in catalog if item.category == category %}
+  <div class="tv-card tv-shop-item-card{% if item.id in owned_ids %} tv-shop-item-card--owned{% endif %}">
+    <div class="tv-shop-item-card__icon">{{ item.icon }}</div>
+    <h3>{{ item.name }}</h3>
+    <p class="tv-text-dim">{{ item.description }}</p>
+    <div class="tv-shop-item-card__footer">
+      {% if item.id in owned_ids %}
+        <span class="tv-pill tv-pill--success">✅ Owned</span>
+      {% else %}
+        <span class="tv-shop-item-card__price">🪙 {{ "{:,}".format(item.price) }}</span>
+        <form method="POST" action="{{ url_for('shop_purchase', item_id=item.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          {% if current_user.total_coins < item.price %}
+          <button class="tv-btn tv-btn--ghost tv-shop-item-card__cta" type="button" disabled>Not enough coins</button>
+          {% else %}
+          <button class="tv-btn tv-btn--primary tv-shop-item-card__cta" type="submit">Buy</button>
+          {% endif %}
+        </form>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endfor %}
+
+{% endblock %}

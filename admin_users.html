@@ -1,0 +1,92 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Users · Admin · Coder Enchanté Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <span class="tv-pill">🛠️ Admin</span>
+  <h1>Users</h1>
+  <p class="tv-text-dim">{{ users|length }} account{{ 's' if users|length != 1 }}{{ ' matching "' + q + '"' if q }}. Bans, admin access, and coin/XP grants all reflect on that user's tabs live - no reload needed.</p>
+</section>
+
+<div class="tv-admin-toolbar tv-animate-in">
+  <form method="GET" class="tv-filter-row">
+    <input type="text" name="q" class="tv-select" placeholder="Search username or email…" value="{{ q }}">
+    <button type="submit" class="tv-btn tv-btn--ghost">Search</button>
+  </form>
+  <a href="{{ url_for('admin.announcement') }}" class="tv-btn tv-btn--ghost">📢 Announcement</a>
+</div>
+
+<div class="tv-card tv-admin-table-card tv-animate-in">
+  <table class="tv-admin-table">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Coins</th>
+        <th>XP</th>
+        <th>Joined</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr class="{{ 'is-inactive' if u.is_banned }}">
+        <td>
+          {{ u.username }}<br>
+          <span class="tv-text-faint">{{ u.email }}</span>
+        </td>
+        <td>{{ "{:,}".format(u.total_coins) }}</td>
+        <td>{{ "{:,}".format(u.total_xp) }}</td>
+        <td>{{ u.created_at.strftime('%b %d, %Y') if u.created_at else '—' }}</td>
+        <td>
+          {% if u.email and u.email.lower() in owner_emails %}<span class="tv-pill tv-pill--warning">Owner</span>
+          {% elif u.is_admin %}<span class="tv-pill tv-pill--success">Admin</span>{% endif %}
+          {% if u.is_banned %}<span class="tv-pill tv-pill--locked">Banned{{ ': ' + u.ban_reason if u.ban_reason }}</span>{% endif %}
+        </td>
+        <td class="tv-admin-table__actions">
+          <a href="{{ url_for('admin.user_history', user_id=u.id) }}" class="tv-btn tv-btn--ghost tv-btn--sm">History</a>
+          <a href="{{ url_for('admin.user_grant', user_id=u.id) }}" class="tv-btn tv-btn--ghost tv-btn--sm">Grant</a>
+          {% if u.email and u.email.lower() not in owner_emails %}
+          <form method="POST" action="{{ url_for('admin.user_toggle_admin', user_id=u.id) }}" class="tv-admin-inline-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="hidden" name="q" value="{{ q }}"/>
+            <button type="submit" class="tv-btn tv-btn--ghost tv-btn--sm">{{ 'Revoke Admin' if u.is_admin else 'Make Admin' }}</button>
+          </form>
+          <form method="POST" action="{{ url_for('admin.user_toggle_ban', user_id=u.id) }}" class="tv-admin-inline-form" data-username="{{ u.username }}" onsubmit="return tvConfirmBan(this, {{ 'true' if u.is_banned else 'false' }});">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <input type="hidden" name="q" value="{{ q }}"/>
+            {% if not u.is_banned %}<input type="text" name="reason" placeholder="Reason (optional)" class="tv-admin-inline-input">{% endif %}
+            <button type="submit" class="tv-btn tv-btn--ghost tv-btn--sm {{ 'tv-admin-danger' if not u.is_banned }}">{{ 'Unban' if u.is_banned else 'Ban' }}</button>
+          </form>
+          {% if not u.is_admin %}
+          <form method="POST" action="{{ url_for('admin.user_delete', user_id=u.id) }}" class="tv-admin-inline-form" onsubmit="return confirm('Permanently delete {{ u.username }}? This cannot be undone.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button type="submit" class="tv-btn tv-btn--ghost tv-btn--sm tv-admin-danger">Delete</button>
+          </form>
+          {% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="tv-text-dim">No users found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function tvConfirmBan(form, isCurrentlyBanned) {
+    if (isCurrentlyBanned) return true;  // unbanning never needs confirmation
+    var username = form.getAttribute('data-username');
+    return confirm('Ban ' + username + '? They will be signed out immediately.');
+  }
+</script>
+{% endblock %}

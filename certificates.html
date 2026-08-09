@@ -1,0 +1,112 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Certificates · Coder Enchanté Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/certificates.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-cert-page tv-animate-in">
+
+  <div class="tv-section-header">
+    <h1>Certificates</h1>
+  </div>
+
+  <div class="tv-cert-tabs">
+    <button type="button" class="tv-cert-tab is-active" id="tv-cert-tab-mine">My Certificates</button>
+    <button type="button" class="tv-cert-tab" id="tv-cert-tab-all">All Certificates</button>
+  </div>
+
+  <!-- ===================== MY CERTIFICATES ===================== -->
+  <div id="tv-cert-panel-mine">
+    {% if not earned %}
+    <div class="tv-card tv-cert-empty">
+      <div class="tv-cert-empty__icon">🎓</div>
+      <h3>No certificates yet</h3>
+      <p class="tv-text-dim">Finish any learning path's roadmap or the full Python course to earn your first one.</p>
+    </div>
+    {% endif %}
+
+    {% for cert in earned %}
+    <div class="tv-card tv-cert-card">
+      <div class="tv-cert-visual">
+        <div class="tv-cert-visual__inner">
+          <div class="tv-cert-visual__brand">Coder Enchanté Academy</div>
+          <div class="tv-cert-visual__title">Certificate of Completion</div>
+          <div class="tv-cert-visual__line">This is to certify that</div>
+          <div class="tv-cert-visual__name">{{ current_user.username }}</div>
+          <div class="tv-cert-visual__line">has successfully completed the course</div>
+          <div class="tv-cert-visual__course">{{ cert.title }}</div>
+          <div class="tv-cert-visual__line">with all projects and assessments.</div>
+
+          <div class="tv-cert-visual__footer">
+            <div class="tv-cert-visual__meta">
+              <span>Certificate ID: {{ cert.certificate_uid }}</span>
+              <span>Date: {{ cert.issued_at.strftime("%d %B %Y") }}</span>
+            </div>
+            <img class="tv-cert-visual__qr" src="{{ url_for('certificate_qr', uid=cert.certificate_uid) }}" alt="QR code to verify this certificate">
+          </div>
+        </div>
+      </div>
+
+      <div class="tv-cert-side">
+        <div class="tv-cert-summary">
+          <div class="tv-cert-summary__label">
+            <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2 3 11h5l-1 7 8-10h-5l1-6Z" fill="currentColor"/></svg>
+            AI Generated Achievement Summary
+          </div>
+          <p>{{ cert.ai_summary or "Great work completing this course!" }}</p>
+        </div>
+
+        <a href="{{ url_for('certificate_download', uid=cert.certificate_uid) }}" class="tv-btn tv-btn--primary tv-cert-download">
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M10 3v10m0 0-4-4m4 4 4-4M4 16h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Download Certificate
+        </a>
+        <a href="{{ url_for('verify_certificate', uid=cert.certificate_uid) }}" class="tv-cert-verify-link" target="_blank" rel="noopener">View public verification page →</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ===================== ALL CERTIFICATES ===================== -->
+  <div id="tv-cert-panel-all" hidden>
+    <div class="tv-cert-all-grid">
+      {% for cert in earned %}
+      <div class="tv-card tv-cert-all-item">
+        <div class="tv-cert-all-item__icon tv-cert-all-item__icon--done">✓</div>
+        <div class="tv-cert-all-item__body">
+          <h4>{{ cert.title }}</h4>
+          <span class="tv-pill">Completed</span>
+        </div>
+      </div>
+      {% endfor %}
+
+      {% for item in in_progress %}
+      <div class="tv-card tv-cert-all-item">
+        <div class="tv-cert-all-item__icon">{{ item.icon }}</div>
+        <div class="tv-cert-all-item__body">
+          <h4>{{ item.title }}</h4>
+          <div class="tv-cert-all-item__bar"><div class="tv-cert-all-item__bar-fill" style="width: {{ item.percent }}%;"></div></div>
+          <span class="tv-text-faint">{{ item.percent }}% complete</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="/assets/js/certificates.js"></script>
+<script>
+  TVCertificates.init({
+    tabMineId: "tv-cert-tab-mine",
+    tabAllId: "tv-cert-tab-all",
+    panelMineId: "tv-cert-panel-mine",
+    panelAllId: "tv-cert-panel-all",
+  });
+</script>
+{% endblock %}

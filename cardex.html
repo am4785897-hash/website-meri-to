@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cardex — PDF to Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --walnut-dk: #241a12;
+    --walnut: #3a2a1c;
+    --walnut-lt: #55402a;
+    --brass: #b8873b;
+    --brass-lt: #d9ab5c;
+    --card: #f2ead6;
+    --card-shadow-line: #d9cba8;
+    --ink: #241a12;
+    --ink-soft: #5b4a38;
+    --tab-1: #8a4a3e;
+    --tab-2: #4a6350;
+    --tab-3: #3d5a6c;
+    --tab-4: #7a5a30;
+    --tab-5: #5c4a70;
+    --error: #a34a3e;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--walnut-dk);
+    background-image:
+      radial-gradient(ellipse at top left, rgba(255,255,255,0.03), transparent 60%),
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 80px);
+    font-family: 'Source Sans 3', sans-serif;
+    color: var(--card);
+    min-height: 100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .topbar{
+    padding: 28px 40px 18px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+    border-bottom: 1px solid rgba(184,135,59,0.25);
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+  }
+  .brand h1{
+    font-family:'Fraunces', serif;
+    font-optical-sizing: auto;
+    font-weight:600;
+    font-size: 32px;
+    letter-spacing: 0.5px;
+    margin:0;
+    color: var(--brass-lt);
+  }
+  .brand .drawer-code{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    background: rgba(0,0,0,0.2);
+    padding: 3px 8px;
+    border-radius: 3px;
+    border: 1px solid rgba(184,135,59,0.3);
+    letter-spacing: 1px;
+  }
+  .tagline{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: rgba(242,234,214,0.55);
+    max-width: 340px;
+    text-align:right;
+    line-height:1.5;
+  }
+
+  main{
+    flex:1;
+    display:grid;
+    grid-template-columns: 360px 1fr;
+    gap: 0;
+    min-width: 0;
+  }
+
+  /* LEFT — Desk / intake panel */
+  .desk{
+    padding: 36px 32px;
+    border-right: 1px solid rgba(184,135,59,0.25);
+    background: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.16));
+    display:flex;
+    flex-direction:column;
+    gap: 22px;
+    min-width: 0;
+  }
+  .desk h2{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--brass);
+    margin: 0 0 4px;
+  }
+  .slot{
+    display:block;
+    width:100%;
+    position:relative;
+    border: 2px dashed rgba(184,135,59,0.45);
+    border-radius: 4px;
+    padding: 30px 18px;
+    text-align:center;
+    cursor:pointer;
+    transition: border-color .2s, background .2s;
+    background: rgba(0,0,0,0.15);
+  }
+  .slot:hover, .slot.dragover{
+    border-color: var(--brass-lt);
+    background: rgba(184,135,59,0.08);
+  }
+  .slot input{ display:none; }
+  .slot .slot-icon{
+    font-family:'Fraunces', serif;
+    font-size: 34px;
+    color: var(--brass);
+    margin-bottom: 8px;
+    display:block;
+  }
+  .slot .slot-label{
+    font-size: 14px;
+    color: rgba(242,234,214,0.75);
+  }
+  .slot .slot-sub{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: rgba(242,234,214,0.4);
+    margin-top: 6px;
+  }
+
+  .file-chip{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 10px;
+    background: rgba(184,135,59,0.1);
+    border: 1px solid rgba(184,135,59,0.35);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: var(--card);
+  }
+  .file-chip button{
+    background:none;
+    border:none;
+    color: rgba(242,234,214,0.5);
+    cursor:pointer;
+    font-size: 15px;
+    line-height:1;
+    padding: 2px 6px;
+  }
+  .file-chip button:hover{ color: var(--card); }
+
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .field label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: rgba(242,234,214,0.5);
+  }
+  select{
+    width:100%;
+    font-family:'Source Sans 3', sans-serif;
+    font-size: 14px;
+    background: rgba(0,0,0,0.2);
+    color: var(--card);
+    border: 1px solid rgba(184,135,59,0.35);
+    border-radius: 4px;
+    padding: 9px 10px;
+  }
+
+  .catalog-btn{
+    width:100%;
+    margin-top: 6px;
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    background: var(--brass);
+    color: var(--walnut-dk);
+    border: none;
+    border-radius: 4px;
+    padding: 13px 18px;
+    cursor:pointer;
+    transition: background .15s, transform .1s;
+  }
+  .catalog-btn:hover:not(:disabled){ background: var(--brass-lt); }
+  .catalog-btn:active:not(:disabled){ transform: scale(0.98); }
+  .catalog-btn:disabled{
+    background: rgba(184,135,59,0.25);
+    color: rgba(36,26,18,0.5);
+    cursor:not-allowed;
+  }
+
+  .status-line{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: rgba(242,234,214,0.55);
+    min-height: 16px;
+    display:flex;
+    align-items:center;
+    gap: 8px;
+  }
+  .status-line.error{ color: var(--error); }
+  .spinner{
+    width: 10px; height:10px;
+    border-radius: 50%;
+    border: 2px solid rgba(184,135,59,0.3);
+    border-top-color: var(--brass-lt);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+
+  .desk-footer{
+    margin-top:auto;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: rgba(242,234,214,0.3);
+    line-height:1.6;
+    border-top: 1px solid rgba(184,135,59,0.15);
+    padding-top: 16px;
+  }
+
+  /* RIGHT — Drawer of cards */
+  .drawer{
+    padding: 40px 44px 60px;
+    overflow-y:auto;
+    min-width: 0;
+  }
+  .drawer-empty{
+    height: 100%;
+    min-height: 280px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    color: rgba(242,234,214,0.3);
+    text-align:center;
+    gap: 10px;
+  }
+  .drawer-empty .glyph{
+    font-family:'Fraunces', serif;
+    font-size: 54px;
+    color: rgba(184,135,59,0.35);
+  }
+  .drawer-empty p{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+    max-width: 280px;
+    line-height:1.6;
+  }
+
+  .drawer-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap:wrap;
+  }
+  .drawer-header h2{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: 24px;
+    color: var(--card);
+    margin:0;
+  }
+  .drawer-header .count{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: rgba(242,234,214,0.45);
+  }
+  .print-btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    background: transparent;
+    color: var(--brass-lt);
+    border: 1px solid rgba(184,135,59,0.4);
+    border-radius: 3px;
+    padding: 8px 14px;
+    cursor:pointer;
+    transition: background .15s;
+  }
+  .print-btn:hover{ background: rgba(184,135,59,0.1); }
+
+  .cards{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 22px;
+  }
+
+  .card{
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 2px;
+    padding: 22px 20px 18px;
+    position:relative;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.05) inset;
+    opacity:0;
+    transform: translateY(14px);
+    animation: rise 0.5s ease forwards;
+  }
+  @keyframes rise{ to{ opacity:1; transform: translateY(0); } }
+
+  .card::before{
+    content:"";
+    position:absolute;
+    left:0; right:0; top:0;
+    height: 26px;
+    background: repeating-linear-gradient(to bottom, transparent 0px, transparent 24px, var(--card-shadow-line) 25px);
+    opacity:0.5;
+    pointer-events:none;
+  }
+  .card .tab{
+    position:absolute;
+    top: -10px;
+    left: 18px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #f2ead6;
+    padding: 4px 10px;
+    border-radius: 2px 2px 0 0;
+  }
+  .card h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size: 17px;
+    line-height:1.35;
+    margin: 10px 0 12px;
+    color: var(--ink);
+  }
+  .card ul{
+    margin:0;
+    padding-left: 18px;
+    display:flex;
+    flex-direction:column;
+    gap: 7px;
+  }
+  .card li{
+    font-size: 13.5px;
+    line-height:1.5;
+    color: var(--ink-soft);
+  }
+  .card li::marker{ color: var(--brass); }
+  .card .cardnum{
+    position:absolute;
+    bottom: 10px;
+    right: 14px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: rgba(36,26,18,0.3);
+  }
+
+  ::-webkit-scrollbar{ width: 10px; }
+  ::-webkit-scrollbar-track{ background: transparent; }
+  ::-webkit-scrollbar-thumb{ background: rgba(184,135,59,0.3); border-radius: 5px; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 860px){
+    main{
+      grid-template-columns: 1fr;
+    }
+    .desk{
+      border-right: none;
+      border-bottom: 1px solid rgba(184,135,59,0.25);
+      padding: 24px 20px;
+    }
+    .drawer{
+      padding: 28px 20px 48px;
+    }
+    .desk-footer{
+      margin-top: 4px;
+    }
+  }
+
+  @media (max-width: 600px){
+    .topbar{
+      padding: 20px 18px 14px;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .brand h1{ font-size: 26px; }
+    .tagline{
+      text-align: left;
+      max-width: 100%;
+    }
+    .desk{ padding: 20px 16px; gap: 18px; }
+    .slot{ padding: 24px 14px; }
+    .drawer{ padding: 24px 16px 40px; }
+    .drawer-header{
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .cards{
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .catalog-btn{
+      padding: 14px 18px;
+      font-size: 16px;
+    }
+    select, .file-chip{
+      font-size: 14px;
+    }
+  }
+
+  @media (max-width: 400px){
+    .brand{
+      flex-direction: column;
+      gap: 6px;
+      align-items: flex-start;
+    }
+    .brand h1{ font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <h1>Cardex</h1>
+    <span class="drawer-code">DRWR · PDF→NOTES</span>
+  </div>
+  <div class="tagline">Drop in a PDF. Pull out an index-card catalog of the ideas worth remembering.</div>
+</div>
+
+<main>
+  <section class="desk">
+    <div>
+      <h2>Intake</h2>
+      <div class="slot" id="slot" tabindex="0" role="button" aria-label="Upload PDF">
+        <input type="file" id="fileInput" accept="application/pdf" />
+        <span class="slot-icon">✦</span>
+        <span class="slot-label" id="slotLabel">Drop a PDF here, or click to browse</span>
+        <span class="slot-sub">.pdf only · processed in your browser</span>
+      </div>
+      <div id="fileChip" style="display:none; margin-top:10px;"></div>
+    </div>
+
+    <div class="field">
+      <label for="density">Catalog density</label>
+      <select id="density">
+        <option value="concise">Concise — key points only</option>
+        <option value="standard" selected>Standard — balanced detail</option>
+        <option value="thorough">Thorough — deep detail</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="hfToken">Hugging Face token</label>
+      <input type="password" id="hfToken" placeholder="hf_xxxxxxxxxxxxxxxxxxxx" value="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"
+        style="width:100%; font-family:'Source Sans 3', sans-serif; font-size:14px; background: rgba(0,0,0,0.2); color: var(--card); border: 1px solid rgba(184,135,59,0.35); border-radius:4px; padding:9px 10px;" />
+      <span style="font-family:'IBM Plex Mono', monospace; font-size:10.5px; color: rgba(242,234,214,0.4);">
+        Saved only in this browser. Get one at huggingface.co/settings/tokens (needs "Make calls to Inference Providers").
+      </span>
+    </div>
+
+    <div class="field">
+      <label for="hfModel">Model</label>
+      <input type="text" id="hfModel" value="meta-llama/Llama-3.3-70B-Instruct"
+        style="width:100%; font-family:'IBM Plex Mono', monospace; font-size:13px; background: rgba(0,0,0,0.2); color: var(--card); border: 1px solid rgba(184,135,59,0.35); border-radius:4px; padding:9px 10px;" />
+    </div>
+
+    <button class="catalog-btn" id="catalogBtn" disabled>Catalog it →</button>
+    <div class="status-line" id="statusLine"></div>
+
+    <div class="desk-footer">
+      Text is extracted locally, then sent once to your<br/>
+      Hugging Face model to generate structured notes.
+    </div>
+  </section>
+
+  <section class="drawer" id="drawer">
+    <div class="drawer-empty">
+      <span class="glyph">﹅</span>
+      <p>Your catalog drawer is empty.<br/>Cards will appear here once a PDF has been processed.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+function loadScript(src){
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Failed to load ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+const pdfjsReady = loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js')
+  .then(() => {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  });
+
+const jspdfReady = loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+
+const slot = document.getElementById('slot');
+const fileInput = document.getElementById('fileInput');
+const slotLabel = document.getElementById('slotLabel');
+const fileChip = document.getElementById('fileChip');
+const catalogBtn = document.getElementById('catalogBtn');
+const statusLine = document.getElementById('statusLine');
+const drawer = document.getElementById('drawer');
+const densitySelect = document.getElementById('density');
+const hfTokenInput = document.getElementById('hfToken');
+const hfModelInput = document.getElementById('hfModel');
+
+const savedToken = localStorage.getItem('cardex_hf_token');
+if (savedToken) hfTokenInput.value = savedToken;
+const savedModel = localStorage.getItem('cardex_hf_model');
+if (savedModel) hfModelInput.value = savedModel;
+hfTokenInput.addEventListener('input', () => {
+  localStorage.setItem('cardex_hf_token', hfTokenInput.value.trim());
+  syncCatalogBtn();
+});
+hfModelInput.addEventListener('input', () => localStorage.setItem('cardex_hf_model', hfModelInput.value.trim()));
+
+function syncCatalogBtn(){
+  catalogBtn.disabled = !(selectedFile && hfTokenInput.value.trim());
+}
+
+let selectedFile = null;
+const tabColors = ['tab-1','tab-2','tab-3','tab-4','tab-5'];
+const tabHex = {
+  'tab-1': '#8a4a3e', 'tab-2': '#4a6350', 'tab-3': '#3d5a6c', 'tab-4': '#7a5a30', 'tab-5': '#5c4a70'
+};
+
+slot.addEventListener('click', (e) => {
+  if (e.target !== fileInput) {
+    fileInput.click();
+  }
+});
+slot.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    fileInput.click();
+  }
+});
+slot.addEventListener('dragover', (e) => { e.preventDefault(); slot.classList.add('dragover'); });
+slot.addEventListener('dragleave', () => slot.classList.remove('dragover'));
+slot.addEventListener('drop', (e) => {
+  e.preventDefault();
+  slot.classList.remove('dragover');
+  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    handleFile(e.dataTransfer.files[0]);
+  }
+});
+fileInput.addEventListener('change', (e) => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+function handleFile(file){
+  if (file.type !== 'application/pdf'){
+    setStatus('That file is not a PDF.', true);
+    return;
+  }
+  selectedFile = file;
+  slotLabel.style.display = 'none';
+  document.querySelector('.slot-icon').style.display = 'none';
+  document.querySelector('.slot-sub').style.display = 'none';
+  fileChip.style.display = 'flex';
+  fileChip.innerHTML = `<span>📄 ${escapeHtml(file.name)}</span><button id="clearFile" type="button">✕</button>`;
+  fileChip.className = 'file-chip';
+  document.getElementById('clearFile').addEventListener('click', (ev) => {
+    ev.preventDefault();
+    resetFile();
+  });
+  syncCatalogBtn();
+  setStatus('');
+}
+
+function resetFile(){
+  selectedFile = null;
+  fileInput.value = '';
+  fileChip.style.display = 'none';
+  slotLabel.style.display = 'block';
+  document.querySelector('.slot-icon').style.display = 'block';
+  document.querySelector('.slot-sub').style.display = 'block';
+  syncCatalogBtn();
+  setStatus('');
+}
+
+function setStatus(msg, isError=false){
+  statusLine.className = 'status-line' + (isError ? ' error' : '');
+  statusLine.innerHTML = msg ? (isError ? '' : '<span class="spinner"></span>') + `<span>${escapeHtml(msg)}</span>` : '';
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+async function extractPdfText(file){
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  let text = '';
+  const maxPages = Math.min(pdf.numPages, 60);
+  for (let i = 1; i <= maxPages; i++){
+    setStatus(`Reading page ${i} of ${maxPages}...`);
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const pageText = content.items.map(it => it.str).join(' ');
+    text += pageText + '\n\n';
+  }
+  return text.trim();
+}
+
+catalogBtn.addEventListener('click', async () => {
+  if (!selectedFile) return;
+  const hfToken = hfTokenInput.value.trim();
+  if (!hfToken){
+    setStatus('Enter your Hugging Face token first.', true);
+    return;
+  }
+  catalogBtn.disabled = true;
+  setStatus('Loading PDF engine...');
+  try {
+    await pdfjsReady;
+  } catch (err) {
+    setStatus('PDF engine failed to load. Please check your connection and try again.', true);
+    catalogBtn.disabled = false;
+    return;
+  }
+  drawer.innerHTML = '';
+  try {
+    setStatus('Opening PDF...');
+    let text = await extractPdfText(selectedFile);
+    if (!text || text.length < 20){
+      throw new Error('No extractable text found in this PDF (it may be scanned images).');
+    }
+    if (text.length > 40000){
+      text = text.slice(0, 40000);
+    }
+
+    setStatus('Cataloging notes...');
+    const density = densitySelect.value;
+    const cards = await generateNotes(text, density);
+    renderCards(cards);
+    setStatus(`Filed ${cards.length} card${cards.length === 1 ? '' : 's'}.`);
+  } catch (err) {
+    console.error(err);
+    setStatus(err.message || 'Something went wrong.', true);
+    drawer.innerHTML = `<div class="drawer-empty"><span class="glyph">✕</span><p>${escapeHtml(err.message || 'Something went wrong while cataloging this PDF.')}</p></div>`;
+  } finally {
+    syncCatalogBtn();
+  }
+});
+
+async function generateNotes(text, density){
+  const densityInstruction = {
+    concise: 'Keep it tight: 4-7 cards total, 2-3 bullets each, only the most important points.',
+    standard: 'Aim for 6-12 cards, 3-5 bullets each, covering the main ideas with useful detail.',
+    thorough: 'Be comprehensive: 10-18 cards, 4-7 bullets each, capturing detail, examples, and nuance.'
+  }[density];
+
+  const systemPrompt = `You convert document text into structured study notes formatted as index cards.
+${densityInstruction}
+Each card covers one coherent topic or section from the document, in the document's own logical order.
+Respond with ONLY a raw JSON array, no markdown fences, no preamble, no commentary. Format:
+[{"heading": "Short topic title", "bullets": ["point one", "point two"]}]
+Bullets should be concise, information-dense, in your own words, and should not include markdown formatting or quotation marks.`;
+
+  const hfToken = hfTokenInput.value.trim();
+  const model = hfModelInput.value.trim() || 'meta-llama/Llama-3.3-70B-Instruct';
+
+  let response;
+  try {
+    response = await fetch("https://router.huggingface.co/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${hfToken}`
+      },
+      body: JSON.stringify({
+        model: model,
+        max_tokens: 4000,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Document text:\n\n${text}` }
+        ]
+      })
+    });
+  } catch (err) {
+    throw new Error('Could not reach Hugging Face. Check your internet connection and try again.');
+  }
+
+  if (!response.ok){
+    let detail = '';
+    try {
+      const errBody = await response.json();
+      detail = errBody?.error?.message || errBody?.error || '';
+    } catch (e) { /* ignore */ }
+    if (response.status === 401){
+      throw new Error('Hugging Face rejected the token. Check that it is correct and has Inference Providers access.');
+    }
+    if (response.status === 404){
+      throw new Error(`Model "${model}" was not found or isn't available via Inference Providers.`);
+    }
+    throw new Error('The note-generation request failed' + (detail ? `: ${detail}` : '.'));
+  }
+
+  const data = await response.json();
+  const raw = (data.choices?.[0]?.message?.content || '').trim();
+  const cleaned = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+
+  let parsed;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch (e) {
+    const match = cleaned.match(/\[[\s\S]*\]/);
+    if (match) {
+      parsed = JSON.parse(match[0]);
+    } else {
+      throw new Error('Could not parse the generated notes. Please try again.');
+    }
+  }
+  if (!Array.isArray(parsed) || parsed.length === 0){
+    throw new Error('No notes were generated from this document.');
+  }
+  return parsed;
+}
+
+function renderCards(cards){
+  const header = document.createElement('div');
+  header.className = 'drawer-header';
+  header.innerHTML = `<h2>${escapeHtml(selectedFile.name.replace(/\.pdf$/i,''))}</h2>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <span class="count">${cards.length} card${cards.length === 1 ? '' : 's'}</span>
+      <button class="print-btn" id="downloadBtn">↓ Download PDF</button>
+    </div>`;
+  drawer.innerHTML = '';
+  drawer.appendChild(header);
+
+  const grid = document.createElement('div');
+  grid.className = 'cards';
+  drawer.appendChild(grid);
+
+  cards.forEach((card, i) => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.style.animationDelay = (i * 0.06) + 's';
+    const color = tabColors[i % tabColors.length];
+    const bullets = (card.bullets || []).map(b => `<li>${escapeHtml(b)}</li>`).join('');
+    el.innerHTML = `
+      <div class="tab" style="background:${tabHex[color]}">${String(i+1).padStart(2,'0')}</div>
+      <h3>${escapeHtml(card.heading || 'Untitled')}</h3>
+      <ul>${bullets}</ul>
+      <div class="cardnum">CARDEX · ${String(i+1).padStart(3,'0')}</div>
+    `;
+    grid.appendChild(el);
+  });
+
+  document.getElementById('downloadBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('downloadBtn');
+    const originalLabel = btn.textContent;
+    btn.textContent = 'Preparing PDF...';
+    btn.disabled = true;
+    try {
+      await jspdfReady;
+      const jsPDF = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+      if (!jsPDF) {
+        throw new Error('jsPDF library did not load correctly.');
+      }
+      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 50;
+      const maxWidth = pageWidth - margin * 2;
+      let y = margin;
+
+      const title = selectedFile.name.replace(/\.pdf$/i, '');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      const titleLines = doc.splitTextToSize(title, maxWidth);
+      doc.text(titleLines, margin, y);
+      y += titleLines.length * 22 + 14;
+
+      cards.forEach((card, i) => {
+        const headingLines = doc.splitTextToSize(`${i + 1}. ${card.heading || 'Untitled'}`, maxWidth);
+        const bulletLineSets = (card.bullets || []).map(b => doc.splitTextToSize('•  ' + b, maxWidth - 10));
+        const bulletsHeight = bulletLineSets.reduce((sum, lines) => sum + lines.length * 14, 0);
+        const blockHeight = headingLines.length * 18 + 8 + bulletsHeight + 18;
+
+        if (y + blockHeight > pageHeight - margin) {
+          doc.addPage();
+          y = margin;
+        }
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        doc.text(headingLines, margin, y);
+        y += headingLines.length * 18 + 8;
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(11);
+        bulletLineSets.forEach(lines => {
+          doc.text(lines, margin + 10, y);
+          y += lines.length * 14;
+        });
+        y += 18;
+      });
+
+      doc.save((title || 'notes') + '.pdf');
+    } catch (err) {
+      console.error(err);
+      setStatus('Could not generate the PDF: ' + (err.message || 'unknown error'), true);
+    } finally {
+      btn.textContent = originalLabel;
+      btn.disabled = false;
+    }
+  });
+}
+</script>
+
+</body>
+</html>

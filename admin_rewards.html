@@ -1,0 +1,37 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Rewards · Admin · Coder Enchanté Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <span class="tv-pill">🛠️ Admin</span>
+  <h1>Rewards</h1>
+  <p class="tv-text-dim">Coin amounts paid out across the Code Battle Arena. Changes apply to the next match finalized - nothing needs a restart.</p>
+</section>
+
+<form method="POST" class="tv-card tv-admin-form tv-animate-in">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+  {% for s in settings %}
+  <div class="tv-admin-form__row tv-reward-row">
+    <div class="tv-flex-col" style="flex: 1;">
+      <strong>{{ s.label }}</strong>
+      {% if s.description %}<span class="tv-text-faint">{{ s.description }}</span>{% endif %}
+    </div>
+    <label class="tv-admin-form__field" style="max-width: 140px;">
+      <span>Coins</span>
+      <input type="number" min="0" step="1" name="amount_{{ s.key }}" class="tv-select" value="{{ s.amount }}" required>
+    </label>
+  </div>
+  {% endfor %}
+
+  <div class="tv-admin-form__actions">
+    <button type="submit" class="tv-btn tv-btn--primary">Save Changes</button>
+  </div>
+</form>
+
+{% endblock %}

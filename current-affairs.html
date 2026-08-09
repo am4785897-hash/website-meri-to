@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Current Affairs — The Wire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0E1420;
+    --ink-2:#141C2B;
+    --paper:#F2F0E9;
+    --paper-dim:#B9C0CC;
+    --signal:#E8A33D;
+    --wire:#4C9A6A;
+    --wire-dim:#3A7350;
+    --rule: rgba(242,240,233,0.14);
+    --rule-strong: rgba(242,240,233,0.28);
+    --display: 'Newsreader', serif;
+    --body: 'Inter', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--ink);color:var(--paper);font-family:var(--body);}
+  ::selection{background:var(--signal);color:var(--ink);}
+  a{color:inherit;}
+
+  /* ===== Top utility bar ===== */
+  .utility{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:8px 24px;font-family:var(--mono);font-size:11px;letter-spacing:.04em;
+    color:var(--paper-dim);border-bottom:1px solid var(--rule);
+    text-transform:uppercase;
+  }
+  .utility .dot{color:var(--wire);}
+  #clock{color:var(--paper);}
+
+  /* ===== Header ===== */
+  header.masthead{
+    padding:28px 24px 20px;
+    border-bottom:2px solid var(--rule-strong);
+    display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;
+  }
+  .masthead h1{
+    font-family:var(--display);font-weight:700;font-size:clamp(34px,5vw,58px);
+    margin:0;letter-spacing:-0.01em;line-height:0.95;
+  }
+  .masthead h1 span{color:var(--signal);font-style:italic;font-weight:500;}
+  .masthead .tag{
+    font-family:var(--mono);font-size:11px;color:var(--paper-dim);
+    text-transform:uppercase;letter-spacing:.08em;max-width:260px;text-align:right;
+  }
+  nav.backlink{
+    font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.06em;
+  }
+  nav.backlink a{
+    display:inline-flex;align-items:center;gap:8px;color:var(--paper);text-decoration:none;
+    border:1px solid var(--rule-strong);padding:7px 14px;border-radius:2px;transition:all .15s ease;
+  }
+  nav.backlink a:hover{border-color:var(--signal);color:var(--signal);}
+
+  /* ===== Ticker (signature element) ===== */
+  .ticker-wrap{
+    background:var(--signal);color:var(--ink);
+    overflow:hidden;white-space:nowrap;border-bottom:2px solid var(--rule-strong);
+    position:relative;height:34px;display:flex;align-items:center;
+  }
+  .ticker-label{
+    font-family:var(--mono);font-weight:600;font-size:11px;letter-spacing:.08em;
+    background:var(--ink);color:var(--signal);padding:0 14px;height:100%;
+    display:flex;align-items:center;flex-shrink:0;z-index:2;text-transform:uppercase;
+  }
+  .ticker-track{
+    display:inline-flex;white-space:nowrap;animation:scroll-left 60s linear infinite;
+    padding-left:100%;
+  }
+  .ticker-track span{
+    font-family:var(--mono);font-size:13px;font-weight:500;margin-right:48px;
+  }
+  .ticker-track span::before{content:"●  ";font-size:8px;vertical-align:middle;}
+  @keyframes scroll-left{
+    from{transform:translateX(0);}
+    to{transform:translateX(-100%);}
+  }
+  .ticker-wrap:hover .ticker-track{animation-play-state:paused;}
+
+  /* ===== Category tabs ===== */
+  .tabs{
+    display:flex;gap:2px;padding:18px 24px 0;flex-wrap:wrap;
+    border-bottom:1px solid var(--rule);
+  }
+  .tab{
+    font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;
+    background:none;border:none;color:var(--paper-dim);cursor:pointer;
+    padding:10px 16px 14px;border-bottom:2px solid transparent;transition:all .15s ease;
+  }
+  .tab:hover{color:var(--paper);}
+  .tab.active{color:var(--paper);border-bottom-color:var(--signal);}
+  .tab .n{color:var(--wire);margin-right:6px;}
+
+  /* ===== Status row ===== */
+  .status{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:14px 24px;font-family:var(--mono);font-size:11px;color:var(--paper-dim);
+    text-transform:uppercase;letter-spacing:.04em;
+  }
+  .status button{
+    font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+    background:none;border:1px solid var(--rule-strong);color:var(--paper);
+    padding:6px 12px;border-radius:2px;cursor:pointer;transition:all .15s ease;
+  }
+  .status button:hover{border-color:var(--wire);color:var(--wire);}
+  .status button:disabled{opacity:.5;cursor:wait;}
+
+  /* ===== Feed grid ===== */
+  main{padding:6px 24px 60px;max-width:1280px;margin:0 auto;}
+  .grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1px;
+    background:var(--rule);border:1px solid var(--rule);
+  }
+  .card{
+    background:var(--ink);padding:20px;display:flex;flex-direction:column;gap:12px;
+    text-decoration:none;color:var(--paper);transition:background .15s ease;
+  }
+  .card:hover{background:var(--ink-2);}
+  .card .thumb{
+    width:100%;aspect-ratio:16/8;border-radius:2px;overflow:hidden;
+    background:linear-gradient(135deg, var(--ink-2) 25%, transparent 25%) -8px 0/16px 16px,
+               linear-gradient(225deg, var(--ink-2) 25%, transparent 25%) -8px 0/16px 16px,
+               linear-gradient(315deg, var(--ink-2) 25%, transparent 25%) 0 0/16px 16px,
+               linear-gradient(45deg, var(--ink-2) 25%, var(--ink) 25%) 0 0/16px 16px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .card .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .card .thumb .ph{font-family:var(--mono);font-size:10px;color:var(--paper-dim);letter-spacing:.08em;text-transform:uppercase;}
+  .card .meta{
+    display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;
+    color:var(--wire);text-transform:uppercase;letter-spacing:.06em;
+  }
+  .card h3{
+    font-family:var(--display);font-weight:600;font-size:19px;line-height:1.28;margin:0;
+    flex-grow:1;
+  }
+  .card .src{
+    font-family:var(--mono);font-size:11px;color:var(--paper-dim);
+    display:flex;justify-content:space-between;border-top:1px solid var(--rule);padding-top:10px;
+  }
+
+  .empty, .loading{
+    grid-column:1/-1;padding:60px 20px;text-align:center;font-family:var(--mono);
+    color:var(--paper-dim);text-transform:uppercase;letter-spacing:.06em;font-size:12px;
+  }
+
+  footer{
+    border-top:1px solid var(--rule);padding:20px 24px;font-family:var(--mono);font-size:11px;
+    color:var(--paper-dim);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
+    text-transform:uppercase;letter-spacing:.05em;
+  }
+
+  @media (max-width:560px){
+    .masthead{flex-direction:column;align-items:flex-start;}
+    .masthead .tag{text-align:left;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .ticker-track{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="utility">
+  <div><span class="dot">●</span> LIVE FEED — POWERED BY NEWSDATA.IO</div>
+  <div id="clock">--:--:--</div>
+</div>
+
+<header class="masthead">
+  <div>
+    <h1>The <span>current Affairs</span></h1>
+    <nav class="backlink" style="margin-top:10px;">
+      <!-- EDIT the href below to point back to your main site -->
+      <a href="/">← Back to Main Site</a>
+    </nav>
+  </div>
+  <div class="tag">Current affairs, pulled straight off the wire. Updated automatically.</div>
+</header>
+
+<div class="ticker-wrap">
+  <div class="ticker-label">Headlines</div>
+  <div class="ticker-track" id="tickerTrack">
+    <span>Loading latest headlines…</span>
+  </div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="status">
+  <div id="statusText">Fetching feed…</div>
+  <button id="refreshBtn">Refresh</button>
+</div>
+
+<main>
+  <div class="grid" id="grid">
+    <div class="loading">Tuning in…</div>
+  </div>
+</main>
+
+<footer>
+  <div>The Wire — a live current affairs feed</div>
+  <div id="autoNote">Auto-refreshes every 5 minutes</div>
+</footer>
+
+<script>
+  // ---- newsdata.io config ----
+  const NEWSDATA_KEY = "pub_e9864a7e8ef445d4a415bc13bd32cf59";
+  const NEWSDATA_BASE = "https://newsdata.io/api/1/latest";
+  const COUNTRY = "in"; // change or set to "" to widen results
+  const LANGUAGE = "en";
+
+  // ---- Config: category name -> newsdata.io category param ----
+  // Supported: business, crime, domestic, education, entertainment,
+  // environment, food, health, lifestyle, politics, science, sports,
+  // technology, top, tourism, world, other
+  const CATEGORIES = [
+    { key: "top",      label: "Top Stories", category: "top" },
+    { key: "world",    label: "World",       category: "world" },
+    { key: "business", label: "Business",    category: "business" },
+    { key: "tech",     label: "Technology",  category: "technology" },
+    { key: "science",  label: "Science",     category: "science" },
+    { key: "health",   label: "Health",      category: "health" },
+    { key: "sports",   label: "Sports",      category: "sports" },
+    { key: "entertainment", label: "Entertainment", category: "entertainment" },
+  ];
+
+  let activeKey = "top";
+  let cache = {};
+  const AUTO_REFRESH_MS = 5 * 60 * 1000;
+
+  const tabsEl = document.getElementById("tabs");
+  const gridEl = document.getElementById("grid");
+  const statusEl = document.getElementById("statusText");
+  const tickerEl = document.getElementById("tickerTrack");
+  const refreshBtn = document.getElementById("refreshBtn");
+
+  function renderTabs(){
+    tabsEl.innerHTML = CATEGORIES.map(c =>
+      `<button class="tab ${c.key===activeKey?'active':''}" data-key="${c.key}">
+        <span class="n">${CATEGORIES.indexOf(c)+1<10?'0':''}${CATEGORIES.indexOf(c)+1}</span>${c.label}
+      </button>`
+    ).join("");
+    tabsEl.querySelectorAll(".tab").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        activeKey = btn.dataset.key;
+        renderTabs();
+        loadCategory(activeKey);
+      });
+    });
+  }
+
+  function timeAgo(dateStr){
+    const d = new Date(dateStr);
+    if (isNaN(d)) return "";
+    const diffMin = Math.round((Date.now() - d.getTime())/60000);
+    if (diffMin < 1) return "just now";
+    if (diffMin < 60) return diffMin + "m ago";
+    const diffHr = Math.round(diffMin/60);
+    if (diffHr < 24) return diffHr + "h ago";
+    return Math.round(diffHr/24) + "d ago";
+  }
+
+  function cardHTML(item){
+    const img = item.image_url;
+    const sourceName = item.source_name || item.source_id || "Source";
+    const title = item.title || "Untitled";
+    return `
+      <a class="card" href="${item.link}" target="_blank" rel="noopener">
+        <div class="thumb">
+          ${img ? `<img src="${img}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<span class=ph>No Image</span>'">` : `<span class="ph">No Image</span>`}
+        </div>
+        <div class="meta"><span>${sourceName}</span><span>${timeAgo(item.pubDate)}</span></div>
+        <h3>${title}</h3>
+        <div class="src"><span>Read on source ↗</span></div>
+      </a>`;
+  }
+
+  function renderTicker(items){
+    if (!items.length) return;
+    const headlines = items.slice(0, 15).map(i => i.title).filter(Boolean);
+    tickerEl.innerHTML = headlines.map(h => `<span>${h}</span>`).join("") + headlines.map(h => `<span>${h}</span>`).join("");
+  }
+
+  async function fetchCategory(cat){
+    const params = new URLSearchParams({
+      apikey: NEWSDATA_KEY,
+      category: cat.category,
+      language: LANGUAGE,
+    });
+    if (COUNTRY) params.set("country", COUNTRY);
+    const res = await fetch(`${NEWSDATA_BASE}?${params.toString()}`);
+    const data = await res.json();
+    if (data.status !== "success") throw new Error((data.results && data.results.message) || data.message || "Feed error (" + res.status + ")");
+    return (data.results || []).filter(a => a.title);
+  }
+
+  async function loadCategory(key, isAuto){
+    const cat = CATEGORIES.find(c => c.key === key);
+    statusEl.textContent = isAuto ? "Auto-refreshing…" : "Fetching " + cat.label + "…";
+    refreshBtn.disabled = true;
+
+    try {
+      let items = cache[key];
+      if (!items || !isAuto) {
+        items = await fetchCategory(cat);
+        cache[key] = items;
+      }
+      if (key === activeKey) {
+        if (!items.length) {
+          gridEl.innerHTML = `<div class="empty">No stories came through. Try refreshing.</div>`;
+        } else {
+          gridEl.innerHTML = items.map(cardHTML).join("");
+        }
+      }
+      if (key === "top") renderTicker(items);
+      statusEl.textContent = "Last updated " + new Date().toLocaleTimeString();
+    } catch(err){
+      if (key === activeKey) {
+        gridEl.innerHTML = `<div class="empty">Couldn't reach the wire (${err.message}). Try refreshing in a moment.</div>`;
+      }
+      statusEl.textContent = "Feed error — will retry automatically";
+      console.error(err);
+    } finally {
+      refreshBtn.disabled = false;
+    }
+  }
+
+  refreshBtn.addEventListener("click", () => {
+    cache = {};
+    loadCategory(activeKey);
+    loadCategory("top", true);
+  });
+
+  function tickClock(){
+    document.getElementById("clock").textContent = new Date().toLocaleTimeString();
+  }
+  setInterval(tickClock, 1000);
+  tickClock();
+
+  renderTabs();
+  loadCategory("top");
+  setInterval(() => { loadCategory(activeKey, true); if(activeKey!=='top') loadCategory('top', true); }, AUTO_REFRESH_MS);
+</script>
+
+</body>
+</html>

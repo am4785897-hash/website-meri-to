@@ -1,0 +1,212 @@
+{% extends "base_dashboard.html" %}
+{% block title %}{{ lesson.title }} · {{ course.title }} · Coder Enchanté Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/lesson.css">
+<link rel="stylesheet" href="/assets/css/bookmarks.css">
+{% endblock %}
+
+{% block content %}
+<div data-lesson-slug="{{ lesson.slug }}" data-course-slug="{{ course.slug }}">
+
+  <!-- Breadcrumb + title -->
+  <section class="tv-flex-col tv-gap-2 tv-animate-in">
+    <div class="tv-lesson-breadcrumb">
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <span>›</span>
+      <span>{{ course.title }}</span>
+      <span>›</span>
+      <span>{{ lesson.title }}</span>
+    </div>
+    <div class="tv-lesson-header">
+      <div>
+        <h1>{{ lesson.title }}</h1>
+        <p class="tv-text-dim">Lesson {{ lesson.order_index + 1 }} of {{ sidebar_lessons|length }} · {{ course.title }}</p>
+      </div>
+      <span class="tv-pill {{ 'tv-pill--success' if my_progress.status == 'complete' else 'tv-pill--warning' }}">
+        {{ 'Completed' if my_progress.status == 'complete' else 'In Progress' }}
+      </span>
+      <button type="button" class="tv-bookmark-toggle {{ 'is-bookmarked' if is_bookmarked }}" id="tv-lesson-bookmark" data-target-type="lesson" data-target-id="{{ lesson.id }}">
+        🔖 <span id="tv-lesson-bookmark-label">{{ 'Bookmarked' if is_bookmarked else 'Bookmark' }}</span>
+      </button>
+    </div>
+  </section>
+
+  <div class="tv-lesson-grid tv-animate-in">
+
+    <!-- ===================== MAIN: tabs + video + content ===================== -->
+    <div class="tv-card">
+      <div class="tv-tabs">
+        <button type="button" class="tv-tab is-active" data-tab="lesson">Lesson</button>
+        <button type="button" class="tv-tab" data-tab="notes">Notes</button>
+        <button type="button" class="tv-tab" data-tab="playground">Code Playground</button>
+        {% if lesson.quiz_question %}
+        <button type="button" class="tv-tab" data-tab="quiz">Quick Check</button>
+        {% endif %}
+      </div>
+
+      <!-- Lesson tab: video + mentor explanation + analogy -->
+      <div class="tv-tab-panel is-active" id="tv-panel-lesson">
+        {% if embed_url %}
+        <div class="tv-video-box">
+          <iframe src="{{ embed_url }}" title="{{ lesson.title }}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        {% if lesson.video_timestamps %}
+        <div class="tv-timestamp-row">
+          {% for ts in lesson.video_timestamps %}
+          <span class="tv-timestamp-chip"><strong>{{ ts.time }}</strong> {{ ts.label }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <div class="tv-mentor-block">
+          <h3>In plain English</h3>
+          <p>{{ lesson.mentor_intro }}</p>
+        </div>
+
+        <div class="tv-analogy-card">
+          <span class="tv-analogy-card__icon">💡</span>
+          <div>
+            <h3>Real-life analogy</h3>
+            <p>{{ lesson.analogy }}</p>
+          </div>
+        </div>
+
+        <div class="tv-practice-box">
+          <h3>🎯 Try it yourself</h3>
+          <p>{{ lesson.practice_task }}</p>
+        </div>
+      </div>
+
+      <!-- Notes tab -->
+      <div class="tv-tab-panel" id="tv-panel-notes">
+        <ul class="tv-notes-list">
+          {% for line in lesson.notes.split('\n') if line.strip() %}
+          <li>{{ line }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Code Playground tab (reuses the exact dashboard playground markup/CSS) -->
+      <div class="tv-tab-panel" id="tv-panel-playground">
+        <div class="tv-playground-header">
+          <h2>Code Playground</h2>
+          <div class="tv-playground-header__controls">
+            <select class="tv-select" id="lesson-playground-lang">
+              <option selected>Python</option>
+            </select>
+            <button type="button" class="tv-btn tv-btn--primary tv-btn--sm" id="lesson-playground-run">
+              <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M6 4.5v11l9-5.5-9-5.5Z" fill="currentColor"/></svg>
+              Run
+            </button>
+            <button type="button" class="tv-btn tv-btn--ghost tv-btn--sm" id="lesson-playground-reset">
+              <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M4 10a6 6 0 1 1 1.8 4.3M4 10V5.5M4 10h4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Reset
+            </button>
+          </div>
+        </div>
+        <div class="tv-playground-body">
+          <div class="tv-editor">
+            <div class="tv-editor__gutter" id="lesson-playground-gutter" aria-hidden="true"></div>
+            <textarea class="tv-editor__textarea" id="lesson-playground-code" spellcheck="false" autocomplete="off" autocapitalize="off">{{ lesson.starter_code }}</textarea>
+          </div>
+          <div class="tv-output">
+            <div class="tv-output__header">Output</div>
+            <div class="tv-stdin-row">
+              <label for="lesson-playground-stdin">Input (stdin, one value per line)</label>
+              <textarea id="lesson-playground-stdin" class="tv-stdin" rows="2" spellcheck="false"></textarea>
+            </div>
+            <pre class="tv-output__body" id="lesson-playground-output">Click Run to see your output here.</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz tab -->
+      {% if lesson.quiz_question %}
+      <div class="tv-tab-panel" id="tv-panel-quiz">
+        <p class="tv-quiz-question">{{ lesson.quiz_question }}</p>
+        <div class="tv-quiz-options">
+          {% for option in lesson.quiz_options %}
+          <button type="button" class="tv-quiz-option" data-index="{{ loop.index0 }}">{{ option }}</button>
+          {% endfor %}
+        </div>
+        <p class="tv-quiz-feedback" id="tv-quiz-feedback"></p>
+      </div>
+      {% endif %}
+
+      <!-- Prev / Next -->
+      <div class="tv-lesson-footer">
+        {% if prev_lesson %}
+        <a href="{{ url_for('course_lesson', course_slug=course.slug, lesson_slug=prev_lesson.slug) }}" class="tv-btn tv-btn--ghost tv-btn--sm">‹ Previous</a>
+        {% else %}
+        <span></span>
+        {% endif %}
+        {% if next_lesson %}
+        <a href="{{ url_for('course_lesson', course_slug=course.slug, lesson_slug=next_lesson.slug) }}" class="tv-btn tv-btn--ghost tv-btn--sm">Next ›</a>
+        {% else %}
+        <span class="tv-text-faint" style="font-size:0.8rem;">Final lesson in this course 🎉</span>
+        {% endif %}
+      </div>
+
+      <!-- Mark complete -->
+      {% if my_progress.status != 'complete' %}
+      <div class="tv-mark-complete-row">
+        <button type="button" class="tv-btn tv-btn--primary" id="tv-mark-complete">Mark Lesson Complete</button>
+        <span class="tv-xp-hint">+{{ lesson.xp_reward }} XP</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ===================== SIDEBAR: course progress ===================== -->
+    <div class="tv-card tv-course-progress-card">
+      <div class="tv-course-progress-card__top">
+        <h2 style="font-size:1rem;">{{ course.title }}</h2>
+        <span>{{ percent }}%</span>
+      </div>
+      <div class="tv-progress"><div class="tv-progress__fill" style="width: {{ percent }}%"></div></div>
+
+      <div class="tv-lesson-list">
+        {% for item in sidebar_lessons %}
+          {% if item.status == 'locked' %}
+          <div class="tv-lesson-list-item is-locked">
+            <span class="tv-lesson-status-dot tv-lesson-status-dot--locked">
+              <svg viewBox="0 0 20 20" fill="none"><rect x="5.5" y="9" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 9V6.5a2.5 2.5 0 0 1 5 0V9" stroke="currentColor" stroke-width="1.5"/></svg>
+            </span>
+            {{ item.title }}
+          </div>
+          {% else %}
+          <a href="{{ url_for('course_lesson', course_slug=course.slug, lesson_slug=item.slug) }}"
+             class="tv-lesson-list-item {{ 'is-current' if item.slug == lesson.slug }}">
+            <span class="tv-lesson-status-dot tv-lesson-status-dot--{{ item.status }}">
+              {% if item.status == 'complete' %}
+              <svg viewBox="0 0 20 20" fill="none"><path d="M4.5 10.5l3.5 3.5 7-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              {% else %}
+              <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" fill="currentColor"/></svg>
+              {% endif %}
+            </span>
+            {{ item.title }}
+          </a>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/assets/js/playground.js"></script>
+<script>
+  TVPlayground.init({
+    codeId: "lesson-playground-code",
+    gutterId: "lesson-playground-gutter",
+    stdinId: "lesson-playground-stdin",
+    outputId: "lesson-playground-output",
+    langId: "lesson-playground-lang",
+    runId: "lesson-playground-run",
+    resetId: "lesson-playground-reset",
+  });
+</script>
+<script src="/assets/js/lesson.js"></script>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Code Playground · TechVerse Academy{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Page-only: give the standalone playground more room than the
+     dashboard's embedded widget - everything else is the exact same
+     .tv-playground-card / .tv-editor / .tv-output styling from dashboard.css. */
+  #tv-standalone-code, #tv-standalone-gutter { min-height: 480px; }
+  .tv-standalone-output-body { min-height: 480px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <h1>Code Playground</h1>
+  <p class="tv-text-dim">A full-size scratchpad to write and run Python - separate from your lesson progress, nothing here counts toward XP.</p>
+</section>
+
+<div class="tv-card tv-playground-card tv-animate-in">
+  <div class="tv-playground-header">
+    <h2>playground.py</h2>
+    <div class="tv-playground-header__controls">
+      <select class="tv-select" id="tv-standalone-snippets">
+        <option value="">Snippets…</option>
+        <option value="hello">Hello, World</option>
+        <option value="variables">Variables & f-strings</option>
+        <option value="loop">For loop</option>
+        <option value="function">Function</option>
+        <option value="list_dict">List & dictionary</option>
+        <option value="port_scanner">Port scanner (ethical hacking)</option>
+        <option value="password_checker">Password strength checker</option>
+      </select>
+      <select class="tv-select" id="tv-standalone-lang">
+        <option selected>Python</option>
+      </select>
+      <button type="button" class="tv-btn tv-btn--primary tv-btn--sm" id="tv-standalone-run">
+        <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M6 4.5v11l9-5.5-9-5.5Z" fill="currentColor"/></svg>
+        Run
+      </button>
+      <button type="button" class="tv-btn tv-btn--ghost tv-btn--sm" id="tv-standalone-reset">
+        <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M4 10a6 6 0 1 1 1.8 4.3M4 10V5.5M4 10h4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Reset
+      </button>
+    </div>
+  </div>
+  <div class="tv-playground-body">
+    <div class="tv-editor">
+      <div class="tv-editor__gutter" id="tv-standalone-gutter" aria-hidden="true"></div>
+      <textarea class="tv-editor__textarea" id="tv-standalone-code" spellcheck="false" autocomplete="off" autocapitalize="off">print("Hello, TechVerse!")</textarea>
+    </div>
+    <div class="tv-output">
+      <div class="tv-output__header">Output</div>
+      <div class="tv-stdin-row">
+        <label for="tv-standalone-stdin">Input (stdin, one value per line)</label>
+        <textarea id="tv-standalone-stdin" class="tv-stdin" rows="2" spellcheck="false"></textarea>
+      </div>
+      <pre class="tv-output__body tv-standalone-output-body" id="tv-standalone-output">Click Run, or press Ctrl+Enter, to see your output here.</pre>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/assets/js/playground.js"></script>
+<script>
+  TVPlayground.init({
+    codeId: "tv-standalone-code",
+    gutterId: "tv-standalone-gutter",
+    stdinId: "tv-standalone-stdin",
+    outputId: "tv-standalone-output",
+    langId: "tv-standalone-lang",
+    runId: "tv-standalone-run",
+    resetId: "tv-standalone-reset",
+  });
+
+  // Snippet library - page-specific, so it lives here rather than in the
+  // shared playground.js (which every other page also loads).
+  (function () {
+    const SNIPPETS = {
+      hello: 'print("Hello, TechVerse!")\n',
+      variables: 'name = "Alex"\nage = 25\nprint(f"{name} is {age} years old.")\n',
+      loop: 'for number in range(1, 11):\n    print(number)\n',
+      function: 'def calculate_area(length, width):\n    return length * width\n\nprint(calculate_area(5, 3))\n',
+      list_dict: 'movies = ["Inception", "Interstellar", "The Matrix"]\nprint(movies[1])\n\nprofile = {"name": "Alex", "age": 25}\nprint(f"{profile[\'name\']} is {profile[\'age\']}")\n',
+      port_scanner:
+        'import socket\n\ntarget = "127.0.0.1"\nfor port in [22, 80, 443]:\n' +
+        '    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n' +
+        '    s.settimeout(0.5)\n' +
+        '    result = s.connect_ex((target, port))\n' +
+        '    print(f"Port {port} is {\'open\' if result == 0 else \'closed\'}")\n' +
+        '    s.close()\n',
+      password_checker:
+        'password = "Sunshine123!"\n\n' +
+        'checks = {\n' +
+        '    "at least 8 characters": len(password) >= 8,\n' +
+        '    "has a digit": any(c.isdigit() for c in password),\n' +
+        '    "has an uppercase letter": any(c.isupper() for c in password),\n' +
+        '    "has a symbol": any(not c.isalnum() for c in password),\n' +
+        '}\n' +
+        'for label, passed in checks.items():\n' +
+        '    print(f"{\'✅\' if passed else \'❌\'} {label}")\n',
+    };
+
+    const select = document.getElementById("tv-standalone-snippets");
+    const codeEl = document.getElementById("tv-standalone-code");
+    if (select && codeEl) {
+      select.addEventListener("change", function () {
+        if (SNIPPETS[select.value]) {
+          codeEl.value = SNIPPETS[select.value];
+          codeEl.dispatchEvent(new Event("input")); // refreshes the gutter line numbers
+        }
+        select.value = "";
+      });
+    }
+  })();
+</script>
+{% endblock %}

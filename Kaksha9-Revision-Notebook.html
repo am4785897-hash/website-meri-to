@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kaksha 9 · Revision Notebook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F3EC;
+    --paper-line:#e4dccc;
+    --ink:#26231e;
+    --ink-soft:#5a5648;
+    --rule:#d8cfba;
+
+    --sci:#1F7A5C;    --sci-soft:#E4F2EA;
+    --sst:#B4670E;    --sst-soft:#FAEBD8;
+    --math:#2E4FA3;   --math-soft:#E5EAF8;
+    --eng:#B23A63;    --eng-soft:#FAE6ED;
+    --san:#9C3B27;    --san-soft:#F7E6DE;
+    --hin:#5B3A8C;    --hin-soft:#EDE6F5;
+
+    --accent: var(--sci);
+    --accent-soft: var(--sci-soft);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    background-image: linear-gradient(var(--paper-line) 1px, transparent 1px);
+    background-size: 100% 34px;
+    background-attachment:local;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .app{ display:flex; min-height:100vh; }
+
+  .tabs{
+    width:230px; flex-shrink:0; padding:28px 0 28px 18px;
+    position:sticky; top:0; height:100vh;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .brand{
+    font-family:'Kalam',cursive; font-weight:700; font-size:1.5rem;
+    padding:0 16px 18px 6px; line-height:1.15; color:var(--ink);
+  }
+  .brand small{
+    display:block; font-family:'IBM Plex Mono',monospace; font-weight:600;
+    font-size:0.62rem; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink-soft); margin-top:4px;
+  }
+
+  .tab{
+    all:unset; cursor:pointer; display:flex; align-items:center; gap:10px;
+    padding:13px 14px 13px 16px; border-radius:10px 0 0 10px;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:0.92rem;
+    color:var(--ink-soft); background:transparent;
+    border:1.5px solid transparent; border-right:none;
+    transition:transform .15s ease, background .15s ease, color .15s ease;
+  }
+  .tab .dot{ width:9px;height:9px;border-radius:50%; background:var(--tab-color); flex-shrink:0; }
+  .tab .devanagari{ font-family:'Kalam',cursive; font-size:0.78rem; opacity:.7; margin-left:auto; }
+  .tab:hover{ transform:translateX(-2px); color:var(--ink); }
+  .tab.active{
+    background:var(--paper); color:var(--ink); border-color:var(--rule);
+    box-shadow:-3px 0 0 var(--tab-color) inset; transform:translateX(-4px);
+  }
+
+  .tabs-footer{
+    margin-top:auto; padding:14px 16px 0 6px;
+    font-family:'IBM Plex Mono',monospace; font-size:0.68rem;
+    color:var(--ink-soft); line-height:1.6; border-top:1px dashed var(--rule);
+  }
+
+  main{ flex:1; min-width:0; padding:36px 48px 80px; }
+
+  .subject-panel{ display:none; animation:fade .35s ease; }
+  .subject-panel.active{ display:block; }
+  @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+
+  .panel-head{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:20px;
+    border-bottom:3px solid var(--accent); padding-bottom:16px; margin-bottom:6px;
+  }
+  .panel-head h1{
+    font-family:'Kalam',cursive; font-weight:700; font-size:2.1rem;
+    margin:0; color:var(--accent); line-height:1.15;
+  }
+  .panel-head .subtitle{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:0.95rem;
+    color:var(--ink-soft); margin-top:6px;
+  }
+  .badge{
+    font-family:'IBM Plex Mono',monospace; font-size:0.68rem; font-weight:600;
+    letter-spacing:.06em; background:var(--accent-soft); color:var(--accent);
+    border:1px solid var(--accent); padding:7px 12px; border-radius:20px;
+    white-space:nowrap; margin-top:4px;
+  }
+
+  /* Chapter switcher */
+  .ch-switch{
+    display:flex; gap:8px; margin:18px 0 8px;
+  }
+  .ch-btn{
+    all:unset; cursor:pointer;
+    font-family:'IBM Plex Mono',monospace; font-size:0.78rem; font-weight:600;
+    padding:8px 16px; border-radius:20px;
+    border:1.5px solid var(--rule); color:var(--ink-soft);
+    transition:all .15s ease;
+  }
+  .ch-btn:hover{ border-color:var(--accent); color:var(--ink); }
+  .ch-btn.active{
+    background:var(--accent); color:#fff; border-color:var(--accent);
+  }
+
+  .chapter-content{ display:none; }
+  .chapter-content.active{ display:block; animation:fade .3s ease; }
+
+  h2.sec{
+    font-family:'Inter',sans-serif; font-weight:800; font-size:1.08rem;
+    margin:28px 0 12px; padding-bottom:6px;
+    border-bottom:1px dashed var(--rule); color:var(--ink);
+  }
+  h2.sec .num{ color:var(--accent); font-family:'IBM Plex Mono',monospace; margin-right:8px; }
+
+  ul{ margin:0 0 14px; padding-left:22px; }
+  li{ margin-bottom:7px; line-height:1.55; }
+  p{ line-height:1.65; margin:0 0 12px; }
+  strong{ color:var(--ink); }
+
+  .callout{
+    background:#fff; border:1.5px solid var(--rule); border-left:5px solid var(--accent);
+    border-radius:8px; padding:14px 18px; margin:16px 0; font-size:0.94rem;
+  }
+  .callout.mistake{ border-left-color:#B23A3A; background:#FCEFEF; }
+  .callout.mistake .lbl{ color:#B23A3A; }
+  .callout .lbl{
+    font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:0.7rem;
+    text-transform:uppercase; letter-spacing:.08em; color:var(--accent);
+    display:block; margin-bottom:6px;
+  }
+
+  .summary-box{
+    margin:22px 0 8px; padding:18px 20px; background:var(--accent-soft);
+    border-radius:10px; position:relative; border:1px solid var(--accent);
+  }
+  .summary-box::before{
+    content:"REVISE IN 60 SECONDS"; position:absolute; top:-11px; left:16px;
+    background:var(--accent); color:#fff; font-family:'IBM Plex Mono',monospace;
+    font-size:0.62rem; font-weight:700; letter-spacing:.09em;
+    padding:3px 10px; border-radius:12px;
+  }
+  .summary-box ul{ margin-top:6px; margin-bottom:0; padding-left:20px;}
+  .summary-box li{ font-weight:500; }
+
+  table{
+    width:100%; border-collapse:collapse; margin:14px 0 20px; font-size:0.9rem;
+    background:#fff; border-radius:8px; overflow:hidden; border:1px solid var(--rule);
+  }
+  th{ background:var(--accent); color:#fff; text-align:left; padding:10px 14px; font-weight:600; font-size:0.82rem; }
+  td{ padding:9px 14px; border-top:1px solid var(--paper-line); }
+  tr:nth-child(even) td{ background:#fbfaf7; }
+
+  .formula{
+    font-family:'IBM Plex Mono',monospace; background:#fff;
+    border:1.5px dashed var(--accent); border-radius:8px;
+    padding:14px 18px; margin:12px 0 18px; font-size:0.95rem;
+    color:var(--ink); white-space:pre-wrap; display:inline-block;
+  }
+
+  .flow{
+    font-family:'IBM Plex Mono',monospace; background:#fff;
+    border:1px solid var(--rule); border-radius:8px;
+    padding:16px 20px; margin:14px 0 20px; font-size:0.82rem;
+    line-height:1.7; white-space:pre; overflow-x:auto; color:var(--ink-soft);
+  }
+
+  .sanskrit-word{ font-family:'Kalam',cursive; font-size:1.05em; }
+
+  footer.note{
+    margin-top:44px; padding-top:16px; border-top:1px dashed var(--rule);
+    font-size:0.8rem; color:var(--ink-soft); font-style:italic;
+  }
+
+  @media (max-width:820px){
+    .app{ flex-direction:column; }
+    .tabs{ position:static; width:100%; height:auto; flex-direction:row; overflow-x:auto; padding:16px 12px; gap:8px; }
+    .brand{ display:none; }
+    .tabs-footer{ display:none; }
+    .tab{ border-radius:20px; border:1.5px solid var(--rule); flex-shrink:0; }
+    .tab.active{ box-shadow:none; border-color:var(--tab-color); }
+    main{ padding:24px 20px 60px; }
+    .panel-head{ flex-direction:column; }
+    .panel-head h1{ font-size:1.7rem; }
+  }
+
+  /* FLOATING VIDEO */
+  .float-video{
+    position:fixed; bottom:22px; right:22px; width:360px; z-index:99999;
+    background:#111; border-radius:14px; overflow:hidden;
+    box-shadow:0 12px 40px rgba(0,0,0,.5); font-family:Inter,sans-serif;
+  }
+  .float-video.minimized{ width:200px; }
+  .float-video.minimized .fv-body{ display:none; }
+  .float-video.hidden{ display:none !important; }
+  .fv-header{ display:flex; align-items:center; gap:8px; padding:10px 12px; background:#1f1c18; cursor:move; }
+  .fv-dot{ width:8px; height:8px; border-radius:50%; background:var(--accent,#1F7A5C); }
+  .fv-title{ flex:1; color:#f0ebe3; font-size:0.78rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .fv-btn{ all:unset; cursor:pointer; color:#ccc; width:24px; height:24px; text-align:center; font-weight:700; }
+  .fv-btn:hover{ color:#fff; }
+  .fv-body{ position:relative; aspect-ratio:16/9; background:#000; }
+  .fv-body iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .fv-footer{ padding:8px 12px; background:#1a1814; display:flex; justify-content:space-between; align-items:center; }
+  .fv-footer span{ font-size:0.65rem; color:#888; }
+  .fv-open{ all:unset; cursor:pointer; color:var(--accent,#1F7A5C); font-size:0.75rem; font-weight:600; }
+  .fv-reopen{ position:fixed; bottom:22px; right:22px; z-index:99998; display:none; background:var(--accent,#1F7A5C); color:#fff; padding:12px 18px; border-radius:30px; font-weight:600; cursor:pointer; border:none; }
+  .fv-reopen.show{ display:block; }
+  @media(max-width:820px){ .float-video{ width:min(360px,calc(100vw - 16px)); right:8px; bottom:12px; } }
+
+</style>
+</head>
+<body>
+<div class="app">
+
+  <nav class="tabs" aria-label="Subjects">
+    <div class="brand">Kaksha 9<br>Revision Notebook<small>New NCERT · 2026–27</small></div>
+
+    <button class="tab active" style="--tab-color:var(--sci)" data-target="science" data-color="sci">
+      <span class="dot"></span> Science <span class="devanagari">विज्ञान</span>
+    </button>
+    <button class="tab" style="--tab-color:var(--sst)" data-target="sst" data-color="sst">
+      <span class="dot"></span> Social Science <span class="devanagari">समाज</span>
+    </button>
+    <button class="tab" style="--tab-color:var(--math)" data-target="maths" data-color="math">
+      <span class="dot"></span> Maths <span class="devanagari">गणित</span>
+    </button>
+    <button class="tab" style="--tab-color:var(--eng)" data-target="english" data-color="eng">
+      <span class="dot"></span> English <span class="devanagari">Eng</span>
+    </button>
+    <button class="tab" style="--tab-color:var(--hin)" data-target="hindi" data-color="hin">
+      <span class="dot"></span> Hindi <span class="devanagari">हिंदी</span>
+    </button>
+    <button class="tab" style="--tab-color:var(--san)" data-target="sanskrit" data-color="san">
+      <span class="dot"></span> Sanskrit <span class="devanagari">संस्कृतम्</span>
+    </button>
+
+    <div class="tabs-footer">6 subjects · Ch 1 + Ch 2<br>Tap a tab to switch</div>
+  </nav>
+
+  <main>
+
+    <!-- ============ SCIENCE ============ -->
+    <section class="subject-panel active" id="science">
+      <div class="panel-head">
+        <div>
+          <h1>Science — Exploration</h1>
+          <div class="subtitle">Entering the World of Secondary Science</div>
+        </div>
+        <span class="badge">CLASS 9</span>
+      </div>
+
+      <div class="ch-switch">
+        <button class="ch-btn active" data-ch="sci-ch1">Chapter 1</button>
+        <button class="ch-btn" data-ch="sci-ch2">Chapter 2</button>
+      </div>
+
+      <!-- SCIENCE CH 1 -->
+      <div class="chapter-content active" id="sci-ch1">
+        <h2 class="sec"><span class="num">1.</span>Why Secondary-Stage Science Feels Different</h2>
+        <ul>
+          <li>In Classes 6–8, science was mostly about <strong>observing and describing</strong> things around you.</li>
+          <li>From Class 9 onwards, science asks you to go deeper — not just "what happens" but <strong>"how do we know it happens, and why should we trust it?"</strong></li>
+          <li>This chapter is a bridge: it teaches the thinking tools you'll use in every chapter this year.</li>
+        </ul>
+
+        <h2 class="sec"><span class="num">2.</span>The Scientific Method — Step by Step</h2>
+        <div class="flow">Observation → Question → Hypothesis → Experiment (Evidence) → Analysis → Conclusion → Refinement/Repeat</div>
+        <ul>
+          <li><strong>Observation:</strong> Noticing something in nature (e.g. "ice melts faster in sunlight").</li>
+          <li><strong>Question:</strong> Turning the observation into a question.</li>
+          <li><strong>Hypothesis:</strong> A testable explanation — not a random guess.</li>
+          <li><strong>Experiment:</strong> Controlled testing where only one variable changes — a <strong>fair test</strong>.</li>
+          <li><strong>Conclusion:</strong> Based on evidence, not opinion.</li>
+          <li><strong>Refinement:</strong> Science is never "final" — new evidence can update old conclusions.</li>
+        </ul>
+
+        <h2 class="sec"><span class="num">3.</span>Scientific Models</h2>
+        <p>A <strong>model</strong> is a simplified version of something real, built to help us understand or predict it.</p>
+        <ul>
+          <li><strong>Physical models</strong> — e.g. a ball-and-stick model of an atom.</li>
+          <li><strong>Diagrammatic models</strong> — e.g. the water cycle diagram.</li>
+          <li><strong>Mathematical models</strong> — e.g. an equation predicting how far an object falls.</li>
+        </ul>
+        <div class="callout"><span class="lbl">Remember</span>Models are useful but incomplete — they simplify reality for a purpose.</div>
+
+        <h2 class="sec"><span class="num">4.</span>The Language of Science</h2>
+        <ul>
+          <li>Science uses <strong>symbols, units and equations</strong> to communicate precisely worldwide.</li>
+          <li><strong>SI Units</strong> are the global standard: metre, kilogram, second, kelvin.</li>
+          <li>Precision matters — "the object is fast" isn't scientific; "the object moves at 12 m/s" is.</li>
+        </ul>
+
+        <h2 class="sec"><span class="num">5.</span>Laws, Theories &amp; Principles</h2>
+        <table>
+          <tr><th>Term</th><th>What it does</th><th>Can it change?</th><th>Example</th></tr>
+          <tr><td><strong>Law</strong></td><td>Describes a consistent pattern</td><td>Rarely</td><td>Newton's Laws of Motion</td></tr>
+          <tr><td><strong>Theory</strong></td><td>Explains why, backed by strong evidence</td><td>Can be refined</td><td>Theory of Evolution</td></tr>
+          <tr><td><strong>Principle</strong></td><td>General rule guiding reasoning</td><td>Generally stable</td><td>Archimedes' Principle</td></tr>
+        </table>
+        <div class="callout"><span class="lbl">Key insight</span>A "theory" in science is <strong>NOT</strong> a guess — it's one of the strongest forms of scientific knowledge.</div>
+
+        <div class="callout mistake">
+          <span class="lbl">⚠ Common Mistakes</span>
+          <ul style="margin-bottom:0">
+            <li>Thinking "theory" means a weak/unproven idea.</li>
+            <li>Believing models are 100% real, not simplified.</li>
+            <li>Skipping units in numerical answers.</li>
+          </ul>
+        </div>
+
+        <div class="summary-box">
+          <ul>
+            <li>Science = observation + testable questions + evidence-based conclusions.</li>
+            <li>Models simplify reality to aid understanding — useful, not perfect.</li>
+            <li>Laws describe, theories explain, principles guide.</li>
+            <li>SI units + symbols allow universal scientific communication.</li>
+            <li>This year integrates Physics, Chemistry, Biology &amp; Earth Science as one subject.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- SCIENCE CH 2 -->
+      <div class="chapter-content" id="sci-ch2">
+        <h2 class="sec"><span class="num">1.</span>Introduction — Cell: The Building Block of Life</h2>
+        <p>Ye chapter batata hai ki har living organism chhote-chhote units se bana hota hai jinhe <strong>cell</strong> kehte hain. Cell life ki basic unit hai — chahe woh ek single-celled bacteria ho ya multi-cellular human body.</p>
+
+        <h2 class="sec"><span class="num">2.</span>Key Concepts</h2>
+        <ul>
+          <li><strong>Cell Theory:</strong> Sab living organisms cells se bane hote hain, aur cell hi structural &amp; functional unit of life hai.</li>
+          <li><strong>Cell ki khoj:</strong> Robert Hooke (1665) ne ki thi (cork ke slice mein "cells" dekhe).</li>
+          <li><strong>Cell Wall:</strong> Sirf plant cells, fungi aur bacteria mein — rigid protective outer layer.</li>
+          <li><strong>Cell Membrane:</strong> Sabhi cells mein — selectively permeable.</li>
+          <li><strong>Nucleus:</strong> Cell ka control center — DNA/genetic material yahan hota hai.</li>
+          <li><strong>Cytoplasm:</strong> Jelly-like substance jisme organelles float karte hain.</li>
+        </ul>
+
+        <h2 class="sec"><span class="num">3.</span>Important Definitions</h2>
+        <table>
+          <tr><th>Term</th><th>Definition</th></tr>
+          <tr><td><strong>Prokaryotic Cell</strong></td><td>Bina defined nucleus wali cell (e.g., bacteria)</td></tr>
+          <tr><td><strong>Eukaryotic Cell</strong></td><td>Well-defined nucleus wali cell (e.g., plant/animal cells)</td></tr>
+          <tr><td><strong>Organelle</strong></td><td>Cell ke andar chhota functional structure</td></tr>
+          <tr><td><strong>Osmosis</strong></td><td>Water ka movement low se high concentration ki taraf, semi-permeable membrane se hoke</td></tr>
+        </table>
+
+        <h2 class="sec"><span class="num">4.</span>Cell Organelles &amp; Their Functions</h2>
+        <table>
+          <tr><th>Organelle</th><th>Function</th></tr>
+          <tr><td><strong>Mitochondria</strong></td><td>"Powerhouse of the cell" — energy (ATP) banata hai</td></tr>
+          <tr><td><strong>Ribosomes</strong></td><td>Protein synthesis</td></tr>
+          <tr><td><strong>Endoplasmic Reticulum</strong></td><td>Transport of materials</td></tr>
+          <tr><td><strong>Golgi Apparatus</strong></td><td>Packaging &amp; secretion</td></tr>
+          <tr><td><strong>Chloroplast</strong></td><td>Photosynthesis ke liye (plants only)</td></tr>
+          <tr><td><strong>Vacuole</strong></td><td>Storage (plant cells mein bada hota hai)</td></tr>
+        </table>
+
+        <h2 class="sec"><span class="num">5.</span>Simple Flowchart: Cell Types</h2>
+        <div class="flow">                    CELL
+          ┌──────────┴──────────┐
+     Prokaryotic           Eukaryotic
+     (no nucleus)      ┌───────┴───────┐
+          │         Plant Cell      Animal Cell
+     Example:      (cell wall +    (no cell wall,
+     Bacteria      chloroplast)    no chloroplast)</div>
+
+        <div class="summary-box">
+          <ul>
+            <li>Cell life ki sabse chhoti aur basic unit hai — Robert Hooke ne discover ki thi.</li>
+            <li>Prokaryotic cells mein nucleus nahi hota; eukaryotic cells mein hota hai.</li>
+            <li>Mitochondria = powerhouse; Nucleus = control center; Ribosomes = protein factory.</li>
+            <li>Plant cells mein cell wall + chloroplast hota hai, animal cells mein nahi.</li>
+            <li>Osmosis aur diffusion cell ke movement processes hain jo exam mein important hain.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SOCIAL SCIENCE ============ -->
+    <section class="subject-panel" id="sst">
+      <div class="panel-head">
+        <div>
+          <h1>Social Science</h1>
+          <div class="subtitle">Understanding Society: India and Beyond</div>
+        </div>
+        <span class="badge">CLASS 9</span>
+      </div>
+
+      <div class="ch-switch">
+        <button class="ch-btn active" data-ch="sst-ch1">Chapter 1</button>
+        <button class="ch-btn" data-ch="sst-ch2">Chapter 2</button>
+      </div>
+
+      <!-- SST CH 1 -->
+      <div class="chapter-content active" id="sst-ch1">
+        <h2 class="sec"><span class="num">1.</span>What is Social Science, Really?</h2>
+        <ul>
+          <li>The <strong>systematic, evidence-based study</strong> of human society — how people live, organise, govern, and use resources.</li>
+          <li>NOT just memorising facts — it's about asking questions, finding evidence, and understanding patterns.</li>
+          <li>Helps us become informed citizens who make better decisions.</li>
+        </ul>
+
+        <h2 class="sec"><span class="num">2.</span>What Makes it "Scientific"?</h2>
+        <div class="flow">Question → Collect Information → Analyse → Interpret → Draw Conclusion → Reflect &amp; Ask New Questions</div>
+        <p>Evidence can come from documents, maps, statistics, interviews, observations, photographs, and artefacts.</p>
+
+        <h2 class="sec"><span class="num">3.</span>Branches of Social Science</h2>
+        <table>
+          <tr><th>Branch</th><th>What it studies</th><th>Examples</th></tr>
+          <tr><td><strong>History</strong></td><td>The past — events, people, changes</td><td>Independence of India, French Revolution</td></tr>
+          <tr><td><strong>Geography</strong></td><td>Earth's surface, people-environment</td><td>Climate, natural resources, population</td></tr>
+          <tr><td><strong>Political Science</strong></td><td>Power, government, democracy, laws</td><td>Indian Constitution, elections</td></tr>
+          <tr><td><strong>Economics</strong></td><td>How people produce, distribute &amp; use resources</td><td>Markets, money, poverty</td></tr>
+          <tr><td><strong>Sociology</strong></td><td>Society, social groups, institutions, culture</td><td>Family, caste, gender roles</td></tr>
+        </table>
+
+        <h2 class="sec"><span class="num">4.</span>Guiding Values</h2>
+        <ul>
+          <li><strong>Diversity</strong> — respecting different cultures, regions, viewpoints.</li>
+          <li><strong>Inclusivity</strong> — fair representation of all groups.</li>
+          <li><strong>Sustainability</strong> — long-term impact on environment &amp; resources.</li>
+          <li><strong>Equity</strong> — fairness in opportunity and treatment.</li>
+        </ul>
+
+        <div class="callout"><span class="lbl">Why Integrated Approach?</span>Real issues rarely fit one box. A <strong>drought</strong> (Geography) affects <strong>farmers' income</strong> (Economics), which can influence <strong>local elections</strong> (Political Science).</div>
+
+        <div class="summary-box">
+          <ul>
+            <li>Social Science = 5 connected disciplines studied through evidence.</li>
+            <li>Core guiding values: Diversity, Inclusivity, Sustainability, Equity.</li>
+            <li>Real-world issues usually involve multiple disciplines together.</li>
+            <li>Good social scientists are curious, patient, open-minded and respectful.</li>
+            <li>This is the foundation chapter — sets up how to think for the rest of the year.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- SST CH 2 -->
+      <div class="chapter-content" id="sst-ch2">
+        <h2 class="sec"><span class="num">1.</span>Introduction — Shaping of the Earth's Surface</h2>
+        <p>Ye chapter Earth ke andar ki structure, plate tectonics, aur Earth ki surface kaise banti hai — ye sab cover karta hai.</p>
+
+        <h2 class="sec"><span class="num">2.</span>Key Concepts</h2>
+        <ul>
+          <li><strong>Earth's Interior Layers:</strong> Crust → Mantle → Outer Core → Inner Core</li>
+          <li><strong>Plate Tectonics Theory:</strong> Earth ki crust bahut saare "plates" mein divided hai jo dheere-dheere move karti hain.</li>
+          <li><strong>Types of Plate Boundaries:</strong>
+            <ul>
+              <li><strong>Convergent</strong> — plates aapas mein takrati hain (mountains, e.g. Himalayas)</li>
+              <li><strong>Divergent</strong> — plates alag hoti hain (new crust, e.g. mid-ocean ridges)</li>
+              <li><strong>Transform</strong> — plates side-by-side slide (earthquakes, e.g. San Andreas Fault)</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h2 class="sec"><span class="num">3.</span>Important Definitions</h2>
+        <table>
+          <tr><th>Term</th><th>Meaning</th></tr>
+          <tr><td><strong>Crust</strong></td><td>Earth ki sabse upar wali thin layer</td></tr>
+          <tr><td><strong>Mantle</strong></td><td>Crust ke neeche wala thick, semi-solid layer</td></tr>
+          <tr><td><strong>Core</strong></td><td>Earth ka sabse andar wala hissa (mostly iron-nickel)</td></tr>
+          <tr><td><strong>Tectonic Plate</strong></td><td>Bade rigid rock ke tukde jo Earth's crust banate hain</td></tr>
+          <tr><td><strong>Continental Drift</strong></td><td>Theory ki continents kabhi ek saath the aur dheere-dheere alag hue</td></tr>
+        </table>
+
+        <h2 class="sec"><span class="num">4.</span>Earth's Layers</h2>
+        <table>
+          <tr><th>Layer</th><th>Thickness / Nature</th><th>State</th></tr>
+          <tr><td><strong>Crust</strong></td><td>~5–70 km</td><td>Solid</td></tr>
+          <tr><td><strong>Mantle</strong></td><td>~2900 km</td><td>Semi-solid</td></tr>
+          <tr><td><strong>Outer Core</strong></td><td>~2200 km</td><td>Liquid</td></tr>
+          <tr><td><strong>Inner Core</strong></td><td>~1250 km (radius)</td><td>Solid</td></tr>
+        </table>
+
+        <h2 class="sec"><span class="num">5.</span>Flowchart: Plate Movement → Landform</h2>
+        <div class="flow">          Tectonic plates move
+          (slowly, few cm/year)
+       ┌──────────┼──────────┐
+  Convergent   Divergent   Transform
+  Mountains    New crust/  Earthquakes
+  (Himalayas)  Ocean ridges (no new land)</div>
+
+        <div class="summary-box">
+          <ul>
+            <li>Earth ke 4 main layers: Crust, Mantle, Outer Core, Inner Core.</li>
+            <li>Tectonic plates continuously move — bahut slow, lekin continuously.</li>
+            <li>3 tarah ki plate boundaries: Convergent, Divergent, Transform.</li>
+            <li>Himalayas convergent boundary ka example hai.</li>
+            <li>Plate tectonics earthquakes, volcanoes aur mountain-building explain karti hai.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MATHS ============ -->
+    <section class="subject-panel" id="maths">
+      <div class="panel-head">
+        <div>
+          <h1>Maths — Ganita Manjari</h1>
+          <div class="subtitle">Orienting Yourself · Linear Polynomials</div>
+        </div>
+        <span class="badge">CLASS 9</span>
+      </div>
+
+      <div class="ch-switch">
+        <button class="ch-btn active" data-ch="math-ch1">Chapter 1</button>
+        <button class="ch-btn" data-ch="math-ch2">Chapter 2</button>
+      </div>
+
+      <!-- MATHS CH 1 -->
+      <div class="chapter-content active" id="math-ch1">
+        <h2 class="sec"><span class="num">1.</span>Why This Chapter Comes First</h2>
+        <ul>
+          <li>Builds the skill of describing <strong>position precisely</strong>.</li>
+          <li>Used in maps, navigation, engineering, and later graph chapters.</li>
+          <li>Connects coordinate geometry to real-life navigation (GPS, maps).</li>
+        </ul>
+
+        <h2 class="sec"><span class="num">2.</span>The Cartesian Coordinate System</h2>
+        <ul>
+          <li><strong>X-axis</strong> → horizontal line</li>
+          <li><strong>Y-axis</strong> → vertical line</li>
+          <li><strong>Origin (0,0)</strong> → where both axes meet</li>
+          <li>A point is written as an ordered pair <strong>(x, y)</strong></li>
+        </ul>
+
+        <h2 class="sec"><span class="num">3.</span>The Four Quadrants</h2>
+        <table>
+          <tr><th>Quadrant</th><th>x-sign</th><th>y-sign</th><th>Example</th></tr>
+          <tr><td>I</td><td>+</td><td>+</td><td>(3, 4)</td></tr>
+          <tr><td>II</td><td>−</td><td>+</td><td>(−3, 4)</td></tr>
+          <tr><td>III</td><td>−</td><td>−</td><td>(−3, −4)</td></tr>
+          <tr><td>IV</td><td>+</td><td>−</td><td>(3, −4)</td></tr>
+        </table>
+
+        <h2 class="sec"><span class="num">4.</span>Distance &amp; Midpoint Formulas</h2>
+        <div class="formula">Distance AB = √[(x₂ − x₁)² + (y₂ − y₁)²]
+
+Midpoint M = ( (x₁ + x₂)/2 , (y₁ + y₂)/2 )</div>
+        <p>Distance formula derived from <strong>Pythagoras Theorem</strong>. Midpoint is simply the average of coordinates.</p>
+
+        <div class="callout">
+          <span class="lbl">Worked Example: A(2,3), B(5,7)</span>
+          Distance = √[(5−2)² + (7−3)²] = √[9+16] = √25 = <strong>5 units</strong><br>
+          Midpoint = ( (2+5)/2, (3+7)/2 ) = <strong>(3.5, 5)</strong>
+        </div>
+
+        <div class="summary-box">
+          <ul>
+            <li>A point is located as (x, y) using two perpendicular axes.</li>
+            <li>Four quadrants have fixed +/− sign patterns.</li>
+            <li>Distance formula comes from Pythagoras' theorem.</li>
+            <li>Midpoint = average of the x's, average of the y's.</li>
+            <li>Useful for graphs, geometry, GPS, and maps.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- MATHS CH 2 -->
+      <div class="chapter-content" id="math-ch2">
+        <h2 class="sec"><span class="num">1.</span>Introduction — Linear Polynomials</h2>
+        <p>Ye chapter algebra ki foundation hai — variables, coefficients, aur especially <strong>linear polynomials</strong> (degree 1) ko real-life examples se samjhaya gaya hai.</p>
+
+        <h2 class="sec"><span class="num">2.</span>Key Concepts</h2>
+        <ul>
+          <li><strong>Polynomial:</strong> Expression jisme variables aur constants ho, sirf +, −, × operations aur non-negative whole number powers ho.</li>
+          <li><strong>Degree of Polynomial:</strong> Variable ka highest power.</li>
+          <li><strong>Linear Polynomial:</strong> Degree 1 — form: <strong>y = ax + b</strong></li>
+          <li><strong>Slope (a)</strong> batata hai line kitni "steep" hai; <strong>y-intercept (b)</strong> batata hai line y-axis ko kahan cross karti hai.</li>
+        </ul>
+
+        <h2 class="sec"><span class="num">3.</span>Important Definitions</h2>
+        <table>
+          <tr><th>Term</th><th>Meaning</th></tr>
+          <tr><td><strong>Variable</strong></td><td>Letter jo unknown value represent karta hai</td></tr>
+          <tr><td><strong>Coefficient</strong></td><td>Number jo variable ke saath multiply hota hai</td></tr>
+          <tr><td><strong>Constant Term</strong></td><td>Fixed number, jisme variable nahi hota</td></tr>
+          <tr><td><strong>Linear Growth</strong></td><td>Jab value constant amount se badhti hai</td></tr>
+          <tr><td><strong>Linear Decay</strong></td><td>Jab value constant amount se ghatit hai</td></tr>
+        </table>
+
+        <h2 class="sec"><span class="num">4.</span>Formulas</h2>
+        <div class="formula">General form:  p(x) = ax + b   (a ≠ 0)
+
+Slope-Intercept:  y = mx + c
+
+Zero of polynomial:  ax + b = 0  ⇒  x = −b/a</div>
+
+        <h2 class="sec"><span class="num">5.</span>Flowchart: Analyze a Linear Polynomial</h2>
+        <div class="flow">Real-life situation (e.g., auto fare)
+            ↓
+Identify variable &amp; constant
+            ↓
+Write as p(x) = ax + b
+            ↓
+Find degree, coefficient, constant term
+            ↓
+Plot on graph → straight line</div>
+
+        <div class="summary-box">
+          <ul>
+            <li>Linear polynomial ka degree hamesha 1 hota hai — form ax + b.</li>
+            <li>Coefficient variable ke saath hota hai, constant term alag khada rehta hai.</li>
+            <li>Har linear polynomial ko graph pe straight line ki tarah represent kar sakte hain.</li>
+            <li>Zero nikalne ke liye equation ko 0 ke barabar rakho.</li>
+            <li>Real-life mein linear patterns: fare, tank filling, savings growth.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ENGLISH ============ -->
+    <section class="subject-panel" id="english">
+      <div class="panel-head">
+        <div>
+          <h1>English — Kaveri</h1>
+          <div class="subtitle">Stories &amp; Poems</div>
+        </div>
+        <span class="badge">CLASS 9</span>
+      </div>
+
+      <div class="ch-switch">
+        <button class="ch-btn active" data-ch="eng-ch1">Chapter 1</button>
+        <button class="ch-btn" data-ch="eng-ch2">Chapter 2</button>
+      </div>
+
+      <!-- ENGLISH CH 1 -->
+      <div class="chapter-content active" id="eng-ch1">
+        <h2 class="sec"><span class="num">1.</span>Prose — "How I Taught My Grandmother to Read" (Sudha Murty)</h2>
+        <p><strong>Theme &amp; Message:</strong></p>
+        <ul>
+          <li>Highlights how <strong>literacy transforms lives</strong>, regardless of age.</li>
+          <li>Celebrates <strong>intergenerational learning</strong> — granddaughter teaches, grandmother learns.</li>
+          <li>Shows deep family bonds, patience, and the joy of shared learning.</li>
+        </ul>
+        <p><strong>Key Points:</strong></p>
+        <ul>
+          <li>Setting: small-town/rural India shapes the grandmother's relationship with books.</li>
+          <li>Narrator's tone — affectionate, admiring, reflective.</li>
+          <li>Turning point — when the grandmother decides she wants to read independently.</li>
+          <li>Character traits: grandmother's determination &amp; humility; narrator's patience &amp; pride.</li>
+        </ul>
+
+        <h2 class="sec"><span class="num">2.</span>Poem — "Bharat Our Land"</h2>
+        <ul>
+          <li>A patriotic poem celebrating India's diversity — landscapes, culture, and people.</li>
+          <li>Uses vivid imagery (mountains, rivers, fields, cities) to build pride and belonging.</li>
+        </ul>
+        <p><strong>Literary Devices:</strong> Imagery, Repetition/Refrain, Personification.</p>
+
+        <div class="summary-box">
+          <ul>
+            <li>Prose theme: power of literacy + respect for elders + role-reversal in learning.</li>
+            <li>Poem theme: pride in India's diverse landscape and culture.</li>
+            <li>Revise both texts together — questions often connect themes across them.</li>
+            <li>Always answer in your own words, using evidence from the text.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ENGLISH CH 2 -->
+      <div class="chapter-content" id="eng-ch2">
+        <h2 class="sec"><span class="num">1.</span>Introduction — "The Pot Maker" (Temsula Ao)</h2>
+        <p>Ye ek touching story hai. Young Naga girl <strong>Sentila</strong> apni maa aur grandmother ki tarah traditional pot maker banna chahti hai.</p>
+
+        <h2 class="sec"><span class="num">2.</span>Story Summary</h2>
+        <ul>
+          <li>Sentila ko bachpan se pot making mein deep interest hai.</li>
+          <li>Uski maa <strong>Arenla</strong> chahti hai ki woh weaving seekhe (pot making bahut mehnat wali hai).</li>
+          <li>Kind widow <strong>Onula</strong> Sentila ko guide karti hai.</li>
+          <li>Ek din Arenla bimar hone ka bahana banake Sentila ko akele batch complete karne deti hai — Sentila skill master kar leti hai.</li>
+          <li>Tragically, Arenla usi din expire ho jaati hai — lekin Sentila apna dream achieve kar chuki hoti hai.</li>
+        </ul>
+
+        <h2 class="sec"><span class="num">3.</span>Key Themes</h2>
+        <ul>
+          <li><strong>Dignity of labour</strong> — har vocation/craft respect deserve karta hai.</li>
+          <li><strong>Passion vs Practicality</strong> — Sentila ka passion vs Arenla ki practical concerns.</li>
+          <li><strong>Community heritage</strong> — craft poore community ki tradition hoti hai.</li>
+          <li><strong>Perseverance</strong> — struggle aur determination final success laata hai.</li>
+        </ul>
+
+        <h2 class="sec"><span class="num">4.</span>Important Characters</h2>
+        <table>
+          <tr><th>Character</th><th>Role</th></tr>
+          <tr><td><strong>Sentila</strong></td><td>Protagonist — pot maker banna chahti hai</td></tr>
+          <tr><td><strong>Arenla</strong></td><td>Sentila ki maa — weaving prefer karti hai</td></tr>
+          <tr><td><strong>Onula</strong></td><td>Kind widow jo Sentila ko guide karti hai</td></tr>
+        </table>
+
+        <h2 class="sec"><span class="num">5.</span>Poem: "Gifts of Grace: Honouring Our Vocations"</h2>
+        <div class="callout">
+          <span class="lbl">Main ideas</span>
+          <ul style="margin-bottom:0">
+            <li>Har kaam, chahe chhota ho ya bada, society ke liye important hai.</li>
+            <li>Vocations ko gift of grace mana gaya hai.</li>
+            <li>Har profession human life ko meaningful banata hai.</li>
+            <li>Respect aur gratitude har worker ko milna chahiye.</li>
+          </ul>
+        </div>
+
+        <div class="summary-box">
+          <ul>
+            <li>Story ka central theme — traditional crafts ki dignity aur community heritage.</li>
+            <li>Sentila ka journey passion aur perseverance ka example hai.</li>
+            <li>Ending bittersweet — success ke saath loss bhi aata hai.</li>
+            <li>Poem chapter ke "vocations ki respect" theme ko complement karti hai.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ HINDI ============ -->
+    <section class="subject-panel" id="hindi">
+      <div class="panel-head">
+        <div>
+          <h1>हिंदी — गंगा पाठ्यपुस्तक</h1>
+          <div class="subtitle">निबंध · पदुमलाल पुन्नालाल बख्शी</div>
+        </div>
+        <span class="badge">CLASS 9</span>
+      </div>
+
+      <div class="ch-switch">
+        <button class="ch-btn active" data-ch="hin-ch2">Chapter 2</button>
+      </div>
+
+      <!-- HINDI CH 2 (only Ch2 available from images) -->
+      <div class="chapter-content active" id="hin-ch2">
+        <h2 class="sec"><span class="num">1.</span>परिचय — "क्या लिखूँ?"</h2>
+        <p>यह एक <strong>आत्मपरक (personal)</strong> निबंध है जिसमें लेखक अपने अनुभव से बताते हैं कि निबंध लिखना कितना कठिन काम है — खासकर जब विषय बहुत बड़ा हो।</p>
+
+        <h2 class="sec"><span class="num">2.</span>मुख्य बिंदु</h2>
+        <ul>
+          <li>लेखक को दो विषयों पर निबंध लिखना था: "दूर के ढोल सुहावने होते हैं" और "समाज-सुधार"।</li>
+          <li>लेखक के पास गार्डिनर जैसी स्वतःस्फूर्त मानसिक स्थिति नहीं थी।</li>
+          <li>उनके पास न विश्वकोश था, न कोई reference book।</li>
+          <li>निबंधशास्त्र के आचार्यों के परस्पर विरोधी विचार — किसी ने छोटे निबंध की सलाह दी, किसी ने सरल भाषा की।</li>
+        </ul>
+
+        <h2 class="sec"><span class="num">3.</span>महत्वपूर्ण परिभाषाएँ</h2>
+        <table>
+          <tr><th>शब्द</th><th>अर्थ</th></tr>
+          <tr><td><strong>आत्मपरक निबंध</strong></td><td>लेखक के अपने विचारों और अनुभवों पर आधारित निबंध।</td></tr>
+          <tr><td><strong>निबंध-शास्त्र</strong></td><td>निबंध लिखने के नियम और सिद्धांत।</td></tr>
+          <tr><td><strong>रूपरेखा</strong></td><td>निबंध की basic structure / outline.</td></tr>
+        </table>
+
+        <h2 class="sec"><span class="num">4.</span>लेखक परिचय</h2>
+        <div class="callout">
+          <span class="lbl">पदुमलाल पुन्नालाल बख्शी (1894–1971)</span>
+          <ul style="margin-bottom:0">
+            <li><strong>जन्म:</strong> खैरागढ़, राजनांदगाँव, छत्तीसगढ़</li>
+            <li><strong>पहचान:</strong> आलोचक, कवि, निबंधकार और हास्य-व्यंग्यकार।</li>
+          </ul>
+        </div>
+
+        <h2 class="sec"><span class="num">5.</span>Flowchart: निबंध लिखने की समस्या</h2>
+        <div class="flow">विषय मिला (2 बड़े topics)
+            ↓
+मानसिक तैयारी नहीं
+            ↓
+संदर्भ ग्रंथ / विश्वकोश की कमी
+            ↓
+आचार्यों के विरोधी विचार → उलझन
+            ↓
+फिर भी अपने अनुभव से निबंध पूरा किया</div>
+
+        <div class="summary-box">
+          <ul>
+            <li>यह निबंध बताता है कि लेखन ज्ञान से ज़्यादा विचार और कल्पना की कला है।</li>
+            <li>लेखक को दो कठिन विषयों पर निबंध लिखना पड़ा था।</li>
+            <li>निबंध-शास्त्र के आचार्यों के विरोधी विचार लेखक को उलझाते हैं।</li>
+            <li>संसाधनों की कमी होने पर भी लेखक अपने अनुभव से आगे बढ़ते हैं।</li>
+            <li>यह निबंध पाठकों से सीधा संवाद स्थापित करता है।</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SANSKRIT ============ -->
+    <section class="subject-panel" id="sanskrit">
+      <div class="panel-head">
+        <div>
+          <h1><span class="sanskrit-word">संस्कृत</span></h1>
+          <div class="subtitle">शारदा / शेमुषी</div>
+        </div>
+        <span class="badge">CLASS 9</span>
+      </div>
+
+      <div class="ch-switch">
+        <button class="ch-btn active" data-ch="san-ch1">Chapter 1</button>
+        <button class="ch-btn" data-ch="san-ch2">Chapter 2</button>
+      </div>
+
+      <!-- SANSKRIT CH 1 -->
+      <div class="chapter-content active" id="san-ch1">
+        <h2 class="sec"><span class="num">1.</span>About the Poem — भारतीवसन्तगीतिः</h2>
+        <ul>
+          <li>A <strong>गीति</strong> (song/lyrical poem) addressed to <strong>वाणी</strong> (Vani / सरस्वती) — goddess of speech, knowledge and music.</li>
+          <li>The poet requests the goddess to play her <strong>वीणा</strong> and sing a fresh song welcoming <strong>वसन्त ऋतु</strong> (spring).</li>
+          <li>Vasanta symbolises renewal, beauty, and creative inspiration.</li>
+        </ul>
+
+        <h2 class="sec"><span class="num">2.</span>Structure &amp; Content</h2>
+        <ul>
+          <li><strong>आम्रवृक्षाः शोभन्ते</strong> — mango trees look beautiful (blossoming).</li>
+          <li>Fresh flowers blooming, nature turning vibrant.</li>
+          <li>External renewal of nature connects with internal renewal of creativity.</li>
+        </ul>
+        <div class="callout"><span class="lbl">Central idea</span>Spring brings beauty outside, and the goddess' song brings inspiration inside.</div>
+
+        <h2 class="sec"><span class="num">3.</span>Important Vocabulary</h2>
+        <table>
+          <tr><th>Sanskrit</th><th>English</th><th>Hindi</th></tr>
+          <tr><td class="sanskrit-word">वाणी</td><td>Goddess of speech / Saraswati</td><td>वाणी / सरस्वती</td></tr>
+          <tr><td class="sanskrit-word">वीणा</td><td>Stringed musical instrument</td><td>वीणा</td></tr>
+          <tr><td class="sanskrit-word">वसन्तः</td><td>Spring season</td><td>वसंत ऋतु</td></tr>
+          <tr><td class="sanskrit-word">नवीना</td><td>New / fresh</td><td>नई</td></tr>
+          <tr><td class="sanskrit-word">आम्रवृक्षः</td><td>Mango tree</td><td>आम का पेड़</td></tr>
+          <tr><td class="sanskrit-word">निनादय</td><td>(Please) resound / play</td><td>बजाओ / गुंजाओ</td></tr>
+          <tr><td class="sanskrit-word">गीतिः</td><td>Song / lyric</td><td>गीत</td></tr>
+        </table>
+
+        <h2 class="sec"><span class="num">4.</span>Grammar Focus</h2>
+        <ul>
+          <li><strong>संधि (Sandhi)</strong> — rules of joining two words/sounds.</li>
+          <li>Simple <strong>verb forms</strong> in poetic/imperative mood.</li>
+          <li><strong>अन्वय (Anvaya)</strong> — rearranging poetic word order into natural order.</li>
+        </ul>
+
+        <div class="summary-box">
+          <ul>
+            <li>The poem is a prayer to Goddess Vani, requesting a fresh song welcoming spring.</li>
+            <li>Spring is depicted through blossoming mango trees and vibrant nature.</li>
+            <li>Learn key vocabulary (वाणी, वीणा, वसन्तः, नवीना) for one-word answers.</li>
+            <li>Practice अन्वय — rearranging shloka into simple sentence order.</li>
+            <li>Review sandhi rules and simple verb forms used in the poem.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- SANSKRIT CH 2 -->
+      <div class="chapter-content" id="san-ch2">
+        <h2 class="sec"><span class="num">1.</span>परिचय — "सुखस्य मूलं धर्मः, धर्मस्य मूलम् अर्थः"</h2>
+        <p>यह अध्याय एक महत्वपूर्ण जीवन-सिद्धान्त को समझाता है — <strong>सुख</strong> का मूल <strong>धर्म</strong> है, और धर्म का मूल <strong>अर्थ</strong> है, जिसका सही तरीके से अर्जन एवं उपयोग किया जाए।</p>
+
+        <h2 class="sec"><span class="num">2.</span>मुख्य बिंदु</h2>
+        <ul>
+          <li><strong>सुखस्य मूलं धर्मः</strong> — Happiness की जड़ धर्म (righteous conduct) में है।</li>
+          <li><strong>धर्मस्य मूलम् अर्थः</strong> — धर्म की जड़ अर्थ (wealth) में है — धन का सही अर्जन और उपयोग धर्म का भाग है।</li>
+          <li>यह अध्याय नैतिक मूल्यों, अनुशासन और संतुलित जीवन पर बल देता है।</li>
+          <li>धन का बुद्धिमानी से उपयोग करना धर्ममय जीवन के लिए आवश्यक है।</li>
+        </ul>
+
+        <h2 class="sec"><span class="num">3.</span>महत्वपूर्ण संस्कृत शब्द</h2>
+        <table>
+          <tr><th>शब्द</th><th>अर्थ</th></tr>
+          <tr><td class="sanskrit-word"><strong>सुखम्</strong></td><td>Happiness / Sukh</td></tr>
+          <tr><td class="sanskrit-word"><strong>धर्मः</strong></td><td>Righteous conduct / Duty</td></tr>
+          <tr><td class="sanskrit-word"><strong>अर्थः</strong></td><td>Wealth / Meaning</td></tr>
+          <tr><td class="sanskrit-word"><strong>मूलम्</strong></td><td>Root / Foundation</td></tr>
+        </table>
+
+        <h2 class="sec"><span class="num">4.</span>अन्य महत्वपूर्ण विचार</h2>
+        <ul>
+          <li>अर्थ का अर्जन परिश्रम, ईमानदारी और उचित मार्ग से होना चाहिए।</li>
+          <li>धर्म का पालन करने से व्यक्ति, समाज और राष्ट्र — सभी का कल्याण होता है।</li>
+          <li>सुख स्थायी तभी होता है जब वह धर्म पर आधारित हो।</li>
+        </ul>
+
+        <h2 class="sec"><span class="num">5.</span>Concept Chain</h2>
+        <div class="flow">धर्मः (Righteous conduct)
+         ↓ (leads to)
+      सुखम् (Happiness)
+
+अर्थः (Wealth, सही तरीके से earned)
+         ↓ (foundation of)
+      धर्मः (Righteous conduct)</div>
+
+        <div class="summary-box">
+          <ul>
+            <li>अध्याय का मुख्य संदेश — सुख की जड़ धर्म में है।</li>
+            <li>धर्म के सही पालन के लिए अर्थ का सही उपयोग जरूरी है।</li>
+            <li>यह अध्याय नैतिक और ethical जीवन को महत्व देता है।</li>
+            <li>धन कमाना बुरा नहीं, लेकिन सही तरीके से कमाना और उपयोग करना महत्वपूर्ण है।</li>
+            <li>यह एक मूल्य-आधारित पाठ है जो संतुलित और अनुशासित जीवन सिखाता है।</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer class="note">Based on the New NCERT 2026–27 textbooks (Exploration, Understanding Society, Ganita Manjari, Kaveri, गंगा, शारदा). Chapter 1 + Chapter 2 combined for quick revision.</footer>
+  </main>
+</div>
+
+
+<!-- FLOATING VIDEO -->
+<div class="float-video" id="floatVideo">
+  <div class="fv-header" id="fvHandle">
+    <span class="fv-dot"></span>
+    <div class="fv-title" id="fvTitle">Science · Chapter 1</div>
+    <button class="fv-btn" id="fvMin">−</button>
+    <button class="fv-btn" id="fvClose">×</button>
+  </div>
+  <div class="fv-body">
+    <iframe id="fvIframe" src="https://www.youtube.com/embed/4F1CwdbRN2I?rel=0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+  </div>
+  <div class="fv-footer">
+    <span>Lesson Video</span>
+    <button class="fv-open" id="fvYT">Open on YouTube ↗</button>
+  </div>
+</div>
+<button class="fv-reopen" id="fvReopen">▶ Lesson Video</button>
+
+<script>
+const tabs = document.querySelectorAll('.tab');
+const panels = document.querySelectorAll('.subject-panel');
+const colorMap = { sci:'--sci', sst:'--sst', math:'--math', eng:'--eng', san:'--san', hin:'--hin' };
+const softMap  = { sci:'--sci-soft', sst:'--sst-soft', math:'--math-soft', eng:'--eng-soft', san:'--san-soft', hin:'--hin-soft' };
+
+const videos = {
+  'sci-ch1': { t:'Science · Chapter 1', id:'1vyeWIN-u6Q' },
+  'sci-ch2': { t:'Science · Chapter 2', id:'j3dxoz6NHPg' },
+  'sst-ch1': { t:'Social Science · Ch 1', id:'4F1CwdbRN2I' },
+  'sst-ch2': { t:'Social Science · Ch 2', id:'4F1CwdbRN2I' },
+  'math-ch1': { t:'Maths · Chapter 1', id:'yxNzy27mrTY' },
+  'math-ch2': { t:'Maths · Chapter 2', id:'yxNzy27mrTY' },
+  'eng-ch1': { t:'English · Unit 1', id:'lfZIhtEUHY4' },
+  'eng-ch2': { t:'English · Unit 2', id:'f34c7jDw3ns' },
+  'hin-ch2': { t:'Hindi · अध्याय 2', id:'GiXrJqqFh9Y' },
+  'san-ch1': { t:'Sanskrit · पाठ 1', id:'yPFyviiuDM8' },
+  'san-ch2': { t:'Sanskrit · पाठ 2', id:'yPFyviiuDM8' }
+};
+
+function setVideo(ch) {
+  const v = videos[ch] || videos['sci-ch1'];
+  document.getElementById('fvTitle').textContent = v.t;
+  document.getElementById('fvIframe').src = 'https://www.youtube.com/embed/' + v.id + '?rel=0';
+  document.getElementById('fvYT').onclick = () => window.open('https://www.youtube.com/watch?v=' + v.id, '_blank');
+}
+setVideo('sci-ch1');
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    panels.forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.target).classList.add('active');
+    const c = tab.dataset.color;
+    document.documentElement.style.setProperty('--accent', `var(${colorMap[c]})`);
+    document.documentElement.style.setProperty('--accent-soft', `var(${softMap[c]})`);
+    const active = document.querySelector('#' + tab.dataset.target + ' .ch-btn.active');
+    if (active) setVideo(active.dataset.ch);
+  });
+});
+
+document.querySelectorAll('.ch-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const panel = btn.closest('.subject-panel');
+    panel.querySelectorAll('.ch-btn').forEach(b => b.classList.remove('active'));
+    panel.querySelectorAll('.chapter-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.ch).classList.add('active');
+    setVideo(btn.dataset.ch);
+  });
+});
+
+const fv = document.getElementById('floatVideo');
+const reopen = document.getElementById('fvReopen');
+document.getElementById('fvMin').onclick = () => {
+  fv.classList.toggle('minimized');
+  document.getElementById('fvMin').textContent = fv.classList.contains('minimized') ? '+' : '−';
+};
+document.getElementById('fvClose').onclick = () => { fv.classList.add('hidden'); reopen.classList.add('show'); };
+reopen.onclick = () => { fv.classList.remove('hidden'); reopen.classList.remove('show'); };
+
+// drag
+let drag=false, sx,sy,ox,oy;
+document.getElementById('fvHandle').onmousedown = e => {
+  drag=true; sx=e.clientX; sy=e.clientY;
+  const r=fv.getBoundingClientRect(); ox=r.left; oy=r.top;
+  fv.style.right='auto'; fv.style.bottom='auto'; fv.style.left=ox+'px'; fv.style.top=oy+'px';
+  e.preventDefault();
+};
+window.onmousemove = e => { if(!drag) return; fv.style.left=(ox+e.clientX-sx)+'px'; fv.style.top=(oy+e.clientY-sy)+'px'; };
+window.onmouseup = () => drag=false;
+</script>
+</body>
+</html>

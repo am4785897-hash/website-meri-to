@@ -1,0 +1,129 @@
+{% extends "base_dashboard.html" %}
+{% block title %}{{ question.title }} · Speed Battle · Code Battle Arena{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/code-battle-arena.css">
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <a href="{{ url_for('battle.speed_battle_lobby') }}" class="tv-arena-admin-link">← Leave Battle</a>
+  <h1>⚡ {{ question.title }}</h1>
+  <div class="tv-arena-mode-card__meta">
+    <span class="tv-pill tv-pill--{{ 'success' if question.difficulty == 'easy' else ('warning' if question.difficulty == 'medium' else '') }}">{{ question.difficulty|title }}</span>
+    <span class="tv-pill" id="sb-timer">⏱ --:--</span>
+    <span class="tv-pill" id="sb-opponent-status">Opponent: {{ opponent.user.username if opponent else 'connecting…' }}</span>
+  </div>
+  <p class="tv-text-dim">{{ question.prompt }}</p>
+</section>
+
+<div id="sb-result" class="tv-card tv-battle-result-card tv-animate-in" style="display:none;"></div>
+
+<form id="sb-form" class="tv-card tv-admin-form tv-animate-in">
+  <label class="tv-admin-form__field tv-admin-form__field--full">
+    <span>Your solution</span>
+    <textarea id="sb-code" rows="14" class="tv-admin-code" spellcheck="false" autocomplete="off" autocapitalize="off">{{ question.starter_code }}</textarea>
+  </label>
+  <div id="sb-your-result" class="tv-text-faint"></div>
+  <div class="tv-admin-form__actions">
+    <button id="sb-submit-btn" class="tv-btn tv-btn--primary" type="submit">Submit Solution</button>
+  </div>
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+(function () {
+  var battleId = {{ battle.id }};
+  var myUserId = {{ current_user.id }};
+  var timeLimitSeconds = {{ question.time_limit_seconds }};
+  var startedAtMs = new Date("{{ battle.started_at.isoformat() }}Z").getTime();
+
+  var socket = io();
+  var form = document.getElementById('sb-form');
+  var codeBox = document.getElementById('sb-code');
+  var submitBtn = document.getElementById('sb-submit-btn');
+  var opponentStatusEl = document.getElementById('sb-opponent-status');
+  var yourResultEl = document.getElementById('sb-your-result');
+  var resultEl = document.getElementById('sb-result');
+  var timerEl = document.getElementById('sb-timer');
+
+  socket.on('connect', function () {
+    socket.emit('battle:join_room', { battle_id: battleId });
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    socket.emit('battle:submit', { battle_id: battleId, code: codeBox.value });
+  });
+
+  socket.on('battle:your_result', function (data) {
+    if (data.is_correct) {
+      yourResultEl.textContent = '✅ All ' + data.total_count + ' tests passed - waiting on the result…';
+    } else {
+      yourResultEl.textContent = '❌ ' + data.passed_count + ' / ' + data.total_count + ' tests passed. Keep trying!';
+    }
+  });
+
+  socket.on('battle:opponent_status', function (data) {
+    if (data.status === 'submitted_incorrect') {
+      opponentStatusEl.textContent = 'Opponent: submitted, not quite yet 👀';
+    }
+  });
+
+  socket.on('battle:opponent_left', function () {
+    opponentStatusEl.textContent = 'Opponent disconnected';
+    submitBtn.disabled = true;
+  });
+
+  function renderFinished(data) {
+    submitBtn.disabled = true;
+    var mine = data.participants.filter(function (p) { return p.user_id === myUserId; })[0];
+    var theirs = data.participants.filter(function (p) { return p.user_id !== myUserId; })[0];
+
+    var heading, cls;
+    if (data.is_draw) {
+      heading = '🤝 Draw';
+      cls = '';
+    } else if (mine && mine.result === 'win') {
+      heading = '🏆 You won!';
+      cls = 'is-correct';
+    } else {
+      heading = '💀 ' + (theirs ? theirs.username : 'Opponent') + ' got there first';
+      cls = 'is-incorrect';
+    }
+
+    resultEl.className = 'tv-card tv-battle-result-card tv-animate-in' + (cls ? ' ' + cls : '');
+    var rewardsHtml = '';
+    if (mine && (mine.coins_awarded || mine.xp_awarded)) {
+      rewardsHtml = '<div class="tv-battle-result-card__rewards">' +
+        (mine.coins_awarded ? '<span class="tv-pill tv-pill--warning">+' + mine.coins_awarded + ' coins</span>' : '') +
+        (mine.xp_awarded ? '<span class="tv-pill">+' + mine.xp_awarded + ' XP</span>' : '') +
+        '</div>';
+    }
+    resultEl.innerHTML = '<h2>' + heading + '</h2>' + rewardsHtml +
+      '<div class="tv-admin-form__actions"><a href="/battle/speed-battle" class="tv-btn tv-btn--primary">Find Another Match</a></div>';
+    resultEl.style.display = '';
+  }
+
+  socket.on('battle:finished', renderFinished);
+
+  // Countdown, purely cosmetic - the server (battle.py's timeout
+  // watcher) is what actually finalizes an undecided battle as a draw,
+  // this just shows the player how long is left.
+  function tick() {
+    var remaining = timeLimitSeconds - Math.floor((Date.now() - startedAtMs) / 1000);
+    if (remaining < 0) remaining = 0;
+    var mins = Math.floor(remaining / 60);
+    var secs = remaining % 60;
+    timerEl.textContent = '⏱ ' + mins + ':' + (secs < 10 ? '0' : '') + secs;
+    if (remaining > 0) setTimeout(tick, 1000);
+  }
+  tick();
+})();
+</script>
+{% endblock %}

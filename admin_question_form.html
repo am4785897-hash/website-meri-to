@@ -1,0 +1,118 @@
+{% extends "base_dashboard.html" %}
+{% block title %}{{ 'Edit Question' if question else 'New Question' }} · Admin · Coder Enchanté Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+{% macro field_value(name, default='') -%}
+{%- if form_data is not none -%}{{ form_data.get(name, default) }}{%- elif question is not none -%}{{ question[name] if question[name] is not none else default }}{%- else -%}{{ default }}{%- endif -%}
+{%- endmacro %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <span class="tv-pill">🛠️ Admin</span>
+  <h1>{{ 'Edit Question' if question else 'New Question' }}</h1>
+  <p class="tv-text-dim">
+    {% if question %}
+    Editing '{{ question.title }}'.
+    {% else %}
+    Add a question to the Code Battle Arena's question bank.
+    {% endif %}
+  </p>
+</section>
+
+<form method="POST" class="tv-card tv-admin-form tv-animate-in" id="question-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+  <div class="tv-admin-form__row">
+    <label class="tv-admin-form__field">
+      <span>Battle Mode</span>
+      <select name="mode" id="mode-select" class="tv-select" required>
+        {% for m in modes %}
+        <option value="{{ m }}" {{ 'selected' if field_value('mode') == m }}>{{ m.replace('_', ' ')|title }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="tv-admin-form__field">
+      <span>Difficulty</span>
+      <select name="difficulty" class="tv-select" required>
+        {% for d in difficulties %}
+        <option value="{{ d }}" {{ 'selected' if field_value('difficulty', 'medium') == d }}>{{ d|title }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label class="tv-admin-form__field">
+      <span>Time Limit (seconds)</span>
+      <input type="number" name="time_limit_seconds" class="tv-select" min="10" step="10" value="{{ field_value('time_limit_seconds', 300) }}" required>
+    </label>
+  </div>
+
+  <label class="tv-admin-form__field tv-admin-form__field--full">
+    <span>Title</span>
+    <input type="text" name="title" class="tv-select" value="{{ field_value('title') }}" placeholder="e.g. Reverse a Linked List" required>
+  </label>
+
+  <label class="tv-admin-form__field tv-admin-form__field--full">
+    <span>Prompt</span>
+    <textarea name="prompt" rows="4" placeholder="The problem statement shown to the player.">{{ field_value('prompt') }}</textarea>
+  </label>
+
+  <label class="tv-admin-form__field tv-admin-form__field--full" data-mode-group="speed_battle,code_completion,blind_coding,ai_battle">
+    <span>Starter Code</span>
+    <textarea name="starter_code" rows="6" class="tv-admin-code" placeholder="Code scaffold shown before the player starts typing.">{{ field_value('starter_code') }}</textarea>
+  </label>
+
+  <label class="tv-admin-form__field tv-admin-form__field--full" data-mode-group="bug_hunt">
+    <span>Buggy Code</span>
+    <textarea name="buggy_code" rows="6" class="tv-admin-code" placeholder="The broken code the player has to find and fix.">{{ field_value('buggy_code') }}</textarea>
+  </label>
+
+  <label class="tv-admin-form__field tv-admin-form__field--full" data-mode-group="output_prediction">
+    <span>Code to Read</span>
+    <textarea name="predict_code" rows="6" class="tv-admin-code" placeholder="The code the player reads (no editor shown to them).">{{ field_value('predict_code') }}</textarea>
+  </label>
+
+  <label class="tv-admin-form__field tv-admin-form__field--full" data-mode-group="output_prediction">
+    <span>Expected Output</span>
+    <textarea name="expected_output" rows="3" class="tv-admin-code" placeholder="Exact output the judge matches the player's answer against.">{{ field_value('expected_output') }}</textarea>
+  </label>
+
+  <label class="tv-admin-form__field tv-admin-form__field--full" data-mode-group="speed_battle,bug_hunt,code_completion,blind_coding,ai_battle,team_battle,tournament">
+    <span>Hidden Tests <span class="tv-text-faint">(JSON list — used to judge submitted code)</span></span>
+    <textarea name="hidden_tests" rows="5" class="tv-admin-code" placeholder='[{"input": "5", "expected": "25"}]'>{%- if form_data is not none -%}{{ form_data.get('hidden_tests_raw', '') }}{%- elif question is not none and question.hidden_tests -%}{{ question.hidden_tests }}{%- endif -%}</textarea>
+  </label>
+
+  <div class="tv-admin-form__actions">
+    <a href="{{ url_for('admin.questions_list') }}" class="tv-btn tv-btn--ghost">Cancel</a>
+    <button type="submit" class="tv-btn tv-btn--primary">{{ 'Save Changes' if question else 'Create Question' }}</button>
+  </div>
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Shows only the fields relevant to the selected mode - every field
+  // still posts normally either way, the backend is the real source of
+  // truth on which fields a mode actually needs (see admin.py's
+  // _parse_question_form). This is just to stop the form from being an
+  // intimidating wall of fields that don't apply to, say, Speed Battle.
+  (function () {
+    var modeSelect = document.getElementById('mode-select');
+    var groups = document.querySelectorAll('[data-mode-group]');
+
+    function sync() {
+      var mode = modeSelect.value;
+      groups.forEach(function (el) {
+        var modes = el.getAttribute('data-mode-group').split(',');
+        el.style.display = modes.indexOf(mode) !== -1 ? '' : 'none';
+      });
+    }
+
+    modeSelect.addEventListener('change', sync);
+    sync();
+  })();
+</script>
+{% endblock %}

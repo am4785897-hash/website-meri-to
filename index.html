@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Coder Enchanté</title>
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+	<link rel="stylesheet" type="text/css" href="/assets/index_ka_.css">
+</head>
+
+<body>
+	<main class="stage">
+
+		<div id="box">
+			<img src="/images/ChatGPT Image Aug 2, 2026, 10_54_30 AM.png" alt="my photo">
+		</div>
+
+		<div class="seal" aria-hidden="true">
+			<svg viewBox="0 0 100 100">
+				<defs>
+					<linearGradient id="sealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+						<stop offset="0%" stop-color="#7B61FF" />
+						<stop offset="100%" stop-color="#00E5FF" />
+					</linearGradient>
+				</defs>
+				<circle cx="50" cy="50" r="46" fill="none" stroke="url(#sealGrad)" stroke-width="1.5" stroke-dasharray="4 6" />
+				<polygon points="50,12 84,70 16,70" fill="none" stroke="url(#sealGrad)" stroke-width="2" />
+				<polygon points="50,88 16,30 84,30" fill="none" stroke="url(#sealGrad)" stroke-width="2" />
+				<text x="50" y="57" text-anchor="middle" font-family="'Space Grotesk', monospace" font-size="20" fill="url(#sealGrad)">&lt;/&gt;</text>
+			</svg>
+		</div>
+
+		<h2>Coder Enchanté</h2>
+		<p class="tagline">From Curiosity to Mastery.</p>
+
+		{% if current_user.is_authenticated %}
+		<p class="welcome">✨ Welcome, {{ current_user.username }}!</p>
+		<a href="/shop" class="coin-balance" title="Student Coins - spend them in the Coin Shop">
+			🪙 <strong>{{ current_user.total_coins|default(0) }}</strong> Student Coins
+		</a>
+		{% endif %}
+
+		<div class="sound">
+			<span>ambience</span>
+			<audio controls autoplay loop>
+				<source src="/audios/MONTAGEM ALQUIMIA.mp3" type="audio/mpeg">
+			</audio>
+		</div>
+
+		<nav id="navbar">
+			<a class="navlink learn" href="/assets/about.html" target="_blank">📖 about coder enchante</a>
+			<a class="navlink learn" href="/assets/current-affairs.html" target="_blank">🗞️ current affairs</a>
+
+			{% if current_user.is_authenticated %}
+			<a class="navlink account" href="/dashboard" target="_blank">🎓 coder enchante academy</a>
+			<a class="navlink battle" href="/code-battle-arena" target="_blank">⚔️ code battle arena</a>
+			<a class="navlink battle" href="/shop" target="_blank">🛍️ coin shop</a>
+			<a class="navlink account" href="/logout">🚪 logout</a>
+			{% else %}
+			<a id="login" class="navlink" href="/login">🔑 login</a>
+			{% endif %}
+
+			<a class="navlink play" href="/assets/space-rocket-quiz.html" target="_blank">🚀 amazing game</a>
+			<a class="navlink play" href="/assets/ai-coding-agent.html">🤖 try ai for coding</a>
+			<a class="navlink play" href="/assets/jarvis.html" target="_blank">🧞 COMPATIBLE AI</a>
+			<a class="navlink play" href="/assets/kbc-quiz.html" target="_blank">🎯 play quiz</a>
+			<a class="navlink learn" href="/assets/hy.html" target="_blank">🐍 learn python</a>
+			<a class="navlink play" href="/assets/hf-generation-studio.html" target="_blank">🎬 text to video</a>
+			<a class="navlink learn" href="/assets/code craft academy.html" target="_blank">💻 learn html css and js</a>
+			<a class="navlink play" href="/assets/cardex.html" target="_blank">📝 long to short notes</a>
+			<a class="navlink learn" href="/assets/Kaksha9-Revision-Notebook.html" target="_blank">📚 ncert notes with explainations</a>
+			<a class="navlink learn" href="/assets/developer_video_library_exact_structure.html" target="_blank">📘 coding courses</a>
+		</nav>
+
+	</main>
+</body>
+
+</html>

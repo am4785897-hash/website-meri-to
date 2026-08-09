@@ -1,0 +1,74 @@
+{% extends "base_dashboard.html" %}
+{% block title %}{{ question.title }} · Output Prediction · Code Battle Arena{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/code-battle-arena.css">
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <a href="{{ url_for('battle.output_prediction_list') }}" class="tv-arena-admin-link">← All Output Prediction Questions</a>
+  <h1>{{ question.title }}</h1>
+  <div class="tv-arena-mode-card__meta">
+    <span class="tv-pill tv-pill--{{ 'success' if question.difficulty == 'easy' else ('warning' if question.difficulty == 'medium' else '') }}">{{ question.difficulty|title }}</span>
+  </div>
+  <p class="tv-text-dim">{{ question.prompt }}</p>
+</section>
+
+<div class="tv-card tv-battle-question-card tv-animate-in">
+  <h3 class="tv-battle-question-card__label">Code</h3>
+  <pre class="tv-admin-code tv-battle-code-block">{{ question.predict_code }}</pre>
+</div>
+
+{% if result %}
+
+<div class="tv-card tv-battle-result-card {{ 'is-correct' if result.is_correct else 'is-incorrect' }} tv-animate-in">
+  <h2>{{ '✅ Correct!' if result.is_correct else '❌ Not quite' }}</h2>
+
+  <div class="tv-battle-result-card__row">
+    <span>Your answer</span>
+    <pre class="tv-admin-code">{{ result.submitted_answer }}</pre>
+  </div>
+
+  {% if not result.is_correct %}
+  <div class="tv-battle-result-card__row">
+    <span>Expected output</span>
+    <pre class="tv-admin-code">{{ question.expected_output }}</pre>
+  </div>
+  {% endif %}
+
+  {% if result.coins_awarded or result.xp_awarded %}
+  <div class="tv-battle-result-card__rewards">
+    {% if result.coins_awarded %}<span class="tv-pill tv-pill--warning">+{{ result.coins_awarded }} coins</span>{% endif %}
+    {% if result.xp_awarded %}<span class="tv-pill">+{{ result.xp_awarded }} XP</span>{% endif %}
+  </div>
+  {% elif not result.is_first_attempt %}
+  <p class="tv-text-faint">Practice replay - already rewarded on your first attempt at this question.</p>
+  {% endif %}
+
+  <div class="tv-admin-form__actions">
+    <a href="{{ url_for('battle.output_prediction_list') }}" class="tv-btn tv-btn--ghost">All Questions</a>
+    {% if not result.is_correct %}
+    <a href="{{ url_for('battle.output_prediction_question', question_id=question.id) }}" class="tv-btn tv-btn--primary">Try Again</a>
+    {% endif %}
+  </div>
+</div>
+
+{% else %}
+
+<form method="POST" class="tv-card tv-admin-form tv-animate-in">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  <label class="tv-admin-form__field tv-admin-form__field--full">
+    <span>What does this code output?</span>
+    <textarea name="submitted_answer" rows="4" class="tv-admin-code" placeholder="Type exactly what you think will print..." required autofocus></textarea>
+  </label>
+  <div class="tv-admin-form__actions">
+    <button type="submit" class="tv-btn tv-btn--primary">Submit Answer</button>
+  </div>
+</form>
+
+{% endif %}
+
+{% endblock %}

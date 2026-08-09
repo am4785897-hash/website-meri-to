@@ -1,0 +1,42 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Grant · {{ user.username }} · Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <a href="{{ url_for('admin.users_list') }}" class="tv-arena-admin-link">← All Users</a>
+  <span class="tv-pill">🛠️ Admin</span>
+  <h1>Grant Coins / XP · {{ user.username }}</h1>
+  <p class="tv-text-dim">Current balance: {{ "{:,}".format(user.total_coins) }} coins, {{ "{:,}".format(user.total_xp) }} XP (Level {{ user.level }}). Updates their topbar live if they're currently online.</p>
+</section>
+
+<form method="POST" class="tv-card tv-admin-form tv-animate-in">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+  <div class="tv-admin-form__row">
+    <label class="tv-admin-form__field">
+      <span>Coins (+/-)</span>
+      <input type="number" step="1" name="coins" class="tv-select" value="0" required>
+    </label>
+    <label class="tv-admin-form__field">
+      <span>XP (+/-)</span>
+      <input type="number" step="1" name="xp" class="tv-select" value="0" required>
+    </label>
+  </div>
+
+  <label class="tv-admin-form__field tv-admin-form__field--full">
+    <span>Reason (recorded on the coin ledger)</span>
+    <input type="text" name="reason" class="tv-select" placeholder="e.g. Community contest prize, refund for a bugged match…" required>
+  </label>
+
+  <div class="tv-admin-form__actions">
+    <a href="{{ url_for('admin.users_list') }}" class="tv-btn tv-btn--ghost">Cancel</a>
+    <button type="submit" class="tv-btn tv-btn--primary">Apply</button>
+  </div>
+</form>
+
+{% endblock %}

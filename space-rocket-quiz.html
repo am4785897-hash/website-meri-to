@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🚀 Space Rocket Quiz</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --neon:#00e5ff; --danger:#ff4d6d; --gold:#ffd166; --panel:#0d1230cc;
+  }
+  *{box-sizing:border-box; font-family: 'Segoe UI', Arial, sans-serif;}
+  html,body{height:100%; margin:0; overflow:hidden; background:#000;}
+  #sky{
+    position:fixed; inset:0;
+    background: radial-gradient(ellipse at 50% 120%, #1b1440 0%, #05040f 60%, #000 100%);
+    z-index:0;
+  }
+  .star{position:absolute; background:#fff; border-radius:50%; opacity:.8; animation:twinkle 2.5s infinite ease-in-out;}
+  @keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+  #app{position:relative; z-index:2; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:14px 10px; color:#e8ecff;}
+
+  h1{margin:2px 0 10px; font-size:clamp(20px,4vw,30px); letter-spacing:1px; text-shadow:0 0 10px var(--neon);}
+
+  #hud{
+    width:min(560px,95vw); display:flex; flex-wrap:wrap; gap:8px; justify-content:space-between;
+    background:var(--panel); border:1px solid #2c3570; border-radius:12px; padding:8px 12px; margin-bottom:8px;
+    font-size:14px;
+  }
+  #hud div span{font-weight:700; color:var(--gold)}
+  .bar-wrap{width:min(560px,95vw); background:#141a3d; border:1px solid #2c3570; border-radius:8px; height:16px; margin-bottom:8px; overflow:hidden;}
+  #fuelBar{height:100%; width:100%; background:linear-gradient(90deg,#00e5ff,#4dff9f); transition:width .25s linear, background .3s;}
+
+  #rocketZone{position:relative; width:min(560px,95vw); height:150px; display:flex; align-items:flex-end; justify-content:center; margin-bottom:6px;}
+  #rocket{transition: transform .4s ease, filter .3s; transform-origin:bottom center; font-size:70px; filter:drop-shadow(0 0 12px #00e5ff);}
+  .shake{animation:shake .4s;}
+  @keyframes shake{0%,100%{transform:translateX(0) }20%{transform:translateX(-10px) rotate(-4deg)}40%{transform:translateX(10px) rotate(4deg)}60%{transform:translateX(-8px)}80%{transform:translateX(8px)}}
+  .boost{animation:boost .5s;}
+  @keyframes boost{0%{transform:translateY(0)}50%{transform:translateY(-14px) scale(1.05)}100%{transform:translateY(0)}}
+  #flame{position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); font-size:26px; opacity:.9; animation:flick .15s infinite alternate;}
+  @keyframes flick{from{transform:translateX(-50%) scaleY(1)}to{transform:translateX(-50%) scaleY(1.3)}}
+
+  #card{
+    width:min(560px,95vw); background:var(--panel); border:1px solid #2c3570; border-radius:14px;
+    padding:16px; text-align:center; box-shadow:0 0 25px #00e5ff22;
+  }
+  #question{font-size:clamp(16px,3vw,20px); margin-bottom:14px; min-height:50px;}
+  #options{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .opt{
+    background:#141a3d; border:1px solid #3a4380; color:#e8ecff; padding:12px 8px; border-radius:10px;
+    cursor:pointer; font-size:14px; transition:.15s; user-select:none;
+  }
+  .opt:hover{background:#1e2657; border-color:var(--neon);}
+  .opt.correct{background:#0f5132; border-color:#4dff9f; color:#c8ffdf;}
+  .opt.wrong{background:#5c1420; border-color:var(--danger); color:#ffd0d8;}
+
+  #lives{margin-top:10px; font-size:18px; letter-spacing:3px;}
+  #overlay{
+    position:fixed; inset:0; z-index:10; background:#000000cc; display:none;
+    align-items:center; justify-content:center; text-align:center; flex-direction:column; gap:12px; padding:20px;
+  }
+  #overlay h2{font-size:28px; text-shadow:0 0 12px var(--neon); margin:0;}
+  #overlay p{margin:2px; font-size:15px;}
+  button.big{
+    background:linear-gradient(135deg,#00e5ff,#7b5cff); border:none; color:#03041a; font-weight:700;
+    padding:12px 26px; border-radius:30px; font-size:16px; cursor:pointer; margin-top:8px;
+  }
+  button.big:hover{filter:brightness(1.1)}
+  #startBtn{margin-top:16px;}
+  .hint{font-size:12px; color:#9aa3d1; margin-top:6px;}
+</style>
+</head>
+<body>
+<div id="sky"></div>
+<div id="app">
+  <h1>🚀 SPACE ROCKET QUIZ</h1>
+  <button class="big" id="homeBtn" style="padding:6px 18px; font-size:13px; margin-bottom:8px;">🏠 go to the main site</button>
+
+  <div id="hud">
+    <div>Score: <span id="score">0</span></div>
+    <div>Level: <span id="level">1</span></div>
+    <div>Lives: <span id="livesNum">10</span></div>
+    <div>High Score: <span id="highScore">0</span></div>
+  </div>
+
+  <div class="bar-wrap"><div id="fuelBar"></div></div>
+
+  <div id="rocketZone">
+    <div id="rocket">🚀<div id="flame">🔥</div></div>
+  </div>
+  <div id="lives"></div>
+
+  <div id="card" style="margin-top:10px;">
+    <div id="question">Loading question...</div>
+    <div id="options"></div>
+  </div>
+</div>
+
+<div id="overlay">
+  <h2 id="overTitle">🚀 Space Rocket Quiz</h2>
+  <p id="overMsg">Answer questions to fuel your rocket. 10 lives, wrong answers shrink your ship. Reach high orbit!</p>
+  <p class="hint" id="overHint"></p>
+  <button class="big" id="startBtn">Start Mission</button>
+</div>
+
+<script>
+/* ---------- Question bank: curated + generated (100+ total) ---------- */
+const curated = [
+["What planet is known as the Red Planet?",["Mars","Venus","Jupiter","Mercury"],0],
+["What is the closest star to Earth?",["Sirius","The Sun","Proxima Centauri","Alpha Centauri"],1],
+["Who was the first person to walk on the Moon?",["Buzz Aldrin","Yuri Gagarin","Neil Armstrong","John Glenn"],2],
+["Which planet has the most moons?",["Saturn","Jupiter","Uranus","Neptune"],1],
+["What galaxy is Earth located in?",["Andromeda","Milky Way","Triangulum","Whirlpool"],1],
+["What gas do plants absorb from the atmosphere?",["Oxygen","Nitrogen","Carbon Dioxide","Hydrogen"],2],
+["What is the largest planet in our solar system?",["Earth","Saturn","Neptune","Jupiter"],3],
+["How many planets are in our solar system?",["7","8","9","10"],1],
+["What force keeps planets in orbit around the Sun?",["Magnetism","Gravity","Friction","Inertia"],1],
+["What is the name of the first artificial satellite launched into space?",["Explorer 1","Sputnik 1","Voyager 1","Apollo 11"],1],
+["Which agency launched the Apollo missions?",["ESA","NASA","ISRO","Roscosmos"],1],
+["What is the term for a star's explosive death?",["Big Bang","Supernova","Eclipse","Nebula"],1],
+["What do we call a rock from space that hits Earth?",["Asteroid","Comet","Meteorite","Satellite"],2],
+["What is the hottest planet in our solar system?",["Mercury","Venus","Mars","Earth"],1],
+["What is the name of Earth's natural satellite?",["Titan","Moon","Europa","Phobos"],1],
+["Which planet is known for its rings?",["Mars","Saturn","Mercury","Earth"],1],
+["What do astronauts wear outside the spacecraft?",["Wetsuit","Spacesuit","Uniform","Armor"],1],
+["What is the study of stars and space called?",["Biology","Astronomy","Geology","Chemistry"],1],
+["What is the center of an atom called?",["Electron","Nucleus","Proton only","Orbit"],1],
+["What force pulls objects toward Earth?",["Magnetism","Friction","Gravity","Tension"],2],
+["What is H2O commonly known as?",["Salt","Water","Oxygen","Hydrogen"],1],
+["Which organ pumps blood in the human body?",["Lungs","Heart","Liver","Kidney"],1],
+["What is the chemical symbol for gold?",["Ag","Au","Gd","Go"],1],
+["How many continents are there on Earth?",["5","6","7","8"],2],
+["What is the largest ocean on Earth?",["Atlantic","Indian","Arctic","Pacific"],3],
+["What is the capital of France?",["Berlin","Madrid","Paris","Rome"],2],
+["What is the tallest mountain in the world?",["K2","Everest","Kilimanjaro","Denali"],1],
+["What is the longest river in the world?",["Amazon","Nile","Yangtze","Mississippi"],1],
+["Which country is known as the Land of the Rising Sun?",["China","Japan","Thailand","Korea"],1],
+["What is the fastest land animal?",["Lion","Cheetah","Horse","Leopard"],1],
+["What is the largest mammal on Earth?",["Elephant","Blue Whale","Giraffe","Shark"],1],
+["How many legs does a spider have?",["6","8","10","4"],1],
+["What is the freezing point of water in Celsius?",["0","32","100","-1"],0],
+["What planet do we live on?",["Mars","Venus","Earth","Jupiter"],2],
+["What is the powerhouse of the cell?",["Nucleus","Mitochondria","Ribosome","Cytoplasm"],1],
+["What natural satellite orbits Earth?",["Mars","The Moon","The Sun","Venus"],1],
+["What is the speed of light approximately?",["300,000 km/s","150,000 km/s","1,000 km/s","30,000 km/s"],0],
+["What do bees produce?",["Milk","Honey","Silk","Wax only"],1],
+["What is the main gas in Earth's atmosphere?",["Oxygen","Nitrogen","Carbon Dioxide","Helium"],1],
+["What instrument is used to see distant stars?",["Microscope","Telescope","Periscope","Binoculars only"],1],
+["What do we call a group of stars forming a pattern?",["Galaxy","Constellation","Nebula","Cluster"],1],
+["Which planet is closest to the Sun?",["Venus","Mercury","Earth","Mars"],1],
+["What is the term for a spacecraft that orbits a planet?",["Rover","Satellite","Lander","Probe only"],1],
+["What is the name of the reusable rocket company founded by Elon Musk?",["Blue Origin","SpaceX","Virgin Galactic","Boeing"],1],
+["What is the boiling point of water in Celsius?",["90","100","110","120"],1],
+["Which planet is called Earth's twin due to similar size?",["Mars","Venus","Mercury","Neptune"],1],
+["What is the layer of gases surrounding a planet called?",["Crust","Atmosphere","Mantle","Core"],1],
+["What do astronauts experience in space due to lack of gravity?",["Heaviness","Weightlessness","Speed","Heat"],1],
+["What year did humans first land on the Moon?",["1965","1969","1972","1959"],1],
+["What is the name for the path an object takes around another in space?",["Rotation","Orbit","Spin","Axis"],1]
+];
+
+// Auto-generate arithmetic questions to guarantee 100+ total (keeps file small)
+const generated = [];
+for(let i=1;i<=60;i++){
+  const a = 3 + i;
+  const b = 2 + (i % 9);
+  const op = i % 3;
+  let q,ans;
+  if(op===0){ q=`${a} + ${b} = ?`; ans=a+b; }
+  else if(op===1){ q=`${a} - ${b} = ?`; ans=a-b; }
+  else { q=`${(i%12)+1} x ${(i%9)+1} = ?`; ans=((i%12)+1)*((i%9)+1); }
+  const opts = new Set([ans]);
+  while(opts.size<4){ opts.add(ans + (Math.floor(Math.random()*9)-4)); }
+  const arr = Array.from(opts).sort(()=>Math.random()-0.5);
+  generated.push([q, arr.map(String), arr.indexOf(ans)]);
+}
+const QUESTIONS = [...curated, ...generated].sort(()=>Math.random()-0.5);
+
+/* ---------- Game state ---------- */
+let idx=0, score=0, level=1, lives=10, correctStreak=0;
+let fuel=100, timerId=null, qTimeLimit=15;
+let rocketScale=1;
+const rocketEl=document.getElementById('rocket');
+const fuelBar=document.getElementById('fuelBar');
+const scoreEl=document.getElementById('score');
+const levelEl=document.getElementById('level');
+const livesNumEl=document.getElementById('livesNum');
+const livesEl=document.getElementById('lives');
+const highScoreEl=document.getElementById('highScore');
+const questionEl=document.getElementById('question');
+const optionsEl=document.getElementById('options');
+const overlay=document.getElementById('overlay');
+const overTitle=document.getElementById('overTitle');
+const overMsg=document.getElementById('overMsg');
+const overHint=document.getElementById('overHint');
+const startBtn=document.getElementById('startBtn');
+
+const HS_KEY='rocketQuizHighScore';
+highScoreEl.textContent = localStorage.getItem(HS_KEY) || 0;
+
+function makeStars(){
+  const sky=document.getElementById('sky');
+  for(let i=0;i<80;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    const size=Math.random()*2+1;
+    s.style.width=s.style.height=size+'px';
+    s.style.left=Math.random()*100+'%';
+    s.style.top=Math.random()*100+'%';
+    s.style.animationDelay=(Math.random()*2)+'s';
+    sky.appendChild(s);
+  }
+}
+makeStars();
+
+function renderLives(){
+  livesNumEl.textContent=lives;
+  livesEl.textContent = '🔥'.repeat(Math.max(lives,0)) + '⚫'.repeat(Math.max(10-lives,0));
+}
+
+function updateRocketScale(){
+  rocketEl.style.transform = `scale(${rocketScale})`;
+}
+
+function startTimer(){
+  clearInterval(timerId);
+  fuel=100;
+  fuelBar.style.width='100%';
+  fuelBar.style.background='linear-gradient(90deg,#00e5ff,#4dff9f)';
+  const step = 100 / (qTimeLimit*10);
+  timerId = setInterval(()=>{
+    fuel -= step;
+    if(fuel<=30) fuelBar.style.background='linear-gradient(90deg,#ffd166,#ff4d6d)';
+    if(fuel<=0){
+      fuel=0;
+      clearInterval(timerId);
+      handleAnswer(-1); // time out = wrong
+    }
+    fuelBar.style.width=fuel+'%';
+  },100);
+}
+
+function loadQuestion(){
+  if(idx>=QUESTIONS.length){ endGame(true); return; }
+  level = Math.min(5, Math.floor(correctStreak/20)+1);
+  qTimeLimit = Math.max(8, 15 - (level-1));
+  levelEl.textContent=level;
+  const [q,opts,correct]=QUESTIONS[idx];
+  questionEl.textContent = `Q${idx+1}: ${q}`;
+  optionsEl.innerHTML='';
+  opts.forEach((opt,i)=>{
+    const b=document.createElement('div');
+    b.className='opt';
+    b.textContent=opt;
+    b.onclick=()=>handleAnswer(i, b, correct);
+    optionsEl.appendChild(b);
+  });
+  startTimer();
+}
+
+function handleAnswer(chosenIdx, btnEl, correctIdx){
+  clearInterval(timerId);
+  const allOpts = document.querySelectorAll('.opt');
+  const isCorrect = chosenIdx===correctIdx;
+
+  if(btnEl){
+    allOpts.forEach((b,i)=>{
+      if(i===correctIdx) b.classList.add('correct');
+      else if(b===btnEl) b.classList.add('wrong');
+    });
+  }
+
+  if(isCorrect){
+    score += 10*level;
+    correctStreak++;
+    rocketScale = Math.min(1.3, rocketScale+0.03);
+    rocketEl.classList.remove('boost'); void rocketEl.offsetWidth; rocketEl.classList.add('boost');
+  } else {
+    lives--;
+    correctStreak = Math.max(0, correctStreak-2);
+    rocketScale = Math.max(0.3, rocketScale-0.09);
+    rocketEl.classList.remove('shake'); void rocketEl.offsetWidth; rocketEl.classList.add('shake');
+  }
+  updateRocketScale();
+  renderLives();
+  scoreEl.textContent=score;
+
+  idx++;
+  setTimeout(()=>{
+    if(lives<=0) endGame(false);
+    else loadQuestion();
+  }, 700);
+}
+
+function endGame(won){
+  clearInterval(timerId);
+  const hs = parseInt(localStorage.getItem(HS_KEY)||'0');
+  if(score>hs) localStorage.setItem(HS_KEY, score);
+  highScoreEl.textContent = Math.max(hs,score);
+
+  overlay.style.display='flex';
+  overTitle.textContent = won ? "🌌 Mission Complete!" : "💥 Rocket Destroyed";
+  overMsg.textContent = won
+    ? `You answered all questions! Final Score: ${score} | Level reached: ${level}`
+    : `Your ship ran out of lives. Final Score: ${score} | Level reached: ${level}`;
+  overHint.textContent = score>hs ? "🏆 New High Score!" : `High Score: ${Math.max(hs,score)}`;
+  startBtn.textContent = "Launch Again";
+}
+
+function resetGame(){
+  idx=0; score=0; level=1; lives=10; correctStreak=0; rocketScale=1;
+  scoreEl.textContent=0; levelEl.textContent=1;
+  updateRocketScale();
+  renderLives();
+  QUESTIONS.sort(()=>Math.random()-0.5);
+  overlay.style.display='none';
+  loadQuestion();
+}
+
+startBtn.onclick = resetGame;
+document.getElementById('homeBtn').onclick = ()=>{
+  if(confirm("Leave the mission and go to the home site?")){
+    clearInterval(timerId);
+    window.location.href = "/"; // change this to your actual home site URL
+  }
+};
+renderLives();
+overlay.style.display='flex';
+</script>
+</body>
+</html>

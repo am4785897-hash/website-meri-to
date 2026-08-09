@@ -1,0 +1,93 @@
+{% extends "base_dashboard.html" %}
+{% block title %}History · {{ user.username }} · Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <a href="{{ url_for('admin.users_list') }}" class="tv-arena-admin-link">← All Users</a>
+  <span class="tv-pill">🛠️ Admin</span>
+  <h1>{{ user.username }}'s History</h1>
+  <p class="tv-text-dim">{{ user.email }} · {{ "{:,}".format(user.total_coins) }} coins · {{ "{:,}".format(user.total_xp) }} XP · Level {{ user.level }}</p>
+</section>
+
+<div class="tv-section-header tv-animate-in"><h2>Battles (last 50)</h2></div>
+<div class="tv-card tv-admin-table-card tv-animate-in">
+  <table class="tv-admin-table">
+    <thead><tr><th>Mode</th><th>Result</th><th>Coins</th><th>XP</th><th>When</th></tr></thead>
+    <tbody>
+      {% for battle, participant in battles %}
+      <tr>
+        <td>{{ battle.mode|replace('_', ' ')|title }}</td>
+        <td>{{ participant.result|title if participant.result else '—' }}</td>
+        <td>{{ "{:+,}".format(participant.coins_awarded) if participant.coins_awarded else 0 }}</td>
+        <td>{{ "{:+,}".format(participant.xp_awarded) if participant.xp_awarded else 0 }}</td>
+        <td>{{ battle.created_at.strftime('%b %d, %H:%M') if battle.created_at else '—' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="tv-text-dim">No battles played.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="tv-section-header tv-animate-in"><h2>Solo Attempts (last 50)</h2></div>
+<div class="tv-card tv-admin-table-card tv-animate-in">
+  <table class="tv-admin-table">
+    <thead><tr><th>Mode</th><th>Correct?</th><th>Coins</th><th>When</th></tr></thead>
+    <tbody>
+      {% for a in attempts %}
+      <tr>
+        <td>{{ a.mode|replace('_', ' ')|title }}</td>
+        <td>{{ '✅' if a.is_correct else '❌' }}</td>
+        <td>{{ "{:+,}".format(a.coins_awarded) if a.coins_awarded else 0 }}</td>
+        <td>{{ a.submitted_at.strftime('%b %d, %H:%M') if a.submitted_at else '—' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="tv-text-dim">No solo attempts.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="tv-section-header tv-animate-in"><h2>Tournaments</h2></div>
+<div class="tv-card tv-admin-table-card tv-animate-in">
+  <table class="tv-admin-table">
+    <thead><tr><th>Tournament</th><th>Seed</th><th>Eliminated Round</th><th>Registered</th></tr></thead>
+    <tbody>
+      {% for tp in tournament_entries %}
+      <tr>
+        <td><a href="{{ url_for('battle.tournament_detail', tournament_id=tp.tournament_id) }}">{{ tp.tournament.title }}</a></td>
+        <td>{{ tp.seed if tp.seed is not none else '—' }}</td>
+        <td>{{ tp.eliminated_round if tp.eliminated_round is not none else ('Champion 🏆' if tp.tournament.champion_id == user.id else '—') }}</td>
+        <td>{{ tp.registered_at.strftime('%b %d, %Y') if tp.registered_at else '—' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="tv-text-dim">No tournament entries.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="tv-section-header tv-animate-in"><h2>Coin Ledger (last 50)</h2></div>
+<div class="tv-card tv-admin-table-card tv-animate-in">
+  <table class="tv-admin-table">
+    <thead><tr><th>When</th><th>Source</th><th>Amount</th></tr></thead>
+    <tbody>
+      {% for e in coin_events %}
+      <tr>
+        <td>{{ e.created_at.strftime('%b %d, %H:%M') if e.created_at else '—' }}</td>
+        <td>{{ e.source }}</td>
+        <td class="{{ 'tv-text-dim' if e.amount < 0 }}">{{ "{:+,}".format(e.amount) }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3" class="tv-text-dim">No coin activity.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

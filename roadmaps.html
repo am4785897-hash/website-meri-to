@@ -1,0 +1,107 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Roadmaps · TechVerse Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/roadmaps.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <h1>Roadmaps</h1>
+  <p class="tv-text-dim">Pick a path and follow it step by step - each node unlocks as you complete the one before it.</p>
+</section>
+
+<!-- Path switcher - plain links so each tab is a real, bookmarkable
+     ?path=<slug> page (roadmap data is rendered server-side per path). -->
+<div class="tv-filter-row tv-animate-in">
+  {% for path in paths %}
+  <a
+    href="{{ url_for('roadmaps', path=path.slug) }}"
+    class="tv-filter-pill tv-roadmap-tab {{ 'is-active' if path.slug == featured_slug }}"
+  >
+    <span class="tv-roadmap-tab__icon">{{ path.icon }}</span>
+    {{ path.title }}
+    <span class="tv-roadmap-tab__percent">{{ path.percent }}%</span>
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Selected path's overall progress -->
+{% for path in paths %}
+{% if path.slug == featured_slug %}
+<div class="tv-card tv-roadmap-overview tv-animate-in">
+  <div class="tv-roadmap-overview__title">
+    <span>{{ path.icon }}</span>
+    <div>
+      <h3>{{ path.title }}</h3>
+      <p class="tv-text-dim">{{ path.subtitle }}</p>
+    </div>
+  </div>
+  <div class="tv-roadmap-overview__percent">
+    <div class="tv-progress"><div class="tv-progress__fill" style="width: {{ path.percent }}%"></div></div>
+    <span>{{ path.percent }}% complete</span>
+  </div>
+</div>
+{% endif %}
+{% endfor %}
+
+<!-- Full roadmap widget - identical markup/classes to the dashboard
+     card, just bigger and with no other widgets competing for space. -->
+<section class="tv-card tv-roadmap-card tv-roadmap-card--full tv-animate-in">
+  <div class="tv-roadmap-header">
+    <div class="tv-roadmap-header__icon">
+      <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="0.9" fill="currentColor"/></svg>
+    </div>
+    <div>
+      <h2>{{ roadmap.title|default("Complete Your Roadmap") }}</h2>
+      <p class="tv-text-dim">{{ roadmap.subtitle }}</p>
+    </div>
+  </div>
+
+  <div class="tv-roadmap-path">
+    <div class="tv-roadmap-row">
+      {% for step in roadmap.row1 %}
+      <a href="{{ step.href|default('#') }}" class="tv-roadmap-step" title="{{ step.name }}">
+        <span class="tv-node tv-node--{{ step.status }}">
+          {% if step.status == 'complete' %}
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M4.5 10.5l3.5 3.5 7-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          {% elif step.status == 'active' %}
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" fill="currentColor"/></svg>
+          {% else %}
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><rect x="5.5" y="9" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 9V6.5a2.5 2.5 0 0 1 5 0V9" stroke="currentColor" stroke-width="1.5"/></svg>
+          {% endif %}
+        </span>
+        <span class="tv-roadmap-step__label">{{ step.name }}</span>
+      </a>
+      {% endfor %}
+    </div>
+
+    <div class="tv-roadmap-connector-v"></div>
+
+    <div class="tv-roadmap-row">
+      {% for step in roadmap.row2 %}
+      <a href="{{ step.href|default('#') }}" class="tv-roadmap-step" title="{{ step.name }}">
+        <span class="tv-node tv-node--{{ step.status }}">
+          {% if step.status == 'complete' %}
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M4.5 10.5l3.5 3.5 7-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          {% elif step.status == 'active' %}
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" fill="currentColor"/></svg>
+          {% else %}
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><rect x="5.5" y="9" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 9V6.5a2.5 2.5 0 0 1 5 0V9" stroke="currentColor" stroke-width="1.5"/></svg>
+          {% endif %}
+        </span>
+        <span class="tv-roadmap-step__label">{{ step.name }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="tv-roadmap-legend">
+    <span class="tv-legend-item"><i class="tv-legend-dot tv-legend-dot--complete"></i>Completed</span>
+    <span class="tv-legend-item"><i class="tv-legend-dot tv-legend-dot--active"></i>In Progress</span>
+    <span class="tv-legend-item"><i class="tv-legend-dot tv-legend-dot--locked"></i>Locked</span>
+  </div>
+</section>
+
+{% endblock %}

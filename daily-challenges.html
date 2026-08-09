@@ -1,0 +1,134 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Daily Challenges · TechVerse Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/daily-challenges.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <h1>Daily Challenges</h1>
+  <p class="tv-text-dim">One fresh challenge every day, the same for everyone - complete it before the UTC reset to bank the XP.</p>
+</section>
+
+<!-- Streak / completed / XP stats -->
+<section class="tv-stat-row tv-animate-in">
+  <div class="tv-card tv-stat-card tv-stat-card--streak">
+    <div class="tv-stat-card__icon">
+      <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2c2 3-2 4-1 7 2-1 3-3 3-3s2 3 0 6c-1.5 2.2-5.5 2.2-7 0-1.5-2.2-.3-5 1-6.5C7 4 8.5 3 10 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    </div>
+    <div>
+      <div class="tv-stat-card__value">{{ challenge_stats.current_streak }}</div>
+      <div class="tv-stat-card__label">Day Streak</div>
+    </div>
+  </div>
+
+  <div class="tv-card tv-stat-card tv-stat-card--level">
+    <div class="tv-stat-card__icon">
+      <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M4.5 10.5l3.5 3.5 7-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div>
+      <div class="tv-stat-card__value">{{ challenge_stats.completed_count }}</div>
+      <div class="tv-stat-card__label">Challenges Completed</div>
+    </div>
+  </div>
+
+  <div class="tv-card tv-stat-card tv-stat-card--xp">
+    <div class="tv-stat-card__icon">
+      <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2 3 11h5l-1 7 8-10h-5l1-6Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+    </div>
+    <div>
+      <div class="tv-stat-card__value">{{ "{:,}".format(challenge_stats.total_xp_earned) }}</div>
+      <div class="tv-stat-card__label">XP From Challenges</div>
+    </div>
+  </div>
+</section>
+
+<!-- Today's Challenge (same widget/IDs as the dashboard card, so
+     js/dashboard-widgets.js drives it with zero changes) -->
+<section class="tv-card tv-challenge-card tv-challenge-card--hero tv-animate-in">
+  <div class="tv-challenge-header">
+    <div class="tv-challenge-header__title">
+      <div class="tv-challenge-header__icon">
+        <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2c2 3-2 4-1 7 2-1 3-3 3-3s2 3 0 6c-1.5 2.2-5.5 2.2-7 0-1.5-2.2-.3-5 1-6.5C7 4 8.5 3 10 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <h2>Today's Challenge</h2>
+        {% if daily_challenge %}
+        <span class="tv-pill tv-pill--success">{{ daily_challenge.category_label }}</span>
+        {% endif %}
+      </div>
+    </div>
+    {% if daily_challenge %}
+    <span class="tv-challenge-timer" id="tv-challenge-timer" data-reset="{{ daily_challenge.reset_at_iso }}">--:--:--</span>
+    {% endif %}
+  </div>
+
+  {% if daily_challenge %}
+  <h3 class="tv-challenge-title">{{ daily_challenge.title }}</h3>
+  <p class="tv-challenge-desc">{{ daily_challenge.description }}</p>
+
+  <div class="tv-challenge-reward">
+    <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2 3 11h5l-1 7 8-10h-5l1-6Z" fill="currentColor"/></svg>
+    Reward: <strong>{{ daily_challenge.reward_xp }} XP</strong>
+  </div>
+
+  <button
+    type="button"
+    class="tv-btn tv-btn--primary tv-challenge-btn"
+    id="tv-challenge-action"
+    data-slug="{{ daily_challenge.slug }}"
+    data-status="{{ daily_challenge.status }}"
+    {{ 'disabled' if daily_challenge.status == 'complete' }}
+  >
+    {% if daily_challenge.status == 'complete' %}
+      ✓ Completed Today
+    {% elif daily_challenge.status == 'started' %}
+      Mark Complete
+    {% else %}
+      Start Challenge
+    {% endif %}
+  </button>
+  {% else %}
+  <p class="tv-challenge-desc">No challenge is active today - check back soon.</p>
+  {% endif %}
+</section>
+
+<!-- Recent history -->
+<section class="tv-flex-col tv-gap-3">
+  <div class="tv-section-header">
+    <h2>Recent Challenges</h2>
+  </div>
+
+  {% if history %}
+  <div class="tv-card tv-challenge-history tv-animate-in">
+    {% for row in history %}
+    <div class="tv-challenge-history__row">
+      <span class="tv-challenge-history__date">{{ row.date }}</span>
+      <span class="tv-challenge-history__title">{{ row.title }}</span>
+      <span class="tv-pill">{{ row.category_label }}</span>
+      <span class="tv-challenge-history__xp">+{{ row.reward_xp }} XP</span>
+      <span class="tv-challenge-history__status tv-challenge-history__status--{{ row.status }}">
+        {% if row.status == 'complete' %}✓ Completed
+        {% elif row.status == 'started' %}In Progress
+        {% else %}Not Started{% endif %}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="tv-card tv-animate-in">
+    <p class="tv-text-dim">Your challenge history will show up here after your first day.</p>
+  </div>
+  {% endif %}
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="/assets/js/dashboard-widgets.js"></script>
+<script>
+  TVDashboardWidgets.init();
+</script>
+{% endblock %}

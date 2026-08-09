@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COMPATIBLE — AI Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+  :root{
+    --void:#06090D;
+    --void-2:#0B1119;
+    --void-3:#121B26;
+    --cyan:#4FD8E8;
+    --cyan-dim:#2B8A96;
+    --amber:#F2A65A;
+    --text:#E7F3F6;
+    --text-dim:#7C93A0;
+    --rule: rgba(231,243,246,0.12);
+    --rule-strong: rgba(231,243,246,0.26);
+    --display:'Orbitron', sans-serif;
+    --body:'Inter', sans-serif;
+    --mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--void);color:var(--text);font-family:var(--body);}
+  ::selection{background:var(--cyan);color:var(--void);}
+  a{color:inherit;}
+  button{font-family:inherit;}
+
+  /* background grid texture */
+  body{
+    background-image:
+      linear-gradient(rgba(79,216,232,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79,216,232,0.035) 1px, transparent 1px);
+    background-size:36px 36px;
+  }
+
+  .utility{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:8px 24px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;
+    color:var(--text-dim);border-bottom:1px solid var(--rule);text-transform:uppercase;
+  }
+  .utility .dot{color:var(--cyan);animation:pulse-dot 2s infinite;}
+  @keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+  header.masthead{
+    padding:26px 24px 18px;border-bottom:1px solid var(--rule);
+    display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;
+  }
+  .masthead h1{
+    font-family:var(--display);font-weight:800;font-size:clamp(26px,4vw,38px);
+    margin:0;letter-spacing:.06em;color:var(--text);
+  }
+  .masthead h1 span{color:var(--cyan);}
+  .masthead .tag{
+    font-family:var(--mono);font-size:11px;color:var(--text-dim);
+    text-transform:uppercase;letter-spacing:.06em;max-width:280px;text-align:right;
+  }
+  nav.backlink a{
+    display:inline-flex;align-items:center;gap:8px;color:var(--text);text-decoration:none;
+    font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.06em;
+    border:1px solid var(--rule-strong);padding:7px 14px;border-radius:2px;transition:all .15s ease;
+  }
+  nav.backlink a:hover{border-color:var(--cyan);color:var(--cyan);}
+
+  /* ===== HUD Hero ===== */
+  .hero{
+    display:flex;flex-direction:column;align-items:center;
+    padding:48px 24px 30px;text-align:center;
+  }
+  .hud{
+    position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center;
+    margin-bottom:22px;
+  }
+  .hud .ring{
+    position:absolute;border-radius:50%;border:1px solid var(--rule-strong);
+  }
+  .hud .ring-outer{
+    width:220px;height:220px;border-style:dashed;border-color:var(--cyan-dim);
+    animation:spin 30s linear infinite;
+  }
+  .hud .ring-mid{
+    width:170px;height:170px;border-color:var(--rule-strong);
+    animation:spin-rev 22s linear infinite;
+  }
+  .hud .ring-mid::before, .hud .ring-mid::after{
+    content:"";position:absolute;width:6px;height:6px;background:var(--cyan);border-radius:50%;
+    top:-3px;left:calc(50% - 3px);box-shadow:0 0 8px var(--cyan);
+  }
+  .hud .ring-mid::after{top:auto;bottom:-3px;}
+  .hud .ring-inner{
+    width:130px;height:130px;border-color:var(--rule);
+  }
+  .hud .orb{
+    position:relative;width:96px;height:96px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, rgba(79,216,232,0.5), rgba(79,216,232,0.05) 70%);
+    border:1px solid var(--cyan-dim);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 30px rgba(79,216,232,0.25);
+    transition:box-shadow .2s ease;
+  }
+  .hud .orb:hover{box-shadow:0 0 44px rgba(79,216,232,0.45);}
+  .hud .orb.listening{animation:pulse-orb 1.2s infinite;}
+  @keyframes pulse-orb{
+    0%,100%{box-shadow:0 0 30px rgba(79,216,232,0.35);}
+    50%{box-shadow:0 0 56px rgba(79,216,232,0.7);}
+  }
+  .hud .orb svg{width:34px;height:34px;fill:none;stroke:var(--cyan);stroke-width:1.6;}
+  @keyframes spin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+  @keyframes spin-rev{from{transform:rotate(360deg);}to{transform:rotate(0);}}
+
+  .hero h2{
+    font-family:var(--display);font-weight:700;font-size:clamp(22px,3.4vw,30px);
+    letter-spacing:.08em;margin:0 0 6px;
+  }
+  .hero p{
+    font-family:var(--mono);font-size:12px;color:var(--text-dim);text-transform:uppercase;
+    letter-spacing:.05em;max-width:520px;margin:0;
+  }
+  #statusReadout{
+    margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--cyan);
+    text-transform:uppercase;letter-spacing:.06em;
+  }
+
+  /* ===== Tabs ===== */
+  .tabbar{
+    display:flex;justify-content:center;gap:2px;padding:10px 24px 0;border-bottom:1px solid var(--rule);
+  }
+  .tabbtn{
+    background:none;border:none;color:var(--text-dim);cursor:pointer;
+    font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.06em;
+    padding:12px 20px 16px;border-bottom:2px solid transparent;transition:all .15s ease;
+  }
+  .tabbtn:hover{color:var(--text);}
+  .tabbtn.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+
+  main{max-width:960px;margin:0 auto;padding:28px 24px 60px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  /* ===== Console ===== */
+  .console-shell{
+    border:1px solid var(--rule-strong);border-radius:6px;overflow:hidden;background:var(--void-2);
+  }
+  .console-head{
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--void-3);padding:10px 14px;border-bottom:1px solid var(--rule);
+  }
+  .console-head .path{font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:.03em;}
+  .console-head .badge{
+    font-family:var(--mono);font-size:10px;color:var(--cyan);border:1px solid var(--cyan-dim);
+    padding:3px 8px;border-radius:2px;text-transform:uppercase;letter-spacing:.05em;
+  }
+  #log{
+    height:400px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;
+    font-family:var(--mono);font-size:13px;line-height:1.55;
+  }
+  #log::-webkit-scrollbar{width:8px;}
+  #log::-webkit-scrollbar-thumb{background:var(--rule-strong);border-radius:4px;}
+  .entry .who{font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+  .entry.you .who{color:var(--amber);}
+  .entry.jarvis .who{color:var(--cyan);}
+  .entry.you .msg{color:var(--text);}
+  .entry.jarvis .msg{color:var(--text);white-space:pre-wrap;}
+  .entry .msg.desktop-only{color:var(--amber);}
+  .entry video, .entry img, .entry canvas{max-width:280px;border-radius:4px;border:1px solid var(--rule-strong);display:block;margin-top:6px;}
+
+  .console-input{
+    display:flex;gap:8px;align-items:center;padding:12px 14px;
+    background:var(--void-3);border-top:1px solid var(--rule);
+  }
+  .console-input .prompt{font-family:var(--mono);color:var(--cyan);font-size:14px;}
+  .console-input input[type=text]{
+    flex-grow:1;background:none;border:none;outline:none;color:var(--text);
+    font-family:var(--mono);font-size:13.5px;
+  }
+  .console-input input[type=text]::placeholder{color:var(--text-dim);}
+  .miniorb{
+    width:34px;height:34px;border-radius:50%;border:1px solid var(--cyan-dim);background:none;
+    color:var(--cyan);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    transition:all .15s ease;
+  }
+  .miniorb:hover{border-color:var(--cyan);box-shadow:0 0 12px rgba(79,216,232,0.4);}
+  .miniorb.on{background:var(--cyan);color:var(--void);animation:pulse-orb 1.2s infinite;}
+  .sendbtn{
+    background:var(--cyan);color:var(--void);border:none;padding:9px 16px;border-radius:3px;
+    font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+    font-weight:600;cursor:pointer;flex-shrink:0;transition:opacity .15s ease;
+  }
+  .sendbtn:hover{opacity:.85;}
+
+  .quickrow{
+    display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;
+  }
+  .quickchip{
+    background:none;border:1px solid var(--rule-strong);color:var(--text-dim);
+    font-family:var(--mono);font-size:10.5px;padding:6px 11px;border-radius:20px;cursor:pointer;
+    text-transform:uppercase;letter-spacing:.04em;transition:all .15s ease;
+  }
+  .quickchip:hover{border-color:var(--cyan);color:var(--cyan);}
+
+  /* hidden file input for pdf */
+  #pdfInput{display:none;}
+
+  /* ===== Feature grid ===== */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;}
+  .fcard{
+    border:1px solid var(--rule-strong);border-radius:6px;padding:18px;background:var(--void-2);
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .fcard .fhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .fcard h3{
+    font-family:var(--display);font-size:15px;letter-spacing:.03em;margin:0;color:var(--text);
+  }
+  .status-tag{
+    font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.06em;
+    padding:3px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0;
+  }
+  .status-tag.live{color:var(--cyan);border:1px solid var(--cyan-dim);}
+  .status-tag.desktop{color:var(--amber);border:1px solid #B87B3D;}
+  .fcard p{font-size:13px;color:var(--text-dim);line-height:1.55;margin:0;}
+  .fcard .ex{
+    font-family:var(--mono);font-size:11px;color:var(--text-dim);border-top:1px solid var(--rule);
+    padding-top:10px;margin-top:2px;
+  }
+  .fcard .ex b{color:var(--text);font-weight:500;}
+
+  footer{
+    border-top:1px solid var(--rule);padding:18px 24px;font-family:var(--mono);font-size:11px;
+    color:var(--text-dim);text-align:center;text-transform:uppercase;letter-spacing:.05em;
+  }
+
+  @media (max-width:560px){
+    .masthead{flex-direction:column;align-items:flex-start;}
+    .masthead .tag{text-align:left;}
+  }
+
+/* ===== Mobile compatibility patch ===== */
+html { -webkit-text-size-adjust: 100%; }
+body { min-width: 0; overflow-x: hidden; }
+button, input { touch-action: manipulation; }
+button { -webkit-tap-highlight-color: transparent; }
+
+@media (max-width: 560px) {
+  .utility {
+    padding: 7px 12px;
+    font-size: 8px;
+    gap: 8px;
+  }
+  .utility > div:first-child {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  header.masthead {
+    padding: 18px 14px 14px;
+    gap: 12px;
+  }
+  .masthead h1 { font-size: 25px; }
+  .masthead .tag {
+    max-width: none;
+    font-size: 9px;
+    line-height: 1.5;
+  }
+  nav.backlink a {
+    min-height: 42px;
+    padding: 9px 12px;
+  }
+
+  .hero {
+    padding: 28px 14px 22px;
+  }
+  .hud {
+    width: 170px;
+    height: 170px;
+    margin-bottom: 18px;
+  }
+  .hud .ring-outer { width: 170px; height: 170px; }
+  .hud .ring-mid { width: 132px; height: 132px; }
+  .hud .ring-inner { width: 100px; height: 100px; }
+  .hud .orb { width: 78px; height: 78px; }
+  .hud .orb svg { width: 30px; height: 30px; }
+
+  .hero h2 {
+    font-size: 20px;
+    line-height: 1.3;
+  }
+  .hero p {
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  .tabbar {
+    justify-content: stretch;
+    padding: 8px 8px 0;
+  }
+  .tabbtn {
+    flex: 1;
+    min-height: 46px;
+    padding: 10px 6px 12px;
+    font-size: 10px;
+  }
+
+  main {
+    width: 100%;
+    padding: 18px 10px 40px;
+  }
+
+  .console-head {
+    padding: 9px 10px;
+    gap: 8px;
+  }
+  .console-head .path {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 9px;
+  }
+  .console-head .badge { font-size: 8px; }
+
+  #log {
+    height: 48vh;
+    min-height: 260px;
+    max-height: 520px;
+    padding: 12px 10px;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+
+  .console-input {
+    gap: 6px;
+    padding: 9px;
+  }
+  .console-input .prompt { font-size: 12px; }
+  .console-input input[type=text] {
+    min-width: 0;
+    width: 100%;
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+  .miniorb, .sendbtn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .miniorb { width: 44px; height: 44px; }
+  .sendbtn {
+    padding: 9px 12px;
+    font-size: 10px;
+  }
+
+  .quickrow {
+    gap: 7px;
+    margin-top: 10px;
+  }
+  .quickchip {
+    min-height: 40px;
+    padding: 8px 10px;
+    font-size: 9px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .fcard { padding: 14px; }
+
+  .entry video,
+  .entry img,
+  .entry canvas {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  footer {
+    padding: 15px 12px;
+    font-size: 9px;
+    line-height: 1.5;
+  }
+}
+
+/* Avoid broken desktop-only actions looking usable on mobile. */
+.mobile-hidden { display: none !important; }
+
+</style>
+</head>
+<body>
+
+<div class="utility">
+  <div><span class="dot">●</span>COMPATIBLE AI — BROWSER INTERFACE</div>
+  <div id="clock">--:--:--</div>
+</div>
+
+<header class="masthead">
+  <div>
+    <h1>COMPA<span>TIBLE</span></h1>
+    <nav class="backlink" style="margin-top:10px;">
+      <!-- EDIT the href below to point back to your main site -->
+      <a href="/">← Back to Main Site</a>
+    </nav>
+  </div>
+  <div class="tag">A browser interface into the COMPATIBLE desktop assistant. Some modules run live here; others need the Windows app.</div>
+</header>
+
+<div class="hero">
+  <div class="hud">
+    <div class="ring ring-outer"></div>
+    <div class="ring ring-mid"></div>
+    <div class="ring ring-inner"></div>
+    <div class="orb" id="orbBtn" title="Click to speak">
+      <svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M9 21h6"/></svg>
+    </div>
+  </div>
+  <h2>COMPATIBLE is online.</h2>
+  <p>Speak or type a command below</p>
+  <div id="statusReadout">MIC: IDLE · TTS: READY</div>
+</div>
+
+<div class="tabbar">
+  <button class="tabbtn active" data-tab="console">Live Console</button>
+  <button class="tabbtn" data-tab="features">Full Feature Map</button>
+</div>
+
+<main>
+  <section class="panel active" id="panel-console">
+    <div class="console-shell">
+      <div class="console-head">
+        <div class="path">COMPATIBLE@browser:~$</div>
+        <div class="badge">Live Demo</div>
+      </div>
+      <div id="log"></div>
+      <div class="console-input">
+        <div class="prompt">&gt;</div>
+        <input type="text" id="cmdInput" placeholder="Try: search python tutorials, what is the eiffel tower, take photo, read pdf, screenshot...">
+        <button class="miniorb" id="micBtn" title="Voice input">🎙</button>
+        <button class="sendbtn" id="sendBtn">Send</button>
+      </div>
+    </div>
+    <div class="quickrow">
+      <button class="quickchip" data-cmd="search python tutorials">search python tutorials</button>
+      <button class="quickchip" data-cmd="what is jarvis marvel">search jarvis marvel</button>
+      <button class="quickchip" data-cmd="take photo">take photo</button>
+      <button class="quickchip" data-cmd="upload image">upload image</button>
+      <button class="quickchip" data-cmd="read pdf">read pdf</button>
+      <button class="quickchip" data-cmd="battery status">battery status</button>
+      <button class="quickchip" data-cmd="storage status">storage status</button>
+      <button class="quickchip" data-cmd="help">help</button>
+    </div>
+    <input type="file" id="pdfInput" accept="application/pdf">
+  </section>
+
+  <section class="panel" id="panel-features">
+    <div class="grid" id="featureGrid"></div>
+  </section>
+</main>
+
+<footer>COMPATIBLE — browser interface to a Windows desktop assistant</footer>
+
+<script>
+  /* ===================== Clock ===================== */
+  function tickClock(){ document.getElementById("clock").textContent = new Date().toLocaleTimeString(); }
+  setInterval(tickClock, 1000); tickClock();
+
+  /* ===================== Tabs ===================== */
+  document.querySelectorAll(".tabbtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tabbtn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+    });
+  });
+
+  /* ===================== Console log ===================== */
+  const logEl = document.getElementById("log");
+  function addEntry(who, contentNode, isDesktopOnly){
+    const entry = document.createElement("div");
+    entry.className = "entry " + who;
+    const label = document.createElement("div");
+    label.className = "who";
+    label.textContent = who === "you" ? "You" : "COMPATIBLE";
+    const msg = document.createElement("div");
+    msg.className = "msg" + (isDesktopOnly ? " desktop-only" : "");
+    if (typeof contentNode === "string") {
+      msg.textContent = contentNode;
+    } else {
+      msg.appendChild(contentNode);
+    }
+    entry.appendChild(label);
+    entry.appendChild(msg);
+    logEl.appendChild(entry);
+    logEl.scrollTop = logEl.scrollHeight;
+    return msg;
+  }
+  function say(text, isDesktopOnly){
+    addEntry("jarvis", text, isDesktopOnly);
+    try {
+      const u = new SpeechSynthesisUtterance(text.replace(/[#*`]/g, ""));
+      u.rate = 1.02;
+      if ("speechSynthesis" in window) speechSynthesis.speak(u);
+    } catch(e){}
+  }
+
+  addEntry("COMPATIBLE", "COMPATIBLE is online. Try a command below, or click the orb to speak.");
+
+  /* ===================== Speech recognition ===================== */
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognizing = false, recognizer = null;
+  const orbBtn = document.getElementById("orbBtn");
+  const micBtn = document.getElementById("micBtn");
+  const statusReadout = document.getElementById("statusReadout");
+
+  if (SR) {
+    recognizer = new SR();
+    recognizer.lang = "en-US";
+    recognizer.interimResults = false;
+    recognizer.onstart = () => {
+      recognizing = true;
+      orbBtn.classList.add("listening");
+      micBtn.classList.add("on");
+      statusReadout.textContent = "MIC: LISTENING · TTS: READY";
+    };
+    recognizer.onend = () => {
+      recognizing = false;
+      orbBtn.classList.remove("listening");
+      micBtn.classList.remove("on");
+      statusReadout.textContent = "MIC: IDLE · TTS: READY";
+    };
+    recognizer.onresult = (e) => {
+      const text = e.results[0][0].transcript;
+      document.getElementById("cmdInput").value = text;
+      handleCommand(text);
+    };
+    recognizer.onerror = () => {
+      statusReadout.textContent = "MIC: ERROR · TTS: READY";
+    };
+  } else {
+    statusReadout.textContent = "MIC: UNSUPPORTED IN THIS BROWSER · TTS: READY";
+  }
+
+  function toggleListen(){
+    if (!recognizer) {
+      say("Voice input isn't supported in this browser. Try Chrome or Edge, or just type your command.");
+      return;
+    }
+    if (recognizing) {
+      try { recognizer.stop(); } catch(e) {}
+    } else {
+      try {
+        recognizer.start();
+      } catch(e) {
+        statusReadout.textContent = "MIC: START FAILED · TTS: READY";
+        say("Microphone could not start. Check browser permission and HTTPS.");
+      }
+    }
+  }
+  orbBtn.addEventListener("click", toggleListen);
+  micBtn.addEventListener("click", toggleListen);
+
+  /* ===================== Live modules ===================== */
+  function webSearch(query){
+    window.open("https://www.google.com/search?q=" + encodeURIComponent(query), "_blank");
+    say(`Searching the web for '${query}'.`);
+  }
+
+  function openUrl(url){
+    if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+    window.open(url, "_blank");
+    say(`Opening ${url}`);
+  }
+
+  async function quickInfo(query){
+    say(`Looking up '${query}'…`);
+    try {
+      const title = encodeURIComponent(query.trim().replace(/\s+/g, "_"));
+      const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${title}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.extract) { say(data.extract); return; }
+      }
+      say(`I couldn't find a quick summary for '${query}'. Try 'search ${query}' instead.`);
+    } catch(e){
+      say(`Lookup failed. Try 'search ${query}' instead.`);
+    }
+  }
+
+  async function batteryStatus(){
+    if (!navigator.getBattery) { say("This browser doesn't expose battery info."); return; }
+    try {
+      const b = await navigator.getBattery();
+      say(`Battery is ${Math.round(b.level*100)}% and is currently ${b.charging ? "charging" : "not charging"}. (Browser-reported, approximate.)`);
+    } catch(e){ say("Couldn't read battery status."); }
+  }
+
+  async function storageStatus(){
+    if (!navigator.storage || !navigator.storage.estimate) { say("This browser doesn't expose storage info."); return; }
+    try {
+      const est = await navigator.storage.estimate();
+      const usedGB = (est.usage / 1073741824).toFixed(2);
+      const quotaGB = (est.quota / 1073741824).toFixed(2);
+      say(`This browser's storage quota: ${usedGB} GB used of about ${quotaGB} GB available. (This is the browser's sandboxed storage, not your real disk — websites can't see actual disk usage.)`);
+    } catch(e){ say("Couldn't read storage status."); }
+  }
+
+  function memoryStatus(){
+    if (navigator.deviceMemory) {
+      say(`This device reports roughly ${navigator.deviceMemory} GB of RAM. (Browser-reported, approximate — not live usage.)`);
+    } else {
+      say("This browser doesn't expose device memory info.");
+    }
+  }
+
+  let cameraStream = null;
+  async function takePhoto(){
+    if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      say("Camera needs a secure HTTPS connection and a browser with camera support.");
+      return;
+    }
+    say("Opening camera…");
+    const wrap = document.createElement("div");
+    const video = document.createElement("video");
+    video.autoplay = true; video.playsInline = true; video.style.width = "280px";
+    const btn = document.createElement("button");
+    btn.className = "quickchip"; btn.style.marginTop = "8px"; btn.textContent = "Capture";
+    wrap.appendChild(video); wrap.appendChild(document.createElement("br")); wrap.appendChild(btn);
+    addEntry("jarvis", wrap);
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      video.srcObject = cameraStream;
+    } catch(e){
+      say("Couldn't open the camera — check that you've granted camera permission.");
+      return;
+    }
+    btn.addEventListener("click", () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+      canvas.getContext("2d").drawImage(video, 0, 0);
+      cameraStream.getTracks().forEach(t => t.stop());
+      video.remove(); btn.remove();
+      const img = document.createElement("img");
+      img.src = canvas.toDataURL("image/png");
+      const dl = document.createElement("a");
+      dl.href = img.src; dl.download = "photo.png"; dl.textContent = "Download photo";
+      dl.style.display = "block"; dl.style.marginTop = "6px"; dl.style.color = "var(--cyan)";
+      const holder = document.createElement("div");
+      holder.appendChild(img); holder.appendChild(dl);
+      addEntry("jarvis", holder);
+      say("Photo captured.");
+    });
+  }
+
+  async function takeScreenshot(){
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+      say("Screen capture isn't available on this mobile browser. Use 'take photo' or upload an image instead.");
+      return;
+    }
+    say("Pick a screen or window to capture in the permission prompt…");
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      const track = stream.getVideoTracks()[0];
+      const video = document.createElement("video");
+      video.srcObject = stream;
+      video.playsInline = true;
+      video.muted = true;
+      await video.play();
+      await new Promise(r => setTimeout(r, 300));
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext("2d").drawImage(video, 0, 0);
+      track.stop();
+      const img = document.createElement("img");
+      img.src = canvas.toDataURL("image/png");
+      const dl = document.createElement("a");
+      dl.href = img.src;
+      dl.download = "screenshot.png";
+      dl.textContent = "Download screenshot";
+      dl.style.display = "block";
+      dl.style.marginTop = "6px";
+      dl.style.color = "var(--cyan)";
+      const holder = document.createElement("div");
+      holder.appendChild(img);
+      holder.appendChild(dl);
+      addEntry("jarvis", holder);
+      say("Screenshot captured.");
+    } catch(e){
+      say("Screenshot cancelled, unavailable on this device, or permission was denied.");
+    }
+  }
+
+  /* ===================== Mobile image upload ===================== */
+  const imageInput = document.createElement("input");
+  imageInput.type = "file";
+  imageInput.accept = "image/*";
+  imageInput.setAttribute("capture", "environment");
+  imageInput.style.display = "none";
+  document.body.appendChild(imageInput);
+
+  function uploadImagePrompt(){
+    say("Choose or take a photo…");
+    imageInput.value = "";
+    imageInput.click();
+  }
+
+  imageInput.addEventListener("change", () => {
+    const file = imageInput.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = "Uploaded photo";
+    img.onload = () => URL.revokeObjectURL(url);
+    addEntry("jarvis", img);
+    say(`Loaded ${file.name}.`);
+  });
+
+  const pdfInput = document.getElementById("pdfInput");
+  function readPdfPrompt(){
+    say("Choose a PDF file…");
+    pdfInput.value = "";
+    pdfInput.click();
+  }
+  pdfInput.addEventListener("change", async () => {
+    const file = pdfInput.files[0];
+    if (!file) return;
+    say(`Reading ${file.name}…`);
+    try {
+      const buf = await file.arrayBuffer();
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      const doc = await pdfjsLib.getDocument({ data: buf }).promise;
+      const page1 = await doc.getPage(1);
+      const content = await page1.getTextContent();
+      const preview = content.items.map(i => i.str).join(" ").slice(0, 300);
+      say(`PDF opened successfully. It has ${doc.numPages} page(s).\n\nFirst page preview: "${preview}${preview.length === 300 ? "…" : ""}"`);
+    } catch(e){
+      say("Couldn't read that PDF: " + e.message);
+    }
+  });
+
+  function desktopOnly(label){
+    say(`'${label}' requires the Jarvis desktop app running on Windows — a website can't do this for security reasons. Install the desktop version to use it.`, true);
+  }
+
+  function showHelp(){
+    say(
+      "Live in this browser:\n" +
+      "  search <query>\n" +
+      "  what is / who is <query>\n" +
+      "  go to <url>\n" +
+      "  take photo\n" +
+      "  upload image\n" +
+      "  screenshot (desktop/compatible browsers)\n" +
+      "  read pdf\n" +
+      "  battery status / storage status / memory status\n\n" +
+      "Desktop-only (needs the Windows app):\n" +
+      "  open/close apps, file delete/rename/move, volume, brightness,\n" +
+      "  shutdown/restart/sleep/lock"
+    );
+  }
+
+  /* ===================== Command router (mirrors commands.py) ===================== */
+  function handleCommand(raw){
+    if (!raw || !raw.trim()) return;
+    addEntry("you", raw);
+    const lower = raw.trim().toLowerCase();
+    let m;
+
+    if (lower === "help") { showHelp(); return; }
+    if (["exit","quit","stop","goodbye","bye"].includes(lower)) {
+      say("This is a browser demo console, so there's nothing to shut down here — just close the tab whenever you're done.");
+      return;
+    }
+
+    if (/^(open|launch|start)\s+.+/.test(lower)) { desktopOnly("open/launch app"); return; }
+    if (/^close\s+.+/.test(lower)) { desktopOnly("close app"); return; }
+    if (lower.includes("list running") || lower.includes("running apps") || lower.includes("running processes")) { desktopOnly("list running apps"); return; }
+    if (/^delete\s+/.test(lower) || /^rename\s+/.test(lower) || /^move\s+/.test(lower) || /^(create|make)\s+folder/.test(lower) || /^(create|make)\s+(a\s+)?(new\s+)?file/.test(lower) || /^list\s+/.test(lower)) { desktopOnly("file system operation"); return; }
+    if (lower.includes("shutdown") || lower.includes("restart") || lower === "sleep" || lower.includes("lock")) { desktopOnly("power action"); return; }
+    if (lower.includes("volume") || lower.includes("mute")) { desktopOnly("system volume control"); return; }
+    if (lower.includes("brightness")) { desktopOnly("screen brightness control"); return; }
+
+    if (m = lower.match(/^search(\s+for)?\s+(.+)$/)) { webSearch(m[2]); return; }
+    if (m = raw.match(/^(what is|who is|tell me about)\s+(.+)$/i)) { quickInfo(m[2]); return; }
+    if (m = raw.match(/^go to\s+(.+)$/i)) { openUrl(m[1].trim()); return; }
+    if (/^read\s+pdf/.test(lower) || lower === "read pdf") { readPdfPrompt(); return; }
+    if (lower.includes("screenshot")) { takeScreenshot(); return; }
+    if (["take photo","capture photo","take picture","capture image"].includes(lower)) { takePhoto(); return; }
+    if (["upload image","upload photo","choose photo"].includes(lower)) { uploadImagePrompt(); return; }
+    if (lower.includes("battery")) { batteryStatus(); return; }
+    if (lower.includes("memory status") || lower.includes("ram status")) { memoryStatus(); return; }
+    if (lower.includes("storage status") || lower.includes("disk status")) { storageStatus(); return; }
+
+    say("I didn't understand that. Type 'help' to see what's live in the browser vs desktop-only.");
+  }
+
+  document.getElementById("sendBtn").addEventListener("click", () => {
+    const input = document.getElementById("cmdInput");
+    handleCommand(input.value);
+    input.value = "";
+  });
+  document.getElementById("cmdInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      handleCommand(e.target.value);
+      e.target.value = "";
+    }
+  });
+  document.querySelectorAll(".quickchip").forEach(chip => {
+    chip.addEventListener("click", () => handleCommand(chip.dataset.cmd));
+  });
+
+  /* ===================== Feature map ===================== */
+  const FEATURES = [
+    { name: "Web Search & Lookup", status: "live", desc: "Google search and Wikipedia quick-info summaries, straight from the browser.", ex: "search python tutorials · what is the eiffel tower" },
+    { name: "Voice In / Voice Out", status: "live", desc: "Speech-to-text via the Web Speech API, and spoken replies via the browser's TTS engine.", ex: "Click the orb, or the mic icon next to the input" },
+    { name: "Camera Capture", status: "live", desc: "Takes a photo through the device camera where supported, or lets you upload/choose an image.", ex: "take photo · upload image" },
+    { name: "Screen Capture", status: "live", desc: "Captures a screen/window/tab where the browser supports the Screen Capture API; mobile browsers may not expose it.", ex: "screenshot" },
+    { name: "PDF Reader", status: "live", desc: "Opens a PDF you select and reports page count plus a text preview, using pdf.js.", ex: "read pdf" },
+    { name: "Battery / Storage / Memory", status: "live", desc: "Approximate, browser-reported battery, storage quota, and device memory — not full OS-level stats.", ex: "battery status · storage status" },
+    { name: "App Launcher", status: "desktop", desc: "Opens native Windows apps by name (Notepad, Chrome, Word, VS Code, custom .exe paths) and can force-close running ones.", ex: "open notepad · close chrome.exe" },
+    { name: "File Manager", status: "desktop", desc: "Create, delete (via Recycle Bin), rename, move files/folders and list directory contents on disk.", ex: "delete C:\\path\\to\\file · make folder Projects" },
+    { name: "System Control", status: "desktop", desc: "Sets system volume and screen brightness, and can shut down, restart, sleep, or lock the machine.", ex: "set volume to 50 · shutdown" },
+    { name: "Command Router", status: "desktop", desc: "The regex-based intent parser (commands.py) that ties every module together and handles confirmation flows for destructive actions.", ex: "Runs invisibly behind every command" },
+  ];
+
+  const grid = document.getElementById("featureGrid");
+  FEATURES.forEach(f => {
+    const card = document.createElement("div");
+    card.className = "fcard";
+    card.innerHTML = `
+      <div class="fhead">
+        <h3>${f.name}</h3>
+        <span class="status-tag ${f.status}">${f.status === "live" ? "Live here" : "Desktop only"}</span>
+      </div>
+      <p>${f.desc}</p>
+      <div class="ex"><b>Try:</b> ${f.ex}</div>
+    `;
+    grid.appendChild(card);
+  });
+</script>
+
+</body>
+</html>

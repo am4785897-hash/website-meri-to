@@ -1,0 +1,302 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Dashboard · Coder Enchanté Academy{% endblock %}
+
+{% block content %}
+
+<!-- Welcome + streak/XP/level + rank -->
+<section class="tv-welcome-row">
+  <div class="tv-card tv-welcome-card">
+    <h1>Welcome back, {{ current_user.username }}! 👋</h1>
+    <p>Let's continue your learning journey.</p>
+
+    <div class="tv-stat-row">
+      <div class="tv-card tv-stat-card tv-stat-card--streak">
+        <div class="tv-stat-card__icon">
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2c2 3-2 4-1 7 2-1 3-3 3-3s2 3 0 6c-1.5 2.2-5.5 2.2-7 0-1.5-2.2-.3-5 1-6.5C7 4 8.5 3 10 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <div class="tv-stat-card__value">{{ stats.streak_days|default(0) }}</div>
+          <div class="tv-stat-card__label">Day Streak</div>
+        </div>
+      </div>
+
+      <div class="tv-card tv-stat-card tv-stat-card--xp">
+        <div class="tv-stat-card__icon">
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2 3 11h5l-1 7 8-10h-5l1-6Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <div class="tv-stat-card__value" id="tv-stat-total-xp">{{ "{:,}".format(stats.total_xp|default(0)) }}</div>
+          <div class="tv-stat-card__label">Total XP</div>
+        </div>
+      </div>
+
+      <div class="tv-card tv-stat-card tv-stat-card--level">
+        <div class="tv-stat-card__icon">
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M10 3 2 7l8 4 8-4-8-4Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M2 13l8 4 8-4M2 10l8 4 8-4" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <div class="tv-stat-card__value" id="tv-stat-level">{{ stats.level|default(1) }}</div>
+          <div class="tv-stat-card__label">Current Level</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <a href="{{ url_for('leaderboard') }}" class="tv-card tv-card--interactive tv-rank-card">
+    <span class="tv-rank-card__label">Your Rank</span>
+    <span class="tv-rank-card__value">#{{ stats.rank|default('—') }}</span>
+    <span class="tv-rank-card__sub">Top {{ stats.rank_percentile|default('—') }}% this month</span>
+  </a>
+</section>
+
+<!-- Continue learning -->
+<section class="tv-flex-col tv-gap-3">
+  <div class="tv-section-header">
+    <h2>Continue Learning</h2>
+    <a href="#">View All</a>
+  </div>
+
+  <div class="tv-path-row">
+    {% for path in paths %}
+    <a href="{{ url_for('dashboard', path=path.slug) }}" class="tv-card tv-card--interactive tv-path-card tv-path-card--{{ path.css_class }}">
+      <div class="tv-path-card__cover"><span class="tv-path-card__badge">{{ path.icon }}</span></div>
+      <div class="tv-path-card__body">
+        <h3>{{ path.title }}</h3>
+        <p class="tv-text-dim">{{ path.subtitle }}</p>
+        <div class="tv-path-card__progress-row">
+          <div class="tv-progress"><div class="tv-progress__fill" style="width: {{ path.percent }}%"></div></div>
+          <span>{{ path.percent }}%</span>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Recommended for You -->
+<section class="tv-flex-col tv-gap-3">
+  <div class="tv-section-header">
+    <h2>Recommended for You</h2>
+    <a href="#">View All</a>
+  </div>
+
+  <div class="tv-filter-row" id="tv-reco-filters">
+    {% for filter in recommended_filters %}
+    <button type="button" class="tv-filter-pill {{ 'is-active' if loop.first }}" data-filter="{{ filter.key }}">{{ filter.label }}</button>
+    {% endfor %}
+  </div>
+
+  <div class="tv-reco-grid" id="tv-reco-grid">
+    {% for item in recommended_items %}
+    <a href="{{ item.href }}" class="tv-card tv-card--interactive tv-reco-card"
+       data-categories="{{ item.category }}{{ ' popular' if item.is_popular }}">
+      <div class="tv-reco-card__icon">{{ item.icon }}</div>
+      <h3>{{ item.title }}</h3>
+      <span class="tv-pill {{ 'tv-pill--success' if item.difficulty == 'Beginner' else 'tv-pill--warning' }}">{{ item.difficulty }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Ethical Hacking Roadmap -->
+<section class="tv-card tv-roadmap-card tv-animate-in">
+  <div class="tv-roadmap-header">
+    <div class="tv-roadmap-header__icon">
+      <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="0.9" fill="currentColor"/></svg>
+    </div>
+    <div>
+      <h2>{{ roadmap.title|default("Ethical Hacking Roadmap") }}</h2>
+      <p class="tv-text-dim">{{ roadmap.subtitle|default("Complete roadmap to become a professional ethical hacker") }}</p>
+    </div>
+  </div>
+
+  <div class="tv-roadmap-path">
+    <div class="tv-roadmap-row">
+      {% for step in roadmap.row1 %}
+      <a href="{{ step.href|default('#') }}" class="tv-roadmap-step" title="{{ step.name }}">
+        <span class="tv-node tv-node--{{ step.status }}">
+          {% if step.status == 'complete' %}
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M4.5 10.5l3.5 3.5 7-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          {% elif step.status == 'active' %}
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" fill="currentColor"/></svg>
+          {% else %}
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><rect x="5.5" y="9" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 9V6.5a2.5 2.5 0 0 1 5 0V9" stroke="currentColor" stroke-width="1.5"/></svg>
+          {% endif %}
+        </span>
+        <span class="tv-roadmap-step__label">{{ step.name }}</span>
+      </a>
+      {% endfor %}
+    </div>
+
+    <div class="tv-roadmap-connector-v"></div>
+
+    <div class="tv-roadmap-row">
+      {% for step in roadmap.row2 %}
+      <a href="{{ step.href|default('#') }}" class="tv-roadmap-step" title="{{ step.name }}">
+        <span class="tv-node tv-node--{{ step.status }}">
+          {% if step.status == 'complete' %}
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M4.5 10.5l3.5 3.5 7-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          {% elif step.status == 'active' %}
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" fill="currentColor"/></svg>
+          {% else %}
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><rect x="5.5" y="9" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 9V6.5a2.5 2.5 0 0 1 5 0V9" stroke="currentColor" stroke-width="1.5"/></svg>
+          {% endif %}
+        </span>
+        <span class="tv-roadmap-step__label">{{ step.name }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="tv-roadmap-legend">
+    <span class="tv-legend-item"><i class="tv-legend-dot tv-legend-dot--complete"></i>Completed</span>
+    <span class="tv-legend-item"><i class="tv-legend-dot tv-legend-dot--active"></i>In Progress</span>
+    <span class="tv-legend-item"><i class="tv-legend-dot tv-legend-dot--locked"></i>Locked</span>
+  </div>
+</section>
+
+<!-- Code Playground -->
+<section class="tv-card tv-playground-card tv-animate-in">
+  <div class="tv-playground-header">
+    <h2>Code Playground</h2>
+    <div class="tv-playground-header__controls">
+      <select class="tv-select" id="tv-playground-lang">
+        {% for lang in playground.languages|default(["Python"]) %}
+        <option {{ 'selected' if loop.first }}>{{ lang }}</option>
+        {% endfor %}
+      </select>
+      <button type="button" class="tv-btn tv-btn--primary tv-btn--sm" id="tv-playground-run">
+        <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M6 4.5v11l9-5.5-9-5.5Z" fill="currentColor"/></svg>
+        Run
+      </button>
+      <button type="button" class="tv-btn tv-btn--ghost tv-btn--sm" id="tv-playground-reset">
+        <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M4 10a6 6 0 1 1 1.8 4.3M4 10V5.5M4 10h4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <div class="tv-playground-body">
+    <div class="tv-editor">
+      <div class="tv-editor__gutter" id="tv-playground-gutter" aria-hidden="true"></div>
+      <textarea
+        class="tv-editor__textarea"
+        id="tv-playground-code"
+        spellcheck="false"
+        autocomplete="off"
+        autocapitalize="off"
+      >{{ playground.starter_code|default(
+"import socket\n\ntarget = input(\"Enter target IP: \")\nport = int(input(\"Enter port: \"))\n\ns = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\nresult = s.connect_ex((target, port))\n\nif result == 0:\n    print(f\"Port {port} is Open on {target}\")\nelse:\n    print(f\"Port {port} is Closed on {target}\")\n\ns.close()"
+) }}</textarea>
+    </div>
+
+    <div class="tv-output">
+      <div class="tv-output__header">Output</div>
+      <div class="tv-stdin-row">
+        <label for="tv-playground-stdin">Input (stdin, one value per line)</label>
+        <textarea id="tv-playground-stdin" class="tv-stdin" rows="2" spellcheck="false">{{ playground.stdin_placeholder|default("") }}</textarea>
+      </div>
+      <pre class="tv-output__body" id="tv-playground-output">{{ playground.output_placeholder|default("Enter target IP: 127.0.0.1\nEnter port: 22\nPort 22 is Open on 127.0.0.1") }}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- Daily Challenge + Project Gallery -->
+<section class="tv-dash-row">
+
+  <div class="tv-card tv-challenge-card tv-animate-in">
+    <div class="tv-challenge-header">
+      <div class="tv-challenge-header__title">
+        <div class="tv-challenge-header__icon">
+          <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2c2 3-2 4-1 7 2-1 3-3 3-3s2 3 0 6c-1.5 2.2-5.5 2.2-7 0-1.5-2.2-.3-5 1-6.5C7 4 8.5 3 10 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </div>
+        <h2>Daily Challenge</h2>
+      </div>
+      {% if daily_challenge %}
+      <span class="tv-challenge-timer" id="tv-challenge-timer" data-reset="{{ daily_challenge.reset_at_iso }}">--:--:--</span>
+      {% endif %}
+    </div>
+
+    {% if daily_challenge %}
+    <p class="tv-challenge-desc">{{ daily_challenge.description }}</p>
+
+    <div class="tv-challenge-reward">
+      <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M10 2 3 11h5l-1 7 8-10h-5l1-6Z" fill="currentColor"/></svg>
+      Reward: <strong>{{ daily_challenge.reward_xp }} XP</strong>
+    </div>
+
+    <button
+      type="button"
+      class="tv-btn tv-btn--primary tv-challenge-btn"
+      id="tv-challenge-action"
+      data-slug="{{ daily_challenge.slug }}"
+      data-status="{{ daily_challenge.status }}"
+      {{ 'disabled' if daily_challenge.status == 'complete' }}
+    >
+      {% if daily_challenge.status == 'complete' %}
+        ✓ Completed Today
+      {% elif daily_challenge.status == 'started' %}
+        Mark Complete
+      {% else %}
+        Start Challenge
+      {% endif %}
+    </button>
+    {% else %}
+    <p class="tv-challenge-desc">No challenge is active today - check back soon.</p>
+    {% endif %}
+  </div>
+
+  <div class="tv-card tv-project-gallery-card tv-animate-in">
+    <div class="tv-section-header">
+      <h2>Project Gallery</h2>
+      <a href="{{ url_for('projects_page') }}">View All</a>
+    </div>
+
+    <div class="tv-project-grid" id="tv-project-grid">
+      {% for project in projects %}
+      <div class="tv-card tv-card--interactive tv-project-card">
+        <a href="{{ project.href }}" class="tv-project-card__link">
+          <div class="tv-project-card__icon">{{ project.icon }}</div>
+          <h3>{{ project.title }}</h3>
+          <span class="tv-pill">{{ project.tech_tag }}</span>
+        </a>
+        <button
+          type="button"
+          class="tv-like-btn {{ 'is-liked' if project.liked }}"
+          data-slug="{{ project.slug }}"
+          aria-label="Like {{ project.title }}"
+        >
+          <svg class="tv-icon tv-like-btn__icon" viewBox="0 0 20 20" fill="none"><path d="M10 17.3s-6.5-4-6.5-8.6a3.9 3.9 0 0 1 6.5-2.9 3.9 3.9 0 0 1 6.5 2.9c0 4.6-6.5 8.6-6.5 8.6Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span class="tv-like-btn__count">{{ project.likes_count }}</span>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="/assets/js/filter-pills.js"></script>
+<script>
+  TVFilterPills.init("tv-reco-filters", "tv-reco-grid", ".tv-reco-card");
+</script>
+<script src="/assets/js/playground.js"></script>
+<script>
+  TVPlayground.init({
+    codeId: "tv-playground-code",
+    gutterId: "tv-playground-gutter",
+    stdinId: "tv-playground-stdin",
+    outputId: "tv-playground-output",
+    langId: "tv-playground-lang",
+    runId: "tv-playground-run",
+    resetId: "tv-playground-reset",
+  });
+</script>
+<script src="/assets/js/dashboard-widgets.js"></script>
+<script>
+  TVDashboardWidgets.init();
+</script>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Projects · TechVerse Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/projects.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <h1>Project Gallery</h1>
+  <p class="tv-text-dim">Hands-on builds across all 3 paths - like the ones you want to try next.</p>
+</section>
+
+<div class="tv-filter-row tv-animate-in" id="tv-project-filters">
+  {% for filter in project_filters %}
+  <button type="button" class="tv-filter-pill {{ 'is-active' if loop.first }}" data-filter="{{ filter.key }}">{{ filter.label }}</button>
+  {% endfor %}
+</div>
+
+<div class="tv-project-grid tv-project-grid--full tv-animate-in" id="tv-project-grid">
+  {% for project in projects %}
+  <div class="tv-card tv-card--interactive tv-project-card tv-project-card--full" data-categories="{{ project.category }}">
+    <a href="{{ project.href }}" class="tv-project-card__link">
+      <div class="tv-project-card__icon">{{ project.icon }}</div>
+      <h3>{{ project.title }}</h3>
+      {% if project.description %}
+      <p class="tv-project-card__desc">{{ project.description }}</p>
+      {% endif %}
+      <div class="tv-project-card__meta">
+        <span class="tv-pill">{{ project.tech_tag }}</span>
+        <span class="tv-pill {{ 'tv-pill--success' if project.difficulty == 'Beginner' else 'tv-pill--warning' }}">{{ project.difficulty }}</span>
+      </div>
+    </a>
+    <button
+      type="button"
+      class="tv-like-btn {{ 'is-liked' if project.liked }}"
+      data-slug="{{ project.slug }}"
+      aria-label="Like {{ project.title }}"
+    >
+      <svg class="tv-icon tv-like-btn__icon" viewBox="0 0 20 20" fill="none"><path d="M10 17.3s-6.5-4-6.5-8.6a3.9 3.9 0 0 1 6.5-2.9 3.9 3.9 0 0 1 6.5 2.9c0 4.6-6.5 8.6-6.5 8.6Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      <span class="tv-like-btn__count">{{ project.likes_count }}</span>
+    </button>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="/assets/js/filter-pills.js"></script>
+<script>
+  TVFilterPills.init("tv-project-filters", "tv-project-grid", ".tv-project-card");
+</script>
+<script src="/assets/js/dashboard-widgets.js"></script>
+<script>
+  TVDashboardWidgets.init();
+</script>
+{% endblock %}

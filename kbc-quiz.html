@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>KBC ∞ — Kaun Banega Crorepati (Infinite)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Cinzel+Decorative:wght@700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#05061a;
+    --bg-1:#0b0f34;
+    --bg-2:#141a4d;
+    --panel:#121840;
+    --panel-2:#1a2158;
+    --line:rgba(232,196,104,0.25);
+    --gold:#e8c468;
+    --gold-bright:#ffd873;
+    --gold-deep:#a97e2e;
+    --purple:#8a5cf0;
+    --purple-deep:#4a2f92;
+    --text:#f3efe0;
+    --text-dim:#a9a6c9;
+    --correct:#3fbf72;
+    --correct-deep:#1f6b3c;
+    --wrong:#e6524f;
+    --wrong-deep:#8a2321;
+    --radius:16px;
+    --shadow-gold: 0 0 0 1px rgba(232,196,104,0.35), 0 8px 24px rgba(0,0,0,0.55);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse 120% 70% at 50% -10%, #24186b 0%, #0b0f34 45%, #05061a 100%);
+    font-family:'Poppins',sans-serif;
+    color:var(--text);
+    overflow-x:hidden;
+    position:relative;
+  }
+  .rays{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background:
+      conic-gradient(from 0deg at 50% 20%,
+        rgba(232,196,104,0.07) 0deg, transparent 18deg,
+        rgba(232,196,104,0.07) 36deg, transparent 54deg,
+        rgba(232,196,104,0.07) 72deg, transparent 90deg,
+        rgba(232,196,104,0.07) 108deg, transparent 126deg,
+        rgba(232,196,104,0.07) 144deg, transparent 162deg,
+        rgba(232,196,104,0.07) 180deg, transparent 198deg,
+        rgba(232,196,104,0.07) 216deg, transparent 234deg,
+        rgba(232,196,104,0.07) 252deg, transparent 270deg,
+        rgba(232,196,104,0.07) 288deg, transparent 306deg,
+        rgba(232,196,104,0.07) 324deg, transparent 342deg,
+        rgba(232,196,104,0.07) 360deg);
+    animation: spin 90s linear infinite;
+    opacity:0.8;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce){
+    .rays{ animation:none; }
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+
+  .stage{
+    position:relative;
+    z-index:1;
+    max-width:1180px;
+    margin:0 auto;
+    padding:18px 16px 40px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+
+  /* HEADER */
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+    padding:10px 4px;
+  }
+  .logo{
+    font-family:'Cinzel Decorative', serif;
+    font-weight:900;
+    font-size:26px;
+    letter-spacing:2px;
+    color:var(--gold-bright);
+    text-shadow:0 0 18px rgba(255,216,115,0.55);
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+  }
+  .logo small{
+    font-family:'Cinzel',serif;
+    font-size:12px;
+    letter-spacing:3px;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    font-weight:600;
+  }
+  .prize-current{
+    font-family:'Cinzel',serif;
+    font-weight:700;
+    font-size:18px;
+    color:var(--gold-bright);
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--line);
+    padding:8px 16px;
+    border-radius:999px;
+    box-shadow:var(--shadow-gold);
+  }
+  .prize-current span{ color:var(--text-dim); font-family:'Poppins',sans-serif; font-weight:500; font-size:11px; display:block; letter-spacing:1px; text-transform:uppercase; }
+
+  /* LAYOUT */
+  .layout{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:18px;
+  }
+  @media (min-width:900px){
+    .layout{ grid-template-columns: 1fr 270px; align-items:start; }
+  }
+
+  /* GAME AREA */
+  .game-area{
+    background:linear-gradient(180deg, rgba(20,26,77,0.7), rgba(11,15,52,0.7));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px;
+    box-shadow: var(--shadow-gold);
+    backdrop-filter: blur(6px);
+  }
+  .meta-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:12px;
+  }
+  .level-badge{
+    font-family:'Cinzel',serif;
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:1px;
+    color:var(--gold);
+    text-transform:uppercase;
+  }
+  .safe-badge{
+    font-size:12px;
+    color:var(--text-dim);
+  }
+  .safe-badge b{ color:var(--gold-bright); }
+
+  .timer-bar{
+    width:100%;
+    height:6px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.08);
+    overflow:hidden;
+    margin-bottom:16px;
+  }
+  .timer-fill{
+    height:100%;
+    width:100%;
+    background:linear-gradient(90deg, var(--correct), var(--gold-bright));
+    transition:width 1s linear, background 0.3s;
+    border-radius:999px;
+  }
+  .timer-fill.low{ background:linear-gradient(90deg, var(--wrong), var(--gold-bright)); }
+
+  .question-card{
+    background:radial-gradient(ellipse at 50% 0%, rgba(138,92,240,0.16), transparent 70%), var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:22px 20px;
+    margin-bottom:18px;
+    min-height:96px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+  .question-text{
+    font-family:'Cinzel',serif;
+    font-weight:600;
+    font-size:19px;
+    line-height:1.55;
+    margin:0;
+    color:var(--text);
+  }
+
+  .options-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:12px;
+    margin-bottom:20px;
+  }
+  @media (min-width:640px){
+    .options-grid{ grid-template-columns:1fr 1fr; }
+  }
+  .option{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    text-align:left;
+    background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1.5px solid var(--line);
+    color:var(--text);
+    padding:14px 16px;
+    border-radius:12px;
+    font-family:'Poppins',sans-serif;
+    font-size:15px;
+    font-weight:500;
+    cursor:pointer;
+    transition:transform .12s ease, border-color .15s ease, background .15s ease, opacity .2s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .option:hover:not(:disabled){ border-color:var(--gold); transform:translateY(-1px); }
+  .option:active:not(:disabled){ transform:scale(0.98); }
+  .option .opt-label{
+    flex:0 0 auto;
+    width:28px;height:28px;
+    border-radius:50%;
+    background:rgba(232,196,104,0.14);
+    border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Cinzel',serif;
+    font-weight:700;
+    font-size:13px;
+    color:var(--gold-bright);
+  }
+  .option.selected{ border-color:var(--gold-bright); background:linear-gradient(180deg, rgba(232,196,104,0.22), var(--panel)); box-shadow:0 0 0 1px var(--gold-bright); }
+  .option.correct{ border-color:var(--correct); background:linear-gradient(180deg, rgba(63,191,114,0.28), var(--panel)); }
+  .option.correct .opt-label{ background:var(--correct); color:#04220f; }
+  .option.wrong{ border-color:var(--wrong); background:linear-gradient(180deg, rgba(230,82,79,0.28), var(--panel)); }
+  .option.wrong .opt-label{ background:var(--wrong); color:#2a0a09; }
+  .option.faded{ opacity:0.28; pointer-events:none; }
+  .option:disabled{ cursor:default; }
+
+  .controls{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:space-between;
+  }
+  .btn{
+    font-family:'Poppins',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    padding:12px 18px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    cursor:pointer;
+    transition:transform .12s ease, filter .15s ease, opacity .2s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn:active:not(:disabled){ transform:scale(0.97); }
+  .btn:disabled{ opacity:0.4; cursor:not-allowed; }
+  .btn-ghost{ background:transparent; color:var(--text-dim); }
+  .btn-ghost:hover:not(:disabled){ color:var(--text); border-color:var(--text-dim); }
+  .btn-gold{
+    background:linear-gradient(180deg, var(--gold-bright), var(--gold-deep));
+    color:#231400;
+    border:none;
+    flex:1;
+    min-width:160px;
+  }
+  .btn-gold:hover:not(:disabled){ filter:brightness(1.08); }
+
+  /* LIFELINES */
+  .lifelines{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .lifeline{
+    flex:1 1 140px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    justify-content:center;
+    background:linear-gradient(180deg, var(--purple-deep), #2c1c5e);
+    border:1px solid rgba(138,92,240,0.45);
+    color:#efe9ff;
+    padding:10px 10px;
+    border-radius:10px;
+    font-size:12.5px;
+    font-weight:600;
+    cursor:pointer;
+    transition:transform .12s ease, opacity .2s;
+  }
+  .lifeline:active:not(:disabled){ transform:scale(0.96); }
+  .lifeline:disabled{ opacity:0.32; cursor:not-allowed; filter:grayscale(0.6); }
+  .lifeline .ico{ font-size:15px; }
+
+  /* LADDER */
+  .ladder{
+    background:linear-gradient(180deg, rgba(20,26,77,0.7), rgba(11,15,52,0.7));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px;
+    box-shadow:var(--shadow-gold);
+    backdrop-filter: blur(6px);
+  }
+  .ladder h3{
+    font-family:'Cinzel',serif;
+    font-size:13px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--gold);
+    margin:0 0 10px;
+    text-align:center;
+  }
+  .ladder ul{
+    list-style:none;
+    margin:0;padding:0;
+    display:flex;
+    flex-direction:column-reverse;
+    gap:4px;
+    max-height:520px;
+    overflow-y:auto;
+  }
+  .ladder li{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:7px 10px;
+    border-radius:8px;
+    font-size:12.5px;
+    color:var(--text-dim);
+  }
+  .ladder li .lv{ font-family:'Cinzel',serif; font-weight:600; opacity:0.8; }
+  .ladder li.checkpoint{ color:var(--text); font-weight:600; }
+  .ladder li.checkpoint .lv::after{ content:' \2605'; color:var(--gold); }
+  .ladder li.current{
+    background:linear-gradient(90deg, rgba(232,196,104,0.22), rgba(232,196,104,0.06));
+    border:1px solid var(--gold);
+    color:var(--gold-bright);
+    font-weight:700;
+  }
+  .ladder li.done{ color:var(--correct); }
+
+  /* mobile ladder drawer */
+  #ladder-toggle{
+    display:none;
+    position:fixed;
+    right:16px;
+    bottom:16px;
+    z-index:40;
+    width:52px;height:52px;
+    border-radius:50%;
+    background:linear-gradient(180deg, var(--gold-bright), var(--gold-deep));
+    border:none;
+    color:#231400;
+    font-size:22px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.5);
+    cursor:pointer;
+  }
+  @media (max-width:899px){
+    #ladder-toggle{ display:flex; align-items:center; justify-content:center; }
+    .ladder{
+      position:fixed;
+      left:0;right:0;bottom:0;
+      max-height:70vh;
+      border-radius:20px 20px 0 0;
+      transform:translateY(105%);
+      transition:transform .3s ease;
+      z-index:39;
+    }
+    .ladder.open{ transform:translateY(0); }
+    .ladder ul{ max-height:50vh; }
+  }
+
+  /* MODALS */
+  .overlay{
+    position:fixed;inset:0;
+    background:rgba(3,4,16,0.86);
+    z-index:60;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .overlay.hidden{ display:none; }
+  .modal-card{
+    background:linear-gradient(180deg, var(--panel-2), var(--bg-1));
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:32px 26px;
+    max-width:420px;
+    width:100%;
+    text-align:center;
+    box-shadow:var(--shadow-gold);
+  }
+  .modal-card h1{
+    font-family:'Cinzel Decorative', serif;
+    color:var(--gold-bright);
+    font-size:30px;
+    margin:0 0 6px;
+    text-shadow:0 0 18px rgba(255,216,115,0.5);
+  }
+  .modal-card .sub{ color:var(--text-dim); font-size:13.5px; margin-bottom:20px; line-height:1.6; }
+  .modal-card .big-amount{
+    font-family:'Cinzel',serif;
+    font-weight:700;
+    font-size:34px;
+    color:var(--gold-bright);
+    margin:6px 0 4px;
+  }
+  .modal-card .result-line{ color:var(--text-dim); font-size:13px; margin-bottom:22px; }
+  .rules{
+    text-align:left;
+    font-size:12.5px;
+    color:var(--text-dim);
+    background:rgba(255,255,255,0.04);
+    border-radius:10px;
+    padding:12px 14px;
+    margin-bottom:20px;
+    line-height:1.7;
+  }
+  .rules b{ color:var(--text); }
+
+  /* POLL POPUP */
+  .poll-popup{
+    position:fixed;
+    left:50%;bottom:20px;
+    transform:translateX(-50%);
+    z-index:70;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px;
+    width:min(90vw,360px);
+    box-shadow:var(--shadow-gold);
+  }
+  .poll-popup h4{ margin:0 0 10px; font-family:'Cinzel',serif; font-size:12px; color:var(--gold); text-transform:uppercase; letter-spacing:1px; }
+  .poll-row{ display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:12px; }
+  .poll-row .lab{ width:18px; color:var(--text-dim); font-weight:600; }
+  .poll-row .bar-track{ flex:1; height:10px; background:rgba(255,255,255,0.08); border-radius:6px; overflow:hidden; }
+  .poll-row .bar-fill{ height:100%; background:linear-gradient(90deg, var(--purple), var(--gold-bright)); border-radius:6px; transition:width .6s ease; }
+  .poll-row .pct{ width:32px; text-align:right; color:var(--text-dim); }
+
+  .toast{
+    position:fixed;
+    top:16px;left:50%;
+    transform:translateX(-50%);
+    background:var(--panel-2);
+    border:1px solid var(--gold);
+    color:var(--gold-bright);
+    padding:10px 18px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:600;
+    z-index:80;
+    box-shadow:var(--shadow-gold);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .3s ease, top .3s ease;
+  }
+  .toast.show{ opacity:1; top:26px; }
+
+  .sr-only{ position:absolute; width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0); }
+
+  a, button{ font-family:inherit; }
+  ::-webkit-scrollbar{ width:6px; }
+  ::-webkit-scrollbar-thumb{ background:var(--gold-deep); border-radius:6px; }
+  #boom{
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+<div class="rays" aria-hidden="true"></div>
+
+<div class="stage">
+  <header>
+    <div class="logo">KBC <span style="color:var(--purple);">∞</span><small>Kaun Banega Crorepati</small></div>
+    <div class="prize-current"><span>Current prize</span><span id="prize-amount">₹0</span></div>
+  </header>
+
+  <div class="lifelines" role="group" aria-label="Lifelines">
+    <button class="lifeline" id="life-fifty" data-life="fifty"><span class="ico">◐</span> 50:50</button>
+    <button class="lifeline" id="life-poll" data-life="poll"><span class="ico">👥</span> Audience Poll</button>
+    <button class="lifeline" id="life-flip" data-life="flip"><span class="ico">⟲</span> Flip Question</button>
+    <a href="/" id="boom" class="lifeline">← Back to Main Site</a>
+    <audio class="layout" controls loop autoplay>
+      <source src="../audios/7-crore-kbc.mp3">
+    </audio>
+  </div>
+
+  <div class="layout">
+    <main class="game-area">
+      <div class="meta-row">
+        <div class="level-badge" id="level-badge">Round 1 · Question 1 of 15</div>
+        <div class="safe-badge">Guaranteed: <b id="safe-amount">₹0</b></div>
+      </div>
+      <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+      <div class="question-card">
+        <p class="question-text" id="question-text">Loading question…</p>
+      </div>
+      <div class="options-grid" id="options-grid"></div>
+      <div class="controls">
+        <button class="btn btn-ghost" id="walkaway-btn">Walk away with current prize</button>
+        <button class="btn btn-gold" id="lockin-btn" disabled>Lock in answer</button>
+      </div>
+    </main>
+
+    <aside class="ladder" id="ladder">
+      <h3>Prize ladder</h3>
+      <ul id="ladder-list"></ul>
+    </aside>
+  </div>
+</div>
+
+<button id="ladder-toggle" aria-label="Show prize ladder">🏆</button>
+
+<div class="overlay" id="start-overlay">
+  <div class="modal-card">
+    <h1>KBC ∞</h1>
+    <div class="sub">Kaun Banega Crorepati — the infinite edition. Fifteen questions per round. Clear a round and the prize ladder multiplies tenfold as you enter the next.</div>
+    <div class="rules">
+      <b>How to play:</b> Answer 15 questions to complete a round. Reach question 5 and question 10 to bank a guaranteed amount. Get one wrong with no safety net and you drop to your last guaranteed prize. Use <b>50:50</b>, <b>Audience Poll</b> and <b>Flip Question</b> once per round — they refresh every new round, so the game never runs out.
+    </div>
+    <button class="btn btn-gold" id="start-btn" style="width:100%;">Start playing</button>
+  </div>
+</div>
+
+<div class="overlay hidden" id="end-overlay">
+  <div class="modal-card">
+    <h1 id="end-title">Game over</h1>
+    <div class="big-amount" id="end-amount">₹0</div>
+    <div class="result-line" id="end-detail">You reached Round 1, Question 1.</div>
+    <button class="btn btn-gold" id="restart-btn" style="width:100%;">Play again</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var BANK = {
+    1: [
+      {q:"How many continents are there on Earth?", o:["5","6","7","8"], a:2},
+      {q:"Which planet is known as the Red Planet?", o:["Venus","Mars","Jupiter","Saturn"], a:1},
+      {q:"What is the capital of India?", o:["Mumbai","Kolkata","New Delhi","Chennai"], a:2},
+      {q:"How many days are there in a leap year?", o:["364","365","366","367"], a:2},
+      {q:"Which is the largest ocean on Earth?", o:["Atlantic","Indian","Arctic","Pacific"], a:3},
+      {q:"H2O is commonly known as what?", o:["Salt","Water","Oxygen","Hydrogen"], a:1},
+      {q:"Which fruit is known as the 'King of Fruits'?", o:["Mango","Apple","Banana","Grapes"], a:0},
+      {q:"In which sport is the term 'six' used?", o:["Football","Cricket","Hockey","Tennis"], a:1},
+      {q:"Which colour do you get by mixing blue and yellow?", o:["Purple","Orange","Green","Pink"], a:2},
+      {q:"What is the national bird of India?", o:["Sparrow","Peacock","Eagle","Parrot"], a:1},
+      {q:"Which animal is known as the 'Ship of the Desert'?", o:["Horse","Camel","Elephant","Goat"], a:1},
+      {q:"How many players are there in a cricket team?", o:["9","10","11","12"], a:2}
+    ],
+    2: [
+      {q:"Who wrote the Indian national anthem 'Jana Gana Mana'?", o:["Bankim Chandra Chatterjee","Rabindranath Tagore","Sarojini Naidu","Muhammad Iqbal"], a:1},
+      {q:"Which river is called the 'Ganga of the South'?", o:["Godavari","Krishna","Kaveri","Narmada"], a:0},
+      {q:"The Great Wall of China was built mainly to defend against invasions from which direction?", o:["South","East","North","West"], a:2},
+      {q:"Which gas do plants absorb from the atmosphere for photosynthesis?", o:["Oxygen","Nitrogen","Carbon dioxide","Hydrogen"], a:2},
+      {q:"Who was the first Prime Minister of India?", o:["Mahatma Gandhi","Jawaharlal Nehru","Sardar Patel","Rajendra Prasad"], a:1},
+      {q:"Which is the smallest planet in our solar system?", o:["Mars","Mercury","Venus","Pluto"], a:1},
+      {q:"The Statue of Liberty was a gift to the USA from which country?", o:["Britain","Spain","France","Italy"], a:2},
+      {q:"Which Indian state is known as the 'Land of Five Rivers'?", o:["Haryana","Punjab","Rajasthan","Gujarat"], a:1},
+      {q:"Who painted the Mona Lisa?", o:["Vincent van Gogh","Pablo Picasso","Leonardo da Vinci","Michelangelo"], a:2},
+      {q:"Which is the longest river in the world?", o:["Amazon","Nile","Yangtze","Mississippi"], a:1},
+      {q:"The FIFA World Cup is held every how many years?", o:["2","3","4","5"], a:2},
+      {q:"Which vitamin is produced when skin is exposed to sunlight?", o:["Vitamin A","Vitamin C","Vitamin D","Vitamin K"], a:2}
+    ],
+    3: [
+      {q:"Which Mughal emperor built the Taj Mahal?", o:["Akbar","Jahangir","Shah Jahan","Aurangzeb"], a:2},
+      {q:"The Battle of Plassey was fought in which year?", o:["1757","1764","1857","1526"], a:0},
+      {q:"Which element has the chemical symbol 'Au'?", o:["Silver","Gold","Aluminium","Argon"], a:1},
+      {q:"Who is known as the 'Father of the Indian Constitution'?", o:["Mahatma Gandhi","B. R. Ambedkar","Jawaharlal Nehru","Sardar Patel"], a:1},
+      {q:"The 2011 Cricket World Cup final was played at which stadium?", o:["Eden Gardens","Wankhede Stadium","M. Chinnaswamy Stadium","Feroz Shah Kotla"], a:1},
+      {q:"Which planet has the most confirmed moons in our solar system?", o:["Jupiter","Saturn","Uranus","Neptune"], a:1},
+      {q:"The Suez Canal connects the Mediterranean Sea to which sea?", o:["Black Sea","Red Sea","Caspian Sea","Arabian Sea"], a:1},
+      {q:"Who composed the music for India's national song 'Vande Mataram'?", o:["Rabindranath Tagore","Bankim Chandra Chatterjee","Jadunath Bhattacharya","Hemant Kumar"], a:2},
+      {q:"Which country hosted the first modern Olympic Games in 1896?", o:["France","Greece","Italy","England"], a:1},
+      {q:"The human heart has how many chambers?", o:["2","3","4","5"], a:2}
+    ],
+    4: [
+      {q:"The Treaty of Versailles was signed in which year?", o:["1917","1918","1919","1920"], a:2},
+      {q:"Which Indian mathematician is widely credited with the concept of zero?", o:["Aryabhata","Brahmagupta","Bhaskara","Ramanujan"], a:1},
+      {q:"The currency 'Yen' belongs to which country?", o:["China","South Korea","Japan","Thailand"], a:2},
+      {q:"Which gas makes up the largest percentage of Earth's atmosphere?", o:["Oxygen","Carbon dioxide","Nitrogen","Argon"], a:2},
+      {q:"The novel 'War and Peace' was written by?", o:["Fyodor Dostoevsky","Leo Tolstoy","Anton Chekhov","Ivan Turgenev"], a:1},
+      {q:"Who was the first woman Prime Minister of India?", o:["Sonia Gandhi","Pratibha Patil","Indira Gandhi","Sushma Swaraj"], a:2},
+      {q:"In chess, how many squares are on the board?", o:["32","48","64","100"], a:2},
+      {q:"The Panama Canal connects which two oceans?", o:["Atlantic and Indian","Pacific and Atlantic","Pacific and Indian","Arctic and Pacific"], a:1},
+      {q:"Which planet is famous for its prominent ring system visible from Earth?", o:["Uranus","Neptune","Saturn","Jupiter"], a:2},
+      {q:"India's 'Chandrayaan-3' mission successfully landed near which region of the Moon?", o:["North Pole","South Pole","Equator","Far side centre"], a:1}
+    ],
+    5: [
+      {q:"Which subatomic particle was confirmed by CERN's Large Hadron Collider in 2012?", o:["Neutrino","Higgs boson","Quark","Positron"], a:1},
+      {q:"The Treaty of Tordesillas (1494) divided newly discovered lands between which two countries?", o:["England and France","Spain and Portugal","Netherlands and Spain","Portugal and England"], a:1},
+      {q:"Who formulated the theory of general relativity?", o:["Isaac Newton","Niels Bohr","Albert Einstein","Max Planck"], a:2},
+      {q:"Which Indian city was formerly known as 'Bombay'?", o:["Chennai","Kolkata","Mumbai","Bengaluru"], a:2},
+      {q:"The 'Fields Medal' is a prestigious award in which field?", o:["Physics","Mathematics","Economics","Literature"], a:1},
+      {q:"Which ancient civilization built Machu Picchu?", o:["Aztec","Maya","Inca","Olmec"], a:2},
+      {q:"The 1944 Bretton Woods Conference led to the creation of which institutions?", o:["UN and WHO","IMF and World Bank","NATO and UN","WTO and UN"], a:1},
+      {q:"Which Indian scientist is credited with discovering the Raman Effect?", o:["Homi Bhabha","C. V. Raman","S. Chandrasekhar","Meghnad Saha"], a:1},
+      {q:"The Larsen Ice Shelf is located on which continent?", o:["Greenland","Antarctica","Arctic islands","Siberia"], a:1},
+      {q:"Who was the first person to reach the South Pole?", o:["Robert Falcon Scott","Roald Amundsen","Ernest Shackleton","Edmund Hillary"], a:1}
+    ]
+  };
+
+  var BASE_LADDER = [1000,2000,3000,5000,10000,20000,40000,80000,160000,320000,640000,1250000,2500000,5000000,10000000];
+  var CHECKPOINTS = [5,10,15];
+  var TOTAL_LEVELS = 15;
+  var TIME_LIMIT = 30;
+
+  function amountFor(round, level){
+    return Math.round(BASE_LADDER[level-1] * Math.pow(10, round-1));
+  }
+  function formatINR(n){
+    var s = Math.round(n).toString();
+    var last3 = s.slice(-3);
+    var rest = s.slice(0,-3);
+    if(rest !== ''){ rest = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ","); last3 = "," + last3; }
+    return "₹" + rest + last3;
+  }
+
+  var state = {
+    round:1, level:1, safeAmount:0,
+    used:{1:[],2:[],3:[],4:[],5:[]},
+    lifelines:{fifty:true, poll:true, flip:true},
+    current:null, locked:false, selected:-1,
+    timer:null, timeLeft:TIME_LIMIT
+  };
+
+  var el = {
+    prize: document.getElementById('prize-amount'),
+    levelBadge: document.getElementById('level-badge'),
+    safeAmount: document.getElementById('safe-amount'),
+    timerFill: document.getElementById('timer-fill'),
+    qText: document.getElementById('question-text'),
+    optionsGrid: document.getElementById('options-grid'),
+    lockinBtn: document.getElementById('lockin-btn'),
+    walkawayBtn: document.getElementById('walkaway-btn'),
+    ladderList: document.getElementById('ladder-list'),
+    ladderToggle: document.getElementById('ladder-toggle'),
+    ladder: document.getElementById('ladder'),
+    startOverlay: document.getElementById('start-overlay'),
+    endOverlay: document.getElementById('end-overlay'),
+    startBtn: document.getElementById('start-btn'),
+    restartBtn: document.getElementById('restart-btn'),
+    endTitle: document.getElementById('end-title'),
+    endAmount: document.getElementById('end-amount'),
+    endDetail: document.getElementById('end-detail'),
+    toast: document.getElementById('toast'),
+    lifeFifty: document.getElementById('life-fifty'),
+    lifePoll: document.getElementById('life-poll'),
+    lifeFlip: document.getElementById('life-flip')
+  };
+
+  function tierFor(level){
+    return Math.min(5, Math.ceil(level/3));
+  }
+
+  function showToast(msg){
+    el.toast.textContent = msg;
+    el.toast.classList.add('show');
+    setTimeout(function(){ el.toast.classList.remove('show'); }, 1800);
+  }
+
+  function pickQuestion(level){
+    var tier = tierFor(level);
+    var pool = BANK[tier];
+    if(state.used[tier].length >= pool.length){ state.used[tier] = []; }
+    var idxs = [];
+    for(var i=0;i<pool.length;i++){ if(state.used[tier].indexOf(i) === -1) idxs.push(i); }
+    var pick = idxs[Math.floor(Math.random()*idxs.length)];
+    state.used[tier].push(pick);
+    return {tier:tier, idx:pick, data: pool[pick]};
+  }
+
+  function shuffleOptions(data){
+    var order = [0,1,2,3];
+    for(var i=order.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t = order[i]; order[i]=order[j]; order[j]=t;
+    }
+    var options = order.map(function(i){ return data.o[i]; });
+    var answerIndex = order.indexOf(data.a);
+    return {options:options, answerIndex:answerIndex};
+  }
+
+  function renderLadder(){
+    el.ladderList.innerHTML = '';
+    for(var lvl=1; lvl<=TOTAL_LEVELS; lvl++){
+      var li = document.createElement('li');
+      var isCheckpoint = CHECKPOINTS.indexOf(lvl) !== -1;
+      if(isCheckpoint) li.className = 'checkpoint';
+      if(lvl === state.level) li.className += ' current';
+      if(lvl < state.level) li.className += ' done';
+      var lv = document.createElement('span');
+      lv.className = 'lv';
+      lv.textContent = 'Q' + lvl;
+      var amt = document.createElement('span');
+      amt.textContent = formatINR(amountFor(state.round, lvl));
+      li.appendChild(lv);
+      li.appendChild(amt);
+      el.ladderList.appendChild(li);
+    }
+    el.ladderList.scrollTop = 0;
+  }
+
+  function updateHeader(){
+    var lockedAmount = state.level > 1 ? amountFor(state.round, state.level-1) : 0;
+    el.prize.textContent = formatINR(lockedAmount);
+    el.levelBadge.textContent = 'Round ' + state.round + ' · Question ' + state.level + ' of ' + TOTAL_LEVELS;
+    el.safeAmount.textContent = formatINR(state.safeAmount);
+  }
+
+  function updateLifelineButtons(){
+    el.lifeFifty.disabled = !state.lifelines.fifty || state.locked;
+    el.lifePoll.disabled = !state.lifelines.poll || state.locked;
+    el.lifeFlip.disabled = !state.lifelines.flip || state.locked;
+  }
+
+  function clearTimer(){
+    if(state.timer){ clearInterval(state.timer); state.timer = null; }
+  }
+
+  function startTimer(){
+    clearTimer();
+    state.timeLeft = TIME_LIMIT;
+    el.timerFill.style.width = '100%';
+    el.timerFill.classList.remove('low');
+    state.timer = setInterval(function(){
+      state.timeLeft--;
+      var pct = Math.max(0, (state.timeLeft/TIME_LIMIT)*100);
+      el.timerFill.style.width = pct + '%';
+      if(state.timeLeft <= 10) el.timerFill.classList.add('low');
+      if(state.timeLeft <= 0){
+        clearTimer();
+        handleTimeout();
+      }
+    }, 1000);
+  }
+
+  function handleTimeout(){
+    if(state.locked) return;
+    state.locked = true;
+    revealAnswer(-1);
+    setTimeout(function(){ endRun(false, "Time ran out."); }, 1600);
+  }
+
+  function loadQuestion(){
+    state.locked = false;
+    state.selected = -1;
+    el.lockinBtn.disabled = true;
+    var picked = pickQuestion(state.level);
+    var shuffled = shuffleOptions(picked.data);
+    state.current = {
+      question: picked.data.q,
+      options: shuffled.options,
+      answerIndex: shuffled.answerIndex
+    };
+    el.qText.textContent = state.current.question;
+    el.optionsGrid.innerHTML = '';
+    var labels = ['A','B','C','D'];
+    shuffled.options.forEach(function(optText, i){
+      var btn = document.createElement('button');
+      btn.className = 'option';
+      btn.setAttribute('data-idx', i);
+      var lab = document.createElement('span');
+      lab.className = 'opt-label';
+      lab.textContent = labels[i];
+      var txt = document.createElement('span');
+      txt.className = 'opt-text';
+      txt.textContent = optText;
+      btn.appendChild(lab);
+      btn.appendChild(txt);
+      btn.addEventListener('click', function(){ selectOption(i); });
+      el.optionsGrid.appendChild(btn);
+    });
+    updateHeader();
+    renderLadder();
+    updateLifelineButtons();
+    startTimer();
+  }
+
+  function selectOption(i){
+    if(state.locked) return;
+    state.selected = i;
+    var opts = el.optionsGrid.querySelectorAll('.option');
+    opts.forEach(function(o){ o.classList.remove('selected'); });
+    var chosen = el.optionsGrid.querySelector('[data-idx="'+i+'"]');
+    if(chosen) chosen.classList.add('selected');
+    el.lockinBtn.disabled = false;
+  }
+
+  function revealAnswer(chosenIdx){
+    var opts = el.optionsGrid.querySelectorAll('.option');
+    opts.forEach(function(o){
+      o.disabled = true;
+      var idx = parseInt(o.getAttribute('data-idx'),10);
+      if(idx === state.current.answerIndex) o.classList.add('correct');
+      else if(idx === chosenIdx) o.classList.add('wrong');
+    });
+  }
+
+  function lockIn(){
+    if(state.locked || state.selected === -1) return;
+    state.locked = true;
+    clearTimer();
+    el.lockinBtn.disabled = true;
+    var correct = state.selected === state.current.answerIndex;
+    revealAnswer(state.selected);
+    setTimeout(function(){
+      if(correct){
+        onCorrect();
+      } else {
+        endRun(false, "That wasn't right.");
+      }
+    }, 1500);
+  }
+
+  function onCorrect(){
+    if(CHECKPOINTS.indexOf(state.level) !== -1){
+      state.safeAmount = amountFor(state.round, state.level);
+      showToast('Checkpoint reached: ' + formatINR(state.safeAmount) + ' guaranteed');
+    }
+    if(state.level >= TOTAL_LEVELS){
+      state.round++;
+      state.level = 1;
+      state.lifelines = {fifty:true, poll:true, flip:true};
+      showToast('Round cleared! Prizes now ×' + Math.pow(10, state.round-1) + ' — round ' + state.round + ' begins');
+      loadQuestion();
+    } else {
+      state.level++;
+      loadQuestion();
+    }
+  }
+
+  function walkAway(){
+    clearTimer();
+    var lockedAmount = state.level > 1 ? amountFor(state.round, state.level-1) : state.safeAmount;
+    var finalAmount = Math.max(lockedAmount, state.safeAmount);
+    endRun(true, "You chose to walk away.", finalAmount);
+  }
+
+  function endRun(won, reason, overrideAmount){
+    clearTimer();
+    var finalAmount = typeof overrideAmount === 'number' ? overrideAmount : state.safeAmount;
+    el.endTitle.textContent = won ? 'Prize secured' : 'Game over';
+    el.endAmount.textContent = formatINR(finalAmount);
+    el.endDetail.textContent = reason + ' You reached Round ' + state.round + ', Question ' + state.level + ' of ' + TOTAL_LEVELS + '.';
+    el.endOverlay.classList.remove('hidden');
+  }
+
+  function useFifty(){
+    if(!state.lifelines.fifty || state.locked) return;
+    state.lifelines.fifty = false;
+    var wrongIdxs = [0,1,2,3].filter(function(i){ return i !== state.current.answerIndex; });
+    for(var i=wrongIdxs.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t = wrongIdxs[i]; wrongIdxs[i]=wrongIdxs[j]; wrongIdxs[j]=t;
+    }
+    var toFade = wrongIdxs.slice(0,2);
+    toFade.forEach(function(i){
+      var opt = el.optionsGrid.querySelector('[data-idx="'+i+'"]');
+      if(opt){ opt.classList.add('faded'); opt.disabled = true; }
+    });
+    updateLifelineButtons();
+    showToast('Two incorrect options removed');
+  }
+
+  function usePoll(){
+    if(!state.lifelines.poll || state.locked) return;
+    state.lifelines.poll = false;
+    updateLifelineButtons();
+    var correctPct = 45 + Math.floor(Math.random()*30);
+    var remaining = 100 - correctPct;
+    var others = [0,0,0];
+    for(var i=0;i<2;i++){ others[i] = Math.floor(Math.random()*remaining); remaining -= others[i]; }
+    others[2] = Math.max(0, remaining);
+    var visibleOpts = Array.from(el.optionsGrid.querySelectorAll('.option'));
+    var pcts = [0,0,0,0];
+    var otherFill = 0;
+    visibleOpts.forEach(function(o){
+      var idx = parseInt(o.getAttribute('data-idx'),10);
+      if(idx === state.current.answerIndex){ pcts[idx] = correctPct; }
+    });
+    visibleOpts.forEach(function(o){
+      var idx = parseInt(o.getAttribute('data-idx'),10);
+      if(idx !== state.current.answerIndex && !o.classList.contains('faded')){
+        pcts[idx] = others[otherFill] || 0;
+        otherFill++;
+      }
+    });
+    showPollPopup(pcts);
+  }
+
+  function showPollPopup(pcts){
+    var existing = document.getElementById('poll-popup');
+    if(existing) existing.remove();
+    var popup = document.createElement('div');
+    popup.className = 'poll-popup';
+    popup.id = 'poll-popup';
+    var h = document.createElement('h4');
+    h.textContent = 'Audience poll results';
+    popup.appendChild(h);
+    var labels = ['A','B','C','D'];
+    pcts.forEach(function(p, i){
+      var row = document.createElement('div');
+      row.className = 'poll-row';
+      var lab = document.createElement('span');
+      lab.className = 'lab';
+      lab.textContent = labels[i];
+      var track = document.createElement('div');
+      track.className = 'bar-track';
+      var fill = document.createElement('div');
+      fill.className = 'bar-fill';
+      fill.style.width = '0%';
+      track.appendChild(fill);
+      var pct = document.createElement('span');
+      pct.className = 'pct';
+      pct.textContent = p + '%';
+      row.appendChild(lab);
+      row.appendChild(track);
+      row.appendChild(pct);
+      popup.appendChild(row);
+      setTimeout(function(){ fill.style.width = p + '%'; }, 60);
+    });
+    document.body.appendChild(popup);
+    setTimeout(function(){ if(popup.parentNode) popup.remove(); }, 6000);
+  }
+
+  function useFlip(){
+    if(!state.lifelines.flip || state.locked) return;
+    state.lifelines.flip = false;
+    showToast('Question swapped');
+    loadQuestion();
+  }
+
+  function resetGame(){
+    state.round = 1;
+    state.level = 1;
+    state.safeAmount = 0;
+    state.used = {1:[],2:[],3:[],4:[],5:[]};
+    state.lifelines = {fifty:true, poll:true, flip:true};
+    loadQuestion();
+  }
+
+  el.lockinBtn.addEventListener('click', lockIn);
+  el.walkawayBtn.addEventListener('click', walkAway);
+  el.lifeFifty.addEventListener('click', useFifty);
+  el.lifePoll.addEventListener('click', usePoll);
+  el.lifeFlip.addEventListener('click', useFlip);
+  el.ladderToggle.addEventListener('click', function(){ el.ladder.classList.toggle('open'); });
+  el.startBtn.addEventListener('click', function(){
+    el.startOverlay.classList.add('hidden');
+    resetGame();
+  });
+  el.restartBtn.addEventListener('click', function(){
+    el.endOverlay.classList.add('hidden');
+    resetGame();
+  });
+
+  renderLadder();
+  updateHeader();
+})();
+</script>
+</body>
+</html>

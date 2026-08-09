@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Darkroom — Text → Image / Video</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0b0d0c;
+    --panel: #14181a;
+    --panel-2: #191f21;
+    --line: #262e30;
+    --ink: #e9efef;
+    --ink-dim: #9fb0ac;
+    --amber: #ffb020;
+    --amber-dim: #6b4a10;
+    --teal: #5eead4;
+    --danger: #ff6b6b;
+    --radius: 3px;
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; background:var(--bg); color:var(--ink);
+    font-family:'IBM Plex Mono', monospace;
+    min-height:100vh;
+  }
+  ::selection{ background:var(--amber); color:#0b0d0c; }
+
+  /* ambient safelight glow */
+  .safelight{
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(600px 300px at 15% -10%, rgba(255,176,32,0.10), transparent 60%),
+      radial-gradient(500px 260px at 85% 0%, rgba(94,234,212,0.06), transparent 60%);
+    animation: pulse 7s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ opacity:0.7; }
+    50%{ opacity:1; }
+  }
+
+  header{
+    position:relative; z-index:1;
+    padding:40px 32px 24px;
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:11px; letter-spacing:0.28em; text-transform:uppercase;
+    color:var(--amber); margin:0 0 10px;
+  }
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700; font-size:clamp(28px, 4vw, 44px);
+    margin:0 0 8px; letter-spacing:-0.01em;
+  }
+  header p.sub{
+    color:var(--ink-dim); margin:0; max-width:640px; font-size:13.5px; line-height:1.6;
+  }
+
+  .keybar{
+    position:relative; z-index:1;
+    display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end;
+    padding:22px 32px; background:var(--panel-2); border-bottom:1px solid var(--line);
+  }
+  .field{ display:flex; flex-direction:column; gap:6px; flex:1; min-width:220px; }
+  .field.small{ flex:0 0 160px; min-width:140px; }
+  label{
+    font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-dim);
+  }
+  input[type=password], input[type=text]{
+    background:#0e1112; border:1px solid var(--line); color:var(--ink);
+    padding:10px 12px; border-radius:var(--radius); font-family:inherit; font-size:13px;
+    outline:none; transition:border-color .15s ease;
+  }
+  input:focus{ border-color:var(--amber); }
+  .key-status{ display:flex; align-items:center; gap:8px; font-size:11px; color:var(--ink-dim); }
+  .dot{ width:7px; height:7px; border-radius:50%; background:#4a5658; transition:background .2s; }
+  .dot.on{ background:var(--teal); box-shadow:0 0 8px var(--teal); }
+
+  main{
+    position:relative; z-index:1;
+    display:grid; grid-template-columns:1fr 1fr; gap:1px;
+    background:var(--line);
+  }
+  @media (max-width: 880px){ main{ grid-template-columns:1fr; } }
+
+  .tray{
+    background:var(--bg); padding:28px 32px 36px; display:flex; flex-direction:column; gap:16px;
+  }
+  .tray-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .tray-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:18px; margin:0;
+  }
+  .tray-title .n{ color:var(--amber); margin-right:8px; }
+  .tray-hint{ font-size:10.5px; color:var(--ink-dim); letter-spacing:0.05em; }
+
+  textarea{
+    width:100%; min-height:88px; resize:vertical;
+    background:#0e1112; border:1px solid var(--line); color:var(--ink);
+    padding:12px; border-radius:var(--radius); font-family:inherit; font-size:13px; line-height:1.5;
+    outline:none; transition:border-color .15s ease;
+  }
+  textarea:focus{ border-color:var(--amber); }
+
+  .row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .row .field{ min-width:0; }
+
+  button.run{
+    appearance:none; border:1px solid var(--amber); background:transparent; color:var(--amber);
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:13px; letter-spacing:0.04em;
+    padding:12px 18px; border-radius:var(--radius); cursor:pointer;
+    transition:background .15s ease, color .15s ease; text-transform:uppercase;
+  }
+  button.run:hover:not(:disabled){ background:var(--amber); color:#0b0d0c; }
+  button.run:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  .status{
+    font-size:12px; color:var(--ink-dim); min-height:18px; display:flex; align-items:center; gap:8px;
+  }
+  .status.err{ color:var(--danger); }
+  .status.ok{ color:var(--teal); }
+  .spinner{
+    width:11px; height:11px; border-radius:50%;
+    border:2px solid var(--amber-dim); border-top-color:var(--amber);
+    animation:spin .8s linear infinite; display:none;
+  }
+  .spinner.on{ display:inline-block; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .frame{
+    position:relative; border:1px solid var(--line); border-radius:var(--radius);
+    background:
+      repeating-linear-gradient(45deg, #101414, #101414 8px, #0d1010 8px, #0d1010 16px);
+    min-height:260px; display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  .frame img, .frame video{
+    width:100%; height:100%; object-fit:contain; display:block; position:relative; z-index:2;
+  }
+  .frame .placeholder{
+    color:#3d4849; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; text-align:center; padding:20px;
+  }
+  .develop-scan{
+    position:absolute; left:0; right:0; top:0; height:3px;
+    background:linear-gradient(90deg, transparent, var(--amber), transparent);
+    box-shadow:0 0 12px var(--amber);
+    animation:scan 1.4s linear infinite; display:none; z-index:3;
+  }
+  .develop-scan.on{ display:block; }
+  @keyframes scan{ 0%{ top:0; } 100%{ top:100%; } }
+
+  a.dl{
+    align-self:flex-start; font-size:11px; color:var(--teal); text-decoration:none;
+    border-bottom:1px dashed var(--teal); padding-bottom:1px;
+  }
+
+  footer{
+    position:relative; z-index:1; padding:22px 32px 40px; color:var(--ink-dim); font-size:11px; line-height:1.7;
+    border-top:1px solid var(--line);
+  }
+  footer code{ color:var(--teal); }
+</style>
+</head>
+<body>
+
+<div class="safelight"></div>
+
+<header>
+  <p class="eyebrow">Client-side · No backend · Key stays in your browser tab</p>
+  <h1>Darkroom</h1>
+  <p class="sub">Text goes in, pixels come out. Two trays — one for stills, one for motion — both talking straight to the Hugging Face Inference API from this page. Nothing is sent anywhere else, and your key is never written to disk.</p>
+</header>
+
+<div class="keybar">
+  <div class="field">
+    <label for="hfKey">Hugging Face API Token</label>
+    <input type="password" id="hfKey" placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" value="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">
+  </div>
+  <div class="key-status">
+    <span class="dot" id="keyDot"></span>
+    <span id="keyStatusText">no key loaded</span>
+  </div>
+</div>
+
+<main>
+  <!-- IMAGE TRAY -->
+  <section class="tray">
+    <div class="tray-head">
+      <h2 class="tray-title"><span class="n">01</span>Still</h2>
+      <span class="tray-hint">text → image</span>
+    </div>
+
+    <div class="field">
+      <label for="imgModel">Model ID</label>
+      <input type="text" id="imgModel" value="black-forest-labs/FLUX.1-schnell">
+    </div>
+
+    <textarea id="imgPrompt" placeholder="A single amber safelight glowing in a dark film darkroom, prints hanging to dry, cinematic, 35mm grain">A single amber safelight glowing in a dark film darkroom, prints hanging to dry, cinematic, 35mm grain</textarea>
+
+    <div class="row">
+      <button class="run" id="imgBtn">Develop image</button>
+      <div class="status" id="imgStatus"><span class="spinner" id="imgSpinner"></span><span id="imgStatusText"></span></div>
+    </div>
+
+    <div class="frame" id="imgFrame">
+      <div class="develop-scan" id="imgScan"></div>
+      <div class="placeholder">tray empty — nothing developed yet</div>
+    </div>
+    <a class="dl" id="imgDownload" style="display:none" download="darkroom-image.png">↓ save image</a>
+  </section>
+
+  <!-- VIDEO TRAY -->
+  <section class="tray">
+    <div class="tray-head">
+      <h2 class="tray-title"><span class="n">02</span>Motion</h2>
+      <span class="tray-hint">text → video</span>
+    </div>
+
+    <div class="field">
+      <label for="vidModel">Model ID</label>
+      <input type="text" id="vidModel" value="damo-vilab/text-to-video-ms-1.7b">
+    </div>
+
+    <textarea id="vidPrompt" placeholder="Film strip unspooling in slow motion across a wooden table, dust in the light">Film strip unspooling in slow motion across a wooden table, dust in the light</textarea>
+
+    <div class="row">
+      <button class="run" id="vidBtn">Develop video</button>
+      <div class="status" id="vidStatus"><span class="spinner" id="vidSpinner"></span><span id="vidStatusText"></span></div>
+    </div>
+
+    <div class="frame" id="vidFrame">
+      <div class="develop-scan" id="vidScan"></div>
+      <div class="placeholder">tray empty — nothing developed yet</div>
+    </div>
+    <a class="dl" id="vidDownload" style="display:none" download="darkroom-video.mp4">↓ save video</a>
+  </section>
+</main>
+
+<footer>
+  Uses the Hugging Face serverless Inference API (<code>https://api-inference.huggingface.co/models/&lt;model-id&gt;</code>) directly from your browser with a <code>fetch()</code> call — there is no server in between, so your token never leaves this tab except to talk to Hugging Face. Video-capable serverless models are limited; if a model returns a permission or "not supported" error, try a different model ID or an Inference Endpoint you've deployed yourself. Cold models can take 20–60s to warm up on first request — the tray will say so and retry automatically.
+</footer>
+
+<script>
+(function(){
+  const keyInput = document.getElementById('hfKey');
+  const keyDot = document.getElementById('keyDot');
+  const keyStatusText = document.getElementById('keyStatusText');
+
+  function refreshKeyStatus() {
+    const has = keyInput.value.trim().length > 0;
+    keyDot.classList.toggle('on', has);
+    keyStatusText.textContent = has ? 'key loaded (memory only)' : 'no key loaded';
+  }
+  keyInput.addEventListener('input', refreshKeyStatus);
+  refreshKeyStatus();
+
+  async function runInference({modelId, prompt, statusEl, spinnerEl, frameEl, scanEl, dlEl, dlName, kind}) {
+    const key = keyInput.value.trim();
+    if (!key) {
+      setStatus(statusEl, 'err', 'Enter your Hugging Face token above first.');
+      return;
+    }
+    if (!modelId.trim()) {
+      setStatus(statusEl, 'err', 'Enter a model ID.');
+      return;
+    }
+    if (!prompt.trim()) {
+      setStatus(statusEl, 'err', 'Enter a prompt.');
+      return;
+    }
+
+    spinnerEl.classList.add('on');
+    scanEl.classList.add('on');
+    dlEl.style.display = 'none';
+    setStatus(statusEl, '', 'Sending request…');
+
+    const url = `https://api-inference.huggingface.co/models/${modelId.trim()}`;
+    const maxAttempts = 6;
+    let attempt = 0;
+
+    try {
+      while (attempt < maxAttempts) {
+        attempt++;
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${key}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/octet-stream'
+          },
+          body: JSON.stringify({ inputs: prompt })
+        });
+
+        if (resp.status === 503) {
+          let waitFor = 15;
+          try {
+            const info = await resp.clone().json();
+            if (info && info.estimated_time) waitFor = Math.min(Math.ceil(info.estimated_time), 45);
+          } catch (e) {}
+          setStatus(statusEl, '', `Model is warming up — retrying in ${waitFor}s (attempt ${attempt}/${maxAttempts})…`);
+          await sleep(waitFor * 1000);
+          continue;
+        }
+
+        if (!resp.ok) {
+          let msg = `Request failed (${resp.status})`;
+          try {
+            const errJson = await resp.clone().json();
+            if (errJson && errJson.error) msg += `: ${errJson.error}`;
+          } catch (e) {}
+          setStatus(statusEl, 'err', msg);
+          return;
+        }
+
+        const contentType = resp.headers.get('content-type') || '';
+        const blob = await resp.blob();
+
+        if (contentType.includes('application/json')) {
+          const text = await blob.text();
+          setStatus(statusEl, 'err', `Model returned JSON instead of media: ${text.slice(0,180)}`);
+          return;
+        }
+
+        const objectUrl = URL.createObjectURL(blob);
+        renderMedia(frameEl, objectUrl, contentType, kind);
+
+        dlEl.href = objectUrl;
+        dlEl.download = dlName;
+        dlEl.style.display = 'inline-block';
+
+        setStatus(statusEl, 'ok', `Done — ${blob.type || 'media'} (${Math.round(blob.size/1024)} KB).`);
+        return;
+      }
+      setStatus(statusEl, 'err', 'Model still loading after several retries. Try again shortly.');
+    } catch (err) {
+      setStatus(statusEl, 'err', `Network/CORS error: ${err.message}. Some models block browser-origin requests — try a different model ID.`);
+    } finally {
+      spinnerEl.classList.remove('on');
+      scanEl.classList.remove('on');
+    }
+  }
+
+  function renderMedia(frameEl, objectUrl, contentType, kind) {
+    frameEl.innerHTML = '';
+    const scan = document.createElement('div');
+    scan.className = 'develop-scan';
+    frameEl.appendChild(scan);
+
+    const isVideo = kind === 'video' || contentType.includes('video');
+    const el = document.createElement(isVideo ? 'video' : 'img');
+    if (isVideo) {
+      el.controls = true;
+      el.autoplay = false;
+      el.loop = true;
+    } else {
+      el.alt = 'Generated image';
+    }
+    el.src = objectUrl;
+    frameEl.appendChild(el);
+  }
+
+  function setStatus(el, cls, text) {
+    el.className = 'status' + (cls ? ' ' + cls : '');
+    const textSpan = el.querySelector('span:last-child');
+    if (textSpan) textSpan.textContent = text;
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  document.getElementById('imgBtn').addEventListener('click', () => {
+    const btn = document.getElementById('imgBtn');
+    btn.disabled = true;
+    runInference({
+      modelId: document.getElementById('imgModel').value,
+      prompt: document.getElementById('imgPrompt').value,
+      statusEl: document.getElementById('imgStatus'),
+      spinnerEl: document.getElementById('imgSpinner'),
+      frameEl: document.getElementById('imgFrame'),
+      scanEl: document.getElementById('imgScan'),
+      dlEl: document.getElementById('imgDownload'),
+      dlName: 'darkroom-image.png',
+      kind: 'image'
+    }).finally(() => { btn.disabled = false; });
+  });
+
+  document.getElementById('vidBtn').addEventListener('click', () => {
+    const btn = document.getElementById('vidBtn');
+    btn.disabled = true;
+    runInference({
+      modelId: document.getElementById('vidModel').value,
+      prompt: document.getElementById('vidPrompt').value,
+      statusEl: document.getElementById('vidStatus'),
+      spinnerEl: document.getElementById('vidSpinner'),
+      frameEl: document.getElementById('vidFrame'),
+      scanEl: document.getElementById('vidScan'),
+      dlEl: document.getElementById('vidDownload'),
+      dlName: 'darkroom-video.mp4',
+      kind: 'video'
+    }).finally(() => { btn.disabled = false; });
+  });
+})();
+</script>
+
+</body>
+</html>

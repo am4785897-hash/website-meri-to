@@ -1,0 +1,136 @@
+{% extends "base_dashboard.html" %}
+{% block title %}{{ question.title }} · Blind Coding · Code Battle Arena{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/code-battle-arena.css">
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <a href="{{ url_for('battle.blind_coding_lobby') }}" class="tv-arena-admin-link">← Leave Battle</a>
+  <h1>🙈 {{ question.title }}</h1>
+  <div class="tv-arena-mode-card__meta">
+    <span class="tv-pill tv-pill--{{ 'success' if question.difficulty == 'easy' else ('warning' if question.difficulty == 'medium' else '') }}">{{ question.difficulty|title }}</span>
+    <span class="tv-pill" id="bc-timer">⏱ --:--</span>
+    <span class="tv-pill" id="bc-opponent-status">Opponent: {{ opponent.user.username if opponent else 'connecting…' }}</span>
+  </div>
+  <p class="tv-text-dim">{{ question.prompt }}</p>
+  <p class="tv-text-faint">🙈 No test runs, no retries - you get one submission. Neither of you sees any result until you've both locked in.</p>
+</section>
+
+<div id="bc-result" class="tv-card tv-battle-result-card tv-animate-in" style="display:none;"></div>
+
+<form id="bc-form" class="tv-card tv-admin-form tv-animate-in">
+  <label class="tv-admin-form__field tv-admin-form__field--full">
+    <span>Your solution (one shot - check it carefully before submitting)</span>
+    <textarea id="bc-code" rows="14" class="tv-admin-code" spellcheck="false" autocomplete="off" autocapitalize="off">{{ question.starter_code }}</textarea>
+  </label>
+  <div id="bc-your-result" class="tv-text-faint"></div>
+  <div class="tv-admin-form__actions">
+    <button id="bc-submit-btn" class="tv-btn tv-btn--primary" type="submit">Lock In Solution</button>
+  </div>
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+(function () {
+  var battleId = {{ battle.id }};
+  var myUserId = {{ current_user.id }};
+  var timeLimitSeconds = {{ question.time_limit_seconds }};
+  var startedAtMs = new Date("{{ battle.started_at.isoformat() }}Z").getTime();
+
+  var socket = io();
+  var form = document.getElementById('bc-form');
+  var codeBox = document.getElementById('bc-code');
+  var submitBtn = document.getElementById('bc-submit-btn');
+  var opponentStatusEl = document.getElementById('bc-opponent-status');
+  var yourResultEl = document.getElementById('bc-your-result');
+  var resultEl = document.getElementById('bc-result');
+  var timerEl = document.getElementById('bc-timer');
+
+  socket.on('connect', function () {
+    socket.emit('battle:join_room', { battle_id: battleId });
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (submitBtn.disabled) return;
+    socket.emit('blind:submit', { battle_id: battleId, code: codeBox.value });
+    // Lock the form immediately client-side too - blind coding is one
+    // shot, no waiting on a server round-trip to know that.
+    submitBtn.disabled = true;
+    codeBox.disabled = true;
+  });
+
+  socket.on('blind:submitted', function () {
+    yourResultEl.textContent = '🔒 Submission locked in - waiting on your opponent…';
+  });
+
+  socket.on('blind:already_submitted', function () {
+    yourResultEl.textContent = '🔒 You already submitted - waiting on your opponent…';
+    submitBtn.disabled = true;
+    codeBox.disabled = true;
+  });
+
+  socket.on('blind:opponent_submitted', function () {
+    opponentStatusEl.textContent = 'Opponent: locked in 🔒';
+  });
+
+  socket.on('battle:opponent_left', function () {
+    opponentStatusEl.textContent = 'Opponent disconnected';
+    submitBtn.disabled = true;
+  });
+
+  function renderFinished(data) {
+    submitBtn.disabled = true;
+    codeBox.disabled = true;
+    var mine = data.participants.filter(function (p) { return p.user_id === myUserId; })[0];
+    var theirs = data.participants.filter(function (p) { return p.user_id !== myUserId; })[0];
+
+    var heading, cls;
+    if (data.is_draw) {
+      heading = '🤝 Draw - neither solution passed';
+      cls = '';
+    } else if (mine && mine.result === 'win') {
+      heading = '🏆 You won!';
+      cls = 'is-correct';
+    } else {
+      heading = '💀 ' + (theirs ? theirs.username : 'Opponent') + ' had the working solution';
+      cls = 'is-incorrect';
+    }
+
+    resultEl.className = 'tv-card tv-battle-result-card tv-animate-in' + (cls ? ' ' + cls : '');
+    var rewardsHtml = '';
+    if (mine && (mine.coins_awarded || mine.xp_awarded)) {
+      rewardsHtml = '<div class="tv-battle-result-card__rewards">' +
+        (mine.coins_awarded ? '<span class="tv-pill tv-pill--warning">+' + mine.coins_awarded + ' coins</span>' : '') +
+        (mine.xp_awarded ? '<span class="tv-pill">+' + mine.xp_awarded + ' XP</span>' : '') +
+        '</div>';
+    }
+    resultEl.innerHTML = '<h2>' + heading + '</h2>' + rewardsHtml +
+      '<div class="tv-admin-form__actions"><a href="/battle/blind-coding" class="tv-btn tv-btn--primary">Find Another Match</a></div>';
+    resultEl.style.display = '';
+  }
+
+  socket.on('battle:finished', renderFinished);
+
+  // Countdown, purely cosmetic - the server (battle.py's blind timeout
+  // watcher) is what actually finalizes an undecided battle, this just
+  // shows the player how long is left.
+  function tick() {
+    var remaining = timeLimitSeconds - Math.floor((Date.now() - startedAtMs) / 1000);
+    if (remaining < 0) remaining = 0;
+    var mins = Math.floor(remaining / 60);
+    var secs = remaining % 60;
+    timerEl.textContent = '⏱ ' + mins + ':' + (secs < 10 ? '0' : '') + secs;
+    if (remaining > 0) setTimeout(tick, 1000);
+  }
+  tick();
+})();
+</script>
+{% endblock %}

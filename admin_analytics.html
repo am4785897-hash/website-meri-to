@@ -1,0 +1,104 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Analytics · Admin · Coder Enchanté Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <span class="tv-pill">🛠️ Admin</span>
+  <h1>Analytics</h1>
+  <p class="tv-text-dim">Engagement across the Code Battle Arena.</p>
+</section>
+
+<div class="tv-stat-grid tv-animate-in">
+  <div class="tv-card tv-stat-tile">
+    <div class="tv-stat-tile__value">{{ total_users }}</div>
+    <div class="tv-stat-tile__label">Students</div>
+  </div>
+  <div class="tv-card tv-stat-tile">
+    <div class="tv-stat-tile__value">{{ new_this_week }}</div>
+    <div class="tv-stat-tile__label">New This Week</div>
+  </div>
+  <div class="tv-card tv-stat-tile">
+    <div class="tv-stat-tile__value">{{ total_battles }}</div>
+    <div class="tv-stat-tile__label">Battles Played</div>
+  </div>
+  <div class="tv-card tv-stat-tile">
+    <div class="tv-stat-tile__value">{{ finished_battles }}</div>
+    <div class="tv-stat-tile__label">Battles Finished</div>
+  </div>
+  <div class="tv-card tv-stat-tile">
+    <div class="tv-stat-tile__value">{{ completed_tournaments }}</div>
+    <div class="tv-stat-tile__label">Tournaments Completed</div>
+  </div>
+  <div class="tv-card tv-stat-tile">
+    <div class="tv-stat-tile__value">{{ avg_participants if avg_participants is not none else '—' }}</div>
+    <div class="tv-stat-tile__label">Avg. Bracket Size</div>
+  </div>
+</div>
+
+<div class="tv-section-header tv-animate-in"><h2>Battles by Mode</h2></div>
+<div class="tv-card tv-admin-table-card tv-animate-in">
+  <table class="tv-admin-table">
+    <thead><tr><th>Mode</th><th>Battles</th></tr></thead>
+    <tbody>
+      {% for mode, count in battles_by_mode %}
+      <tr><td>{{ mode|replace('_', ' ')|title }}</td><td>{{ count }}</td></tr>
+      {% else %}
+      <tr><td colspan="2" class="tv-text-dim">No battles played yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="tv-section-header tv-animate-in"><h2>Solo Modes (Output Prediction / Code Completion)</h2></div>
+<div class="tv-card tv-admin-table-card tv-animate-in">
+  <table class="tv-admin-table">
+    <thead><tr><th>Mode</th><th>Attempts</th><th>Correct</th><th>Accuracy</th></tr></thead>
+    <tbody>
+      {% for mode, count, correct in attempts_by_mode %}
+      <tr>
+        <td>{{ mode|replace('_', ' ')|title }}</td>
+        <td>{{ count }}</td>
+        <td>{{ correct or 0 }}</td>
+        <td>{{ ((correct or 0) / count * 100)|round(1) if count else 0 }}%</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="tv-text-dim">No attempts yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="tv-section-header tv-animate-in"><h2>Tournaments by Status</h2></div>
+<div class="tv-card tv-admin-table-card tv-animate-in">
+  <table class="tv-admin-table">
+    <thead><tr><th>Status</th><th>Count</th></tr></thead>
+    <tbody>
+      {% for status, count in tournaments_by_status %}
+      <tr><td>{{ status|title }}</td><td>{{ count }}</td></tr>
+      {% else %}
+      <tr><td colspan="2" class="tv-text-dim">No tournaments created yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="tv-section-header tv-animate-in"><h2>Most Active Players</h2></div>
+<div class="tv-card tv-admin-table-card tv-animate-in">
+  <table class="tv-admin-table">
+    <thead><tr><th>#</th><th>User</th><th>Battles Played</th></tr></thead>
+    <tbody>
+      {% for u, battle_count in most_active %}
+      <tr><td>{{ loop.index }}</td><td>{{ u.username }}</td><td>{{ battle_count }}</td></tr>
+      {% else %}
+      <tr><td colspan="3" class="tv-text-dim">No activity yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

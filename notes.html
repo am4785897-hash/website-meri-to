@@ -1,0 +1,37 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Notes · TechVerse Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/notes.css">
+{% endblock %}
+
+{% block content %}
+<section class="tv-notes-toolbar tv-animate-in">
+  <div>
+    <h1>Notes</h1>
+    <p class="tv-text-dim">Jot down anything - your notes are private to you.</p>
+  </div>
+  <button type="button" class="tv-btn tv-btn--primary" id="tv-new-note">+ New Note</button>
+</section>
+
+<div class="tv-notes-grid tv-animate-in" id="tv-notes-grid">
+  {% for note in notes %}
+  <div class="tv-note-card" data-note-id="{{ note.id }}">
+    <input class="tv-note-card__title" value="{{ note.title }}" placeholder="Untitled note">
+    <textarea class="tv-note-card__content" placeholder="Start typing...">{{ note.content }}</textarea>
+    <div class="tv-note-card__footer">
+      <span class="tv-note-card__timestamp">{{ note.updated_at.strftime('%d %b, %H:%M') }}</span>
+      <button type="button" class="tv-note-card__delete">Delete</button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<p class="tv-notes-empty" id="tv-notes-empty" {% if notes %}style="display:none;"{% endif %}>
+  No notes yet - click "+ New Note" to write your first one.
+</p>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/assets/js/notes.js"></script>
+{% endblock %}

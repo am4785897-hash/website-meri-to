@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codex Terminal — AI Coding Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,600;0,6..72,700;1,6..72,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
+<style>
+  :root{
+    --ink:#0E1420;
+    --ink-2:#141C2B;
+    --ink-3:#1B2436;
+    --paper:#F2F0E9;
+    --paper-dim:#B9C0CC;
+    --signal:#E8A33D;
+    --wire:#4C9A6A;
+    --wire-dim:#3A7350;
+    --rule: rgba(242,240,233,0.14);
+    --rule-strong: rgba(242,240,233,0.28);
+    --display: 'Newsreader', serif;
+    --body: 'Inter', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--ink);color:var(--paper);font-family:var(--body);height:100%;}
+  body{display:flex;flex-direction:column;min-height:100vh;}
+  ::selection{background:var(--signal);color:var(--ink);}
+  a{color:inherit;}
+
+  .utility{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:8px 24px;font-family:var(--mono);font-size:11px;letter-spacing:.04em;
+    color:var(--paper-dim);border-bottom:1px solid var(--rule);text-transform:uppercase;flex-shrink:0;
+  }
+  .utility .dot{color:var(--wire);}
+
+  header.masthead{
+    padding:24px 24px 18px;border-bottom:2px solid var(--rule-strong);
+    display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;flex-shrink:0;
+  }
+  .masthead h1{
+    font-family:var(--display);font-weight:700;font-size:clamp(28px,4.5vw,46px);
+    margin:0;letter-spacing:-0.01em;line-height:0.95;
+  }
+  .masthead h1 span{color:var(--signal);font-style:italic;font-weight:500;}
+  .masthead .tag{
+    font-family:var(--mono);font-size:11px;color:var(--paper-dim);
+    text-transform:uppercase;letter-spacing:.08em;max-width:280px;text-align:right;
+  }
+  nav.backlink a{
+    display:inline-flex;align-items:center;gap:8px;color:var(--paper);text-decoration:none;
+    font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.06em;
+    border:1px solid var(--rule-strong);padding:7px 14px;border-radius:2px;transition:all .15s ease;
+  }
+  nav.backlink a:hover{border-color:var(--signal);color:var(--signal);}
+
+  /* ===== Terminal window ===== */
+  .terminal-shell{
+    flex-grow:1;display:flex;flex-direction:column;max-width:920px;width:100%;
+    margin:24px auto;padding:0 24px 24px;
+  }
+  .terminal-chrome{
+    display:flex;align-items:center;gap:8px;
+    background:var(--ink-3);border:1px solid var(--rule-strong);border-bottom:none;
+    padding:10px 14px;border-radius:6px 6px 0 0;
+  }
+  .terminal-chrome .knob{width:11px;height:11px;border-radius:50%;background:var(--rule-strong);}
+  .terminal-chrome .knob:nth-child(1){background:#E86B5A;}
+  .terminal-chrome .knob:nth-child(2){background:var(--signal);}
+  .terminal-chrome .knob:nth-child(3){background:var(--wire);}
+  .terminal-chrome .path{
+    margin-left:10px;font-family:var(--mono);font-size:11px;color:var(--paper-dim);
+    letter-spacing:.03em;
+  }
+  .terminal-chrome .modelbadge{
+    margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--wire);
+    text-transform:uppercase;letter-spacing:.06em;border:1px solid var(--wire-dim);
+    padding:3px 8px;border-radius:2px;
+  }
+
+  #messages{
+    background:var(--ink-2);border:1px solid var(--rule-strong);border-top:none;
+    flex-grow:1;min-height:420px;max-height:60vh;overflow-y:auto;
+    padding:20px;display:flex;flex-direction:column;gap:18px;
+  }
+  #messages::-webkit-scrollbar{width:8px;}
+  #messages::-webkit-scrollbar-thumb{background:var(--rule-strong);border-radius:4px;}
+
+  .msg{display:flex;flex-direction:column;gap:6px;max-width:100%;}
+  .msg .role{
+    font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;
+  }
+  .msg.user .role{color:var(--signal);}
+  .msg.assistant .role{color:var(--wire);}
+  .msg .bubble{
+    font-size:14.5px;line-height:1.6;
+  }
+  .msg.user .bubble{
+    font-family:var(--mono);white-space:pre-wrap;color:var(--paper);
+  }
+  .msg.assistant .bubble{color:var(--paper);}
+  .msg.assistant .bubble p{margin:0 0 10px;}
+  .msg.assistant .bubble p:last-child{margin-bottom:0;}
+  .msg.assistant .bubble ul, .msg.assistant .bubble ol{margin:0 0 10px;padding-left:20px;}
+  .msg.assistant .bubble code:not(pre code){
+    background:var(--ink-3);padding:2px 6px;border-radius:3px;font-family:var(--mono);font-size:13px;
+  }
+
+  .codeblock{
+    position:relative;margin:6px 0 10px;border:1px solid var(--rule-strong);border-radius:4px;overflow:hidden;
+  }
+  .codeblock .cb-head{
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--ink-3);padding:6px 10px;font-family:var(--mono);font-size:10px;
+    color:var(--paper-dim);text-transform:uppercase;letter-spacing:.06em;
+  }
+  .codeblock .cb-copy{
+    background:none;border:1px solid var(--rule-strong);color:var(--paper-dim);
+    font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;
+    padding:3px 9px;border-radius:2px;cursor:pointer;transition:all .15s ease;
+  }
+  .codeblock .cb-copy:hover{border-color:var(--signal);color:var(--signal);}
+  .codeblock .cb-copy.copied{border-color:var(--wire);color:var(--wire);}
+  .codeblock pre{margin:0;padding:14px;overflow-x:auto;font-size:13px;background:#0d1117!important;}
+  .codeblock code.hljs{background:transparent!important;padding:0;}
+
+  .typing{display:flex;gap:5px;padding:4px 0;}
+  .typing span{
+    width:6px;height:6px;border-radius:50%;background:var(--wire);
+    animation:blink 1.2s infinite ease-in-out;
+  }
+  .typing span:nth-child(2){animation-delay:.2s;}
+  .typing span:nth-child(3){animation-delay:.4s;}
+  @keyframes blink{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
+
+  /* ===== Input bar ===== */
+  .inputbar{
+    display:flex;gap:10px;align-items:flex-end;
+    background:var(--ink-2);border:1px solid var(--rule-strong);border-top:none;
+    padding:14px 16px;border-radius:0 0 6px 6px;
+  }
+  .inputbar .prompt{font-family:var(--mono);color:var(--signal);font-size:15px;padding-bottom:9px;}
+  .inputbar textarea{
+    flex-grow:1;background:none;border:none;outline:none;resize:none;
+    color:var(--paper);font-family:var(--mono);font-size:14px;line-height:1.5;
+    max-height:160px;padding:8px 0;
+  }
+  .inputbar textarea::placeholder{color:var(--paper-dim);}
+  .inputbar button.send{
+    font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+    background:var(--signal);color:var(--ink);border:none;padding:10px 18px;border-radius:3px;
+    cursor:pointer;font-weight:600;transition:opacity .15s ease;flex-shrink:0;
+  }
+  .inputbar button.send:hover{opacity:.85;}
+  .inputbar button.send:disabled{opacity:.4;cursor:wait;}
+
+  .hint{
+    font-family:var(--mono);font-size:10px;color:var(--paper-dim);text-transform:uppercase;
+    letter-spacing:.05em;margin-top:8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;
+  }
+  .hint button.clear{
+    background:none;border:none;color:var(--paper-dim);font-family:var(--mono);font-size:10px;
+    text-transform:uppercase;letter-spacing:.05em;cursor:pointer;text-decoration:underline;
+  }
+  .hint button.clear:hover{color:var(--signal);}
+
+  footer{
+    border-top:1px solid var(--rule);padding:16px 24px;font-family:var(--mono);font-size:11px;
+    color:var(--paper-dim);text-align:center;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;
+  }
+
+  @media (max-width:560px){
+    .masthead{flex-direction:column;align-items:flex-start;}
+    .masthead .tag{text-align:left;}
+  }
+</style>
+</head>
+<body>
+
+<div class="utility">
+  <div><span class="dot">●</span> AI CODING AGENT — POWERED BY HUGGING FACE</div>
+  <div id="clock">--:--:--</div>
+</div>
+
+<header class="masthead">
+  <div>
+    <h1>student Enchanté <span>terminal</span></h1>
+    <nav class="backlink" style="margin-top:10px;">
+      <audio controls autoplay loop><source src="../audios/airtel_funk.mp3"></audio>
+      <!-- EDIT the href below to point back to your main site -->
+      <a href="index.html">← Back to Main Site</a>
+    </nav>
+  </div>
+  <div class="tag">Ask it to write, explain, debug, or refactor code — in your browser, live.</div>
+</header>
+
+<div class="terminal-shell">
+  <div class="terminal-chrome">
+    <div class="knob"></div><div class="knob"></div><div class="knob"></div>
+    <div class="path">~/codex-terminal</div>
+    <div class="modelbadge" id="modelBadge">connecting…</div>
+  </div>
+  <div id="messages"></div>
+  <div class="inputbar">
+    <div class="prompt">$</div>
+    <textarea id="input" rows="1" placeholder="Ask for code, an explanation, a debug — e.g. 'write a debounce function in JS'"></textarea>
+    <button class="send" id="sendBtn">Run →</button>
+  </div>
+  <div class="hint">
+    <span>Enter to send · Shift+Enter for newline</span>
+    <button class="clear" id="clearBtn">Clear conversation</button>
+  </div>
+</div>
+
+<footer>Enchanté Terminal — an interactive coding agent</footer>
+
+<script>
+  // ---- Hugging Face Inference Providers config ----
+  const HF_TOKEN = "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";
+  const HF_ENDPOINT = "https://router.huggingface.co/v1/chat/completions";
+  // Qwen2.5-Coder is a strong, widely-available free-tier coding model.
+  // ":fastest" auto-picks the quickest provider currently serving it.
+  const MODEL = "Qwen/Qwen2.5-Coder-32B-Instruct:fastest";
+
+  const SYSTEM_PROMPT = "You are a precise, friendly coding assistant embedded in a website. Write correct, runnable code. Use markdown code blocks with a language tag for every snippet. Keep explanations concise.";
+
+  const messagesEl = document.getElementById("messages");
+  const inputEl = document.getElementById("input");
+  const sendBtn = document.getElementById("sendBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const modelBadge = document.getElementById("modelBadge");
+
+  let history = [{ role: "system", content: SYSTEM_PROMPT }];
+
+  function tickClock(){
+    document.getElementById("clock").textContent = new Date().toLocaleTimeString();
+  }
+  setInterval(tickClock, 1000);
+  tickClock();
+
+  modelBadge.textContent = MODEL.split("/").pop().split(":")[0];
+
+  function scrollToBottom(){
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function renderMarkdown(text){
+    const html = marked.parse(text, { breaks: true });
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = html;
+    wrapper.querySelectorAll("pre code").forEach(block => {
+      hljs.highlightElement(block);
+      const pre = block.parentElement;
+      const lang = (block.className.match(/language-(\w+)/) || [,"code"])[1];
+      const cb = document.createElement("div");
+      cb.className = "codeblock";
+      const head = document.createElement("div");
+      head.className = "cb-head";
+      head.innerHTML = `<span>${lang}</span>`;
+      const copyBtn = document.createElement("button");
+      copyBtn.className = "cb-copy";
+      copyBtn.textContent = "Copy";
+      copyBtn.addEventListener("click", () => {
+        navigator.clipboard.writeText(block.textContent).then(() => {
+          copyBtn.textContent = "Copied";
+          copyBtn.classList.add("copied");
+          setTimeout(() => { copyBtn.textContent = "Copy"; copyBtn.classList.remove("copied"); }, 1500);
+        });
+      });
+      head.appendChild(copyBtn);
+      cb.appendChild(head);
+      pre.parentElement.insertBefore(cb, pre);
+      cb.appendChild(pre);
+    });
+    return wrapper;
+  }
+
+  function addMessage(role, content){
+    const msg = document.createElement("div");
+    msg.className = "msg " + role;
+    const roleLabel = document.createElement("div");
+    roleLabel.className = "role";
+    roleLabel.textContent = role === "user" ? "You" : "Agent";
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    if (role === "assistant") {
+      bubble.appendChild(renderMarkdown(content));
+    } else {
+      bubble.textContent = content;
+    }
+    msg.appendChild(roleLabel);
+    msg.appendChild(bubble);
+    messagesEl.appendChild(msg);
+    scrollToBottom();
+    return bubble;
+  }
+
+  function addTyping(){
+    const msg = document.createElement("div");
+    msg.className = "msg assistant";
+    msg.id = "typingMsg";
+    msg.innerHTML = `<div class="role">Agent</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
+    messagesEl.appendChild(msg);
+    scrollToBottom();
+  }
+  function removeTyping(){
+    const t = document.getElementById("typingMsg");
+    if (t) t.remove();
+  }
+
+  async function sendMessage(){
+    const text = inputEl.value.trim();
+    if (!text) return;
+    inputEl.value = "";
+    inputEl.style.height = "auto";
+    sendBtn.disabled = true;
+
+    addMessage("user", text);
+    history.push({ role: "user", content: text });
+    addTyping();
+
+    try {
+      const res = await fetch(HF_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + HF_TOKEN,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: history,
+          max_tokens: 1024,
+          temperature: 0.3
+        })
+      });
+      const data = await res.json();
+      removeTyping();
+      if (!res.ok) {
+        throw new Error((data.error && data.error.message) || "Request failed (" + res.status + ")");
+      }
+      const reply = data.choices?.[0]?.message?.content || "(No response received.)";
+      addMessage("assistant", reply);
+      history.push({ role: "assistant", content: reply });
+    } catch (err) {
+      removeTyping();
+      addMessage("assistant", "**Error reaching the model:** " + err.message + "\n\nCheck that your Hugging Face token is set correctly near the top of the script, and that the model is available via Inference Providers.");
+      console.error(err);
+    } finally {
+      sendBtn.disabled = false;
+    }
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  inputEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  inputEl.addEventListener("input", () => {
+    inputEl.style.height = "auto";
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + "px";
+  });
+
+  clearBtn.addEventListener("click", () => {
+    history = [{ role: "system", content: SYSTEM_PROMPT }];
+    messagesEl.innerHTML = "";
+    addMessage("assistant", "Conversation cleared. What are we building?");
+  });
+
+  addMessage("assistant", "Ready. Ask me to write, explain, debug, or refactor code.");
+</script>
+
+</body>
+</html>

@@ -1,0 +1,40 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Announcement · Admin · Coder Enchanté Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <a href="{{ url_for('admin.users_list') }}" class="tv-arena-admin-link">← Users</a>
+  <span class="tv-pill">🛠️ Admin</span>
+  <h1>Site Announcement</h1>
+  <p class="tv-text-dim">Shows as a banner at the top of every page for every signed-in user. Saving pushes it live to any tab that's already open - no reload needed.</p>
+</section>
+
+<form method="POST" class="tv-card tv-admin-form tv-animate-in">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+  <label class="tv-admin-form__field tv-admin-form__field--full">
+    <span>Message</span>
+    <input type="text" name="message" class="tv-select" maxlength="500" placeholder="e.g. Scheduled maintenance tonight 11 PM - 12 AM." value="{{ announcement.message }}">
+  </label>
+
+  <label class="tv-admin-form__field" style="flex-direction: row; align-items: center; gap: 8px;">
+    <input type="checkbox" name="is_active" {{ 'checked' if announcement.is_active }}>
+    <span>Active (visible sitewide)</span>
+  </label>
+
+  <div class="tv-admin-form__actions">
+    <button type="submit" class="tv-btn tv-btn--primary">Save</button>
+  </div>
+</form>
+
+{% if announcement.is_active and announcement.message %}
+<div class="tv-section-header tv-animate-in"><h2>Preview</h2></div>
+<div class="tv-site-banner tv-animate-in">📢 {{ announcement.message }}</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Courses · Coder Enchanté Academy{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-3 tv-animate-in">
+  <div class="tv-section-header">
+    <h1>Courses</h1>
+  </div>
+
+  <div class="tv-path-row">
+    {% for course in courses %}
+    <a href="{{ url_for('course_overview', course_slug=course.slug) }}" class="tv-card tv-card--interactive tv-path-card tv-path-card--{{ course.css_class }}">
+      <div class="tv-path-card__cover"><span class="tv-path-card__badge">{{ course.icon }}</span></div>
+      <div class="tv-path-card__body">
+        <h3>{{ course.title }}</h3>
+        <p class="tv-text-dim">{{ course.subtitle }}</p>
+        <p class="tv-text-faint" style="font-size:0.78rem;">{{ course.lesson_count }} lessons</p>
+        <div class="tv-path-card__progress-row">
+          <div class="tv-progress"><div class="tv-progress__fill" style="width: {{ course.percent }}%"></div></div>
+          <span>{{ course.percent }}%</span>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

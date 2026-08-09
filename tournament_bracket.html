@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ tournament.name }} — Bracket</title>
+<style>
+body{margin:0;background:#080b14;color:#eef2ff;font-family:system-ui,sans-serif}.wrap{max-width:1200px;margin:auto;padding:26px 16px}.muted{color:#aab4c9}
+.rounds{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:25px}.round h2{font-size:14px;color:#aab4c9}.match{background:#12182a;border:1px solid #28324b;border-radius:12px;padding:12px;margin-bottom:18px}.p{display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #28324b}.p:last-child{border:0}.win{color:#2dd4a7;font-weight:800}
+button{border:0;border-radius:9px;background:#7657ff;color:white;padding:10px 14px;font-weight:700;cursor:pointer}
+@media(max-width:800px){.rounds{grid-template-columns:1fr 1fr}}@media(max-width:520px){.rounds{grid-template-columns:1fr}}
+</style></head><body><main class="wrap">
+<p class="muted">🏆 TOURNAMENT</p><h1>{{ tournament.name }}</h1><p class="muted">Status: {{ tournament.status }}</p>
+<div class="rounds">
+{% for round_no in range(1,5) %}
+<div class="round"><h2>{% if round_no == 1 %}ROUND 1{% elif round_no == 2 %}QUARTERFINAL{% elif round_no == 3 %}SEMIFINAL{% else %}FINAL{% endif %}</h2>
+{% for m in matches if m.round_no == round_no %}
+<div class="match">
+<div class="p {% if m.winner_id == m.player1_id %}win{% endif %}">{{ m.player1_name }} <span>{% if m.winner_id == m.player1_id %}✓{% endif %}</span></div>
+<div class="p {% if m.winner_id == m.player2_id %}win{% endif %}">{{ m.player2_name }} <span>{% if m.winner_id == m.player2_id %}✓{% endif %}</span></div>
+{% if m.status in ['ready','bye'] and current_user.id in [m.player1_id,m.player2_id] and m.status == 'ready' %}
+<button onclick="location.href='/tournament/{{ tournament.id }}/match/{{ m.id }}'">Enter Match →</button>
+{% endif %}
+</div>{% endfor %}</div>
+{% endfor %}
+</div>
+<p class="muted">Rewards: 🥇 +1000 Coins · 🥈 +500 · 🥉 +250</p>
+</main></body></html>

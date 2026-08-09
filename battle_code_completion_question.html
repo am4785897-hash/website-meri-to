@@ -1,0 +1,77 @@
+{% extends "base_dashboard.html" %}
+{% block title %}{{ question.title }} · Code Completion · Code Battle Arena{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/code-battle-arena.css">
+<link rel="stylesheet" href="/assets/css/admin.css">
+{% endblock %}
+
+{% block content %}
+
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <a href="{{ url_for('battle.code_completion_list') }}" class="tv-arena-admin-link">← All Code Completion Questions</a>
+  <h1>{{ question.title }}</h1>
+  <div class="tv-arena-mode-card__meta">
+    <span class="tv-pill tv-pill--{{ 'success' if question.difficulty == 'easy' else ('warning' if question.difficulty == 'medium' else '') }}">{{ question.difficulty|title }}</span>
+    <span class="tv-pill">⏱ {{ question.time_limit_seconds }}s</span>
+  </div>
+  <p class="tv-text-dim">{{ question.prompt }}</p>
+</section>
+
+{% if result %}
+
+<div class="tv-card tv-battle-result-card {{ 'is-correct' if result.is_correct else 'is-incorrect' }} tv-animate-in">
+  <h2>{{ '✅ All tests passed!' if result.is_correct else '❌ ' ~ result.passed_count ~ ' / ' ~ result.total_count ~ ' tests passed' }}</h2>
+
+  <div class="tv-battle-result-card__row">
+    <span>Your submission</span>
+    <pre class="tv-admin-code">{{ result.submitted_code }}</pre>
+  </div>
+
+  <div class="tv-battle-result-card__row tv-flex-col tv-gap-2">
+    <span>Test results</span>
+    {% for t in result.test_results %}
+    <div class="tv-card tv-battle-test-row {{ 'is-correct' if t.passed else 'is-incorrect' }}">
+      <div class="tv-arena-mode-card__meta">
+        <span class="tv-pill {{ 'tv-pill--success' if t.passed else 'tv-pill--danger' }}">{{ 'Test ' ~ loop.index ~ ' ✓' if t.passed else 'Test ' ~ loop.index ~ ' ✗' }}</span>
+      </div>
+      {% if t.input %}<p class="tv-text-faint">Input: <code>{{ t.input }}</code></p>{% endif %}
+      <p class="tv-text-faint">Expected: <code>{{ t.expected }}</code></p>
+      {% if not t.passed %}<p class="tv-text-faint">Got: <code>{{ t.actual }}</code></p>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if result.coins_awarded or result.xp_awarded %}
+  <div class="tv-battle-result-card__rewards">
+    {% if result.coins_awarded %}<span class="tv-pill tv-pill--warning">+{{ result.coins_awarded }} coins</span>{% endif %}
+    {% if result.xp_awarded %}<span class="tv-pill">+{{ result.xp_awarded }} XP</span>{% endif %}
+  </div>
+  {% elif not result.is_first_attempt %}
+  <p class="tv-text-faint">Practice replay - already rewarded on your first attempt at this question.</p>
+  {% endif %}
+
+  <div class="tv-admin-form__actions">
+    <a href="{{ url_for('battle.code_completion_list') }}" class="tv-btn tv-btn--ghost">All Questions</a>
+    {% if not result.is_correct %}
+    <a href="{{ url_for('battle.code_completion_question', question_id=question.id) }}" class="tv-btn tv-btn--primary">Try Again</a>
+    {% endif %}
+  </div>
+</div>
+
+{% else %}
+
+<form method="POST" class="tv-card tv-admin-form tv-animate-in">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  <label class="tv-admin-form__field tv-admin-form__field--full">
+    <span>Complete the code so it passes every hidden test</span>
+    <textarea name="submitted_code" rows="12" class="tv-admin-code" spellcheck="false" autocomplete="off" autocapitalize="off" required autofocus>{{ question.starter_code }}</textarea>
+  </label>
+  <div class="tv-admin-form__actions">
+    <button type="submit" class="tv-btn tv-btn--primary">Submit Solution</button>
+  </div>
+</form>
+
+{% endif %}
+
+{% endblock %}

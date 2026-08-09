@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tournament Hub — Coder Enchante</title>
+<style>
+body{margin:0;background:#080b14;color:#eef2ff;font-family:system-ui,sans-serif}.wrap{max-width:1100px;margin:auto;padding:28px 16px}
+.muted{color:#aab4c9}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}.card{background:#12182a;border:1px solid #28324b;border-radius:16px;padding:20px}
+.tag{display:inline-block;border:1px solid #28324b;border-radius:999px;padding:5px 9px;color:#aab4c9;font-size:12px;margin-right:5px}.open{color:#2dd4a7}
+button{border:0;border-radius:9px;background:#7657ff;color:white;padding:11px 15px;font-weight:700;cursor:pointer}
+.notice{padding:12px 14px;background:#171c2e;border-radius:10px;margin:16px 0}
+</style></head><body><main class="wrap">
+<p class="muted">CODE BATTLE ARENA • TOURNAMENTS</p><h1>🏆 Tournament Hub</h1>
+<p class="muted">Join a scheduled coding tournament and progress through the bracket.</p>
+<div class="notice">🥇 +1000 Coins &nbsp; • &nbsp; 🥈 +500 Coins &nbsp; • &nbsp; 🥉 +250 Coins</div>
+<div class="grid">
+{% for t in tournaments %}
+<article class="card"><span class="tag open">{{ t.status }}</span><span class="tag">{{ t.registered }}/{{ t.max_slots }}</span>
+<h2>{{ t.name }}</h2><p class="muted">Format: {{ t.format }}<br>Start: {{ t.start_at or 'Not scheduled' }}</p>
+<button onclick="viewTournament({{ t.id }})">View Tournament →</button>
+{% if t.status == 'registration' %}<button onclick="registerTournament({{ t.id }})">Register</button>{% endif %}
+</article>
+{% else %}<article class="card"><h2>No tournaments yet</h2><p class="muted">Check back soon.</p></article>{% endfor %}
+</div></main>
+<script>
+function viewTournament(id){location.href='/tournament/'+id}
+async function registerTournament(id){
+ const r=await fetch('/api/tournaments/'+id+'/register',{method:'POST'});
+ const d=await r.json(); alert(d.error||'Registered successfully!'); if(r.ok) location.reload();
+}
+</script></body></html>

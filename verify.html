@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Certificate Verification · Coder Enchanté Academy</title>
+<link rel="stylesheet" href="/assets/css/design-system.css">
+<link rel="stylesheet" href="/assets/css/verify.css">
+</head>
+<body>
+
+<div class="tv-verify-shell">
+  <div class="tv-verify-brand">
+    <span class="tv-brand__mark">
+      <svg width="26" height="26" viewBox="0 0 28 28" fill="none"><path d="M14 2 25 8v12L14 26 3 20V8L14 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 9v10M9 11.5 19 16.5M19 11.5 9 16.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+    </span>
+    Coder Enchanté Academy
+  </div>
+
+  {% if certificate %}
+  <div class="tv-card tv-verify-card">
+    <div class="tv-verify-badge tv-verify-badge--valid">
+      <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M4 10.5 8 14l8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Verified Certificate
+    </div>
+
+    <h1>{{ certificate.title }}</h1>
+    <p class="tv-text-dim">Issued to</p>
+    <div class="tv-verify-name">{{ certificate.user.username }}</div>
+
+    <div class="tv-verify-meta">
+      <div>
+        <span class="tv-text-faint">Certificate ID</span>
+        <strong>{{ certificate.certificate_uid }}</strong>
+      </div>
+      <div>
+        <span class="tv-text-faint">Issued On</span>
+        <strong>{{ certificate.issued_at.strftime("%d %B %Y") }}</strong>
+      </div>
+    </div>
+
+    <p class="tv-verify-footnote">
+      This certificate was issued by Coder Enchanté Academy and confirmed valid at the time of verification.
+    </p>
+  </div>
+  {% else %}
+  <div class="tv-card tv-verify-card">
+    <div class="tv-verify-badge tv-verify-badge--invalid">
+      <svg class="tv-icon" viewBox="0 0 20 20" fill="none"><path d="M6 6l8 8M14 6l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Certificate Not Found
+    </div>
+    <p class="tv-text-dim">This certificate ID doesn't match any record in Coder Enchanté Academy's system.</p>
+  </div>
+  {% endif %}
+</div>
+
+</body>
+</html>

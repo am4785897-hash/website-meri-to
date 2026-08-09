@@ -1,0 +1,63 @@
+{% extends "base_dashboard.html" %}
+{% block title %}Settings · TechVerse Academy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/assets/css/settings.css">
+{% endblock %}
+
+{% block content %}
+<section class="tv-flex-col tv-gap-2 tv-animate-in">
+  <h1>Settings</h1>
+  <p class="tv-text-dim">Manage your account.</p>
+</section>
+
+<div class="tv-settings-grid tv-animate-in">
+
+  <div class="tv-card tv-settings-section">
+    <h2>Account</h2>
+    <p class="tv-hint">Member since {{ current_user.created_at.strftime('%d %b %Y') if current_user.created_at else '—' }} · Level {{ current_user.level }} · {{ current_user.total_xp }} XP</p>
+
+    <form id="tv-profile-form">
+      <div class="tv-form-row">
+        <label for="tv-settings-username">Username</label>
+        <input type="text" id="tv-settings-username" value="{{ current_user.username }}" minlength="3" required>
+      </div>
+      <div class="tv-form-row">
+        <label for="tv-settings-email">Email</label>
+        <input type="email" id="tv-settings-email" value="{{ current_user.email }}" disabled>
+      </div>
+      <button type="submit" class="tv-btn tv-btn--primary tv-btn--sm">Save Changes</button>
+      <p class="tv-settings-message" id="tv-profile-message"></p>
+    </form>
+  </div>
+
+  {% if current_user.password_hash %}
+  <div class="tv-card tv-settings-section">
+    <h2>Change Password</h2>
+    <p class="tv-hint">You sign in with a password on this account.</p>
+    <form id="tv-password-form">
+      <div class="tv-form-row">
+        <label for="tv-current-password">Current password</label>
+        <input type="password" id="tv-current-password" required autocomplete="current-password">
+      </div>
+      <div class="tv-form-row">
+        <label for="tv-new-password">New password</label>
+        <input type="password" id="tv-new-password" minlength="8" required autocomplete="new-password">
+      </div>
+      <button type="submit" class="tv-btn tv-btn--primary tv-btn--sm">Update Password</button>
+      <p class="tv-settings-message" id="tv-password-message"></p>
+    </form>
+  </div>
+  {% else %}
+  <div class="tv-card tv-settings-section">
+    <h2>Sign-in Method</h2>
+    <p class="tv-hint">This account signs in with {{ current_user.oauth_provider|capitalize if current_user.oauth_provider else 'a third-party provider' }} - there's no site password to manage here.</p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/assets/js/settings.js"></script>
+{% endblock %}

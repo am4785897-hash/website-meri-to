@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tournament Match</title>
+<style>
+body{margin:0;background:#080b14;color:#eef2ff;font-family:system-ui,sans-serif}.wrap{max-width:1050px;margin:auto;padding:25px 16px}.panel{background:#12182a;border:1px solid #28324b;border-radius:14px;padding:18px;margin:14px 0}.muted{color:#aab4c9}
+textarea{width:100%;min-height:380px;box-sizing:border-box;background:#070a12;color:#dce5ff;border:1px solid #28324b;border-radius:10px;padding:14px;font-family:ui-monospace,monospace}
+button{border:0;border-radius:9px;background:#7657ff;color:white;padding:11px 15px;font-weight:700;cursor:pointer}
+.result{margin-top:12px;padding:11px;border-radius:9px;background:#171f37}
+</style></head><body><main class="wrap">
+<p class="muted">🏆 TOURNAMENT MATCH</p><h1>Match #{{ match.id }}</h1>
+<div class="panel"><p><b>{{ match.player1_id }}</b> vs <b>{{ match.player2_id }}</b></p>
+<p class="muted">The first accepted server-side submission wins the match.</p>
+<h2>Your code</h2><textarea id="code" spellcheck="false" placeholder="# Write your Python solution here"></textarea><br><br>
+<button onclick="submitCode()">Submit</button><div id="result"></div></div></main>
+<script>
+async function submitCode(){
+ const code=document.getElementById('code').value;
+ const r=await fetch('/api/tournaments/{{ tournament_id }}/match/{{ match.id }}/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+ const d=await r.json(); document.getElementById('result').textContent=d.error|| (d.accepted===false ? `❌ ${d.passed}/${d.total} tests passed.` : '✅ Match completed.'); if(d.completed) setTimeout(()=>location.href='/tournament/{{ tournament_id }}',800);
+}
+</script></body></html>

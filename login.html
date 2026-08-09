@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In - Student Enchanté</title>
+    <link rel="stylesheet" href="/assets/index_ka_.css">
+    <style>
+        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .auth-card { max-width: 380px; width: 90%; padding: 2rem; border-radius: 12px;
+                     box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .auth-card h1 { margin-bottom: 1.2rem; font-size: 1.4rem; }
+        .auth-card label { display: block; margin-top: 0.9rem; font-size: 0.9rem; }
+        .auth-card input[type="text"], .auth-card input[type="password"] {
+            width: 100%; padding: 0.6rem; margin-top: 0.3rem; box-sizing: border-box;
+            border: 1px solid #ccc; border-radius: 6px;
+        }
+        .auth-card button { margin-top: 1.4rem; width: 100%; padding: 0.7rem;
+                             border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .flash { padding: 0.6rem 0.8rem; border-radius: 6px; margin-bottom: 0.8rem; font-size: 0.9rem; }
+        .flash.error { background: #fdecea; color: #b3261e; }
+        .flash.success { background: #e6f4ea; color: #1e7b34; }
+        .flash.info { background: #e8f0fe; color: #1a56c4; }
+        .auth-switch { margin-top: 1rem; font-size: 0.9rem; text-align: center; }
+        .remember-row { margin-top: 0.9rem; display: flex; align-items: center; gap: 0.4rem; }
+        .oauth-row { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.5rem; }
+        .oauth-btn {
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            width: 100%; padding: 0.65rem; border-radius: 6px; font-weight: 600;
+            font-size: 0.9rem; text-decoration: none; border: 1px solid #ccc;
+        }
+        .oauth-btn.google { background: #fff; color: #1f1f1f; }
+        .oauth-btn.github { background: #24292e; color: #fff; border-color: #24292e; }
+        .oauth-divider { display: flex; align-items: center; gap: 0.7rem; margin: 1.2rem 0;
+                          font-size: 0.8rem; color: #888; }
+        .oauth-divider::before, .oauth-divider::after { content: ""; flex: 1; height: 1px; background: #ddd; }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <h1>Log in to Student Enchanté</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if config.GOOGLE_CLIENT_ID or config.GITHUB_CLIENT_ID %}
+        <div class="oauth-row">
+            {% if config.GOOGLE_CLIENT_ID %}
+            <a class="oauth-btn google" href="{{ url_for('auth.google_login') }}">Continue with Google</a>
+            {% endif %}
+            {% if config.GITHUB_CLIENT_ID %}
+            <a class="oauth-btn github" href="{{ url_for('auth.github_login') }}">Continue with GitHub</a>
+            {% endif %}
+        </div>
+        <div class="oauth-divider">or use your password</div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next')) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+            <label for="identifier">Username or Email</label>
+            <input type="text" id="identifier" name="identifier" required autofocus>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+
+            <div class="remember-row">
+                <input type="checkbox" id="remember" name="remember">
+                <label for="remember" style="display:inline; margin:0;">Remember me</label>
+            </div>
+
+            <button type="submit">Log In</button>
+        </form>
+
+        <div class="auth-switch">
+            Don't have an account? <a href="{{ url_for('auth.signup') }}">Sign up</a>
+        </div>
+    </div>
+</body>
+</html>
