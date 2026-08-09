@@ -1,0 +1,26 @@
+.tv-settings-grid { display: flex; flex-direction: column; gap: var(--tv-space-3); max-width: 560px; }
+
+.tv-settings-section h2 { font-size: 1rem; margin-bottom: 4px; }
+.tv-settings-section p.tv-hint { font-size: 0.82rem; color: var(--tv-text-faint); margin-bottom: var(--tv-space-3); }
+
+.tv-form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--tv-space-3); }
+.tv-form-row label { font-size: 0.78rem; font-weight: 600; color: var(--tv-text-dim); }
+.tv-form-row input {
+  background: var(--tv-bg-elevated);
+  border: 1px solid var(--tv-border);
+  border-radius: var(--tv-radius-sm);
+  color: var(--tv-text);
+  font-family: var(--tv-font);
+  font-size: 0.88rem;
+  padding: 10px 12px;
+}
+.tv-form-row input:focus { outline: none; border-color: var(--tv-purple); }
+.tv-form-row input:disabled { opacity: 0.6; }
+
+.tv-settings-message { font-size: 0.82rem; margin-top: 6px; display: none; }
+.tv-settings-message.is-visible { display: block; }
+.tv-settings-message.is-success { color: var(--tv-success); }
+.tv-settings-message.is-error { color: var(--tv-danger); }
+
+.tv-settings-meta { display: flex; flex-direction: column; gap: 4px; font-size: 0.84rem; color: var(--tv-text-dim); }
+.tv-settings-meta strong { color: var(--tv-text); }

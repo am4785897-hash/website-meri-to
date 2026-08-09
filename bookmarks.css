@@ -1,0 +1,37 @@
+.tv-bookmarks-list { display: flex; flex-direction: column; gap: 10px; }
+
+.tv-bookmark-row {
+  display: flex;
+  align-items: center;
+  gap: var(--tv-space-3);
+  padding: var(--tv-space-3);
+  border-radius: var(--tv-radius-md);
+  background: var(--tv-surface);
+  border: 1px solid var(--tv-border);
+}
+.tv-bookmark-row__icon { font-size: 1.4rem; }
+.tv-bookmark-row__text { flex: 1; display: flex; flex-direction: column; }
+.tv-bookmark-row__text strong { font-size: 0.9rem; }
+.tv-bookmark-row__text span { font-size: 0.78rem; color: var(--tv-text-faint); }
+
+.tv-bookmarks-empty {
+  text-align: center;
+  padding: var(--tv-space-5) var(--tv-space-3);
+  color: var(--tv-text-faint);
+  font-size: 0.9rem;
+}
+
+/* Small bookmark toggle button reused on lesson pages */
+.tv-bookmark-toggle {
+  background: none;
+  border: 1px solid var(--tv-border);
+  border-radius: var(--tv-radius-sm);
+  color: var(--tv-text-dim);
+  cursor: pointer;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tv-bookmark-toggle.is-bookmarked { color: var(--tv-purple-soft); border-color: var(--tv-purple); }

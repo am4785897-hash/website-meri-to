@@ -1,0 +1,187 @@
+/* =========================================================================
+   Certificates page. Depends on design-system.css + dashboard.css (shell/
+   sidebar/topbar) already being loaded.
+   ========================================================================= */
+
+.tv-cert-page { display: flex; flex-direction: column; gap: var(--tv-space-4); }
+
+/* ---------------------------- TABS ---------------------------- */
+.tv-cert-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--tv-radius-md);
+  background: var(--tv-surface);
+  border: 1px solid var(--tv-border);
+  width: fit-content;
+}
+.tv-cert-tab {
+  padding: 8px 18px;
+  border-radius: var(--tv-radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--tv-text-dim);
+  font-family: var(--tv-font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--tv-transition), color var(--tv-transition);
+}
+.tv-cert-tab.is-active { background: var(--tv-gradient); color: #fff; }
+.tv-cert-tab:not(.is-active):hover { color: var(--tv-text); }
+
+/* ---------------------------- EMPTY STATE ---------------------------- */
+.tv-cert-empty {
+  padding: var(--tv-space-5) var(--tv-space-4);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.tv-cert-empty__icon { font-size: 2.4rem; }
+
+/* ---------------------------- CERTIFICATE CARD ---------------------------- */
+.tv-cert-card {
+  padding: var(--tv-space-4);
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: var(--tv-space-4);
+  align-items: stretch;
+}
+
+/* The parchment visual - deliberately cream/gold/ink, breaking from the
+   dark theme on purpose, because that's what a real printed certificate
+   looks like (matches the reference design's certificate mockup). */
+.tv-cert-visual {
+  border-radius: var(--tv-radius-md);
+  padding: 3px;
+  background: linear-gradient(135deg, #caa15a, #8a6a2f);
+}
+.tv-cert-visual__inner {
+  height: 100%;
+  border-radius: calc(var(--tv-radius-md) - 3px);
+  background: #fbf3e3;
+  color: #2b2320;
+  padding: var(--tv-space-4);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid #caa15a;
+}
+.tv-cert-visual__brand {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #4b3aa8;
+  font-size: 0.85rem;
+}
+.tv-cert-visual__title { font-size: 1.3rem; font-weight: 800; margin: 4px 0 8px; }
+.tv-cert-visual__line { font-size: 0.78rem; color: #5a4f45; }
+.tv-cert-visual__name { font-size: 1.4rem; font-weight: 700; font-style: italic; color: #4b3aa8; margin: 4px 0; }
+.tv-cert-visual__course { font-size: 1rem; font-weight: 700; margin: 4px 0; }
+
+.tv-cert-visual__footer {
+  margin-top: auto;
+  padding-top: var(--tv-space-3);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+}
+.tv-cert-visual__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.68rem;
+  color: #5a4f45;
+}
+.tv-cert-visual__qr {
+  width: 52px; height: 52px;
+  border-radius: 4px;
+  border: 1px solid #caa15a;
+  background: #fff;
+}
+
+/* ---------------------------- SIDE PANEL ---------------------------- */
+.tv-cert-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-space-3);
+}
+.tv-cert-summary {
+  flex: 1;
+  padding: var(--tv-space-3);
+  border-radius: var(--tv-radius-md);
+  background: var(--tv-surface);
+  border: 1px solid var(--tv-border);
+}
+.tv-cert-summary__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--tv-warning);
+  margin-bottom: 8px;
+}
+.tv-cert-summary__label .tv-icon { width: 16px; height: 16px; }
+.tv-cert-summary p { font-size: 0.85rem; line-height: 1.6; white-space: pre-line; }
+
+.tv-cert-download {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.tv-cert-verify-link {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--tv-text-faint);
+  text-decoration: none;
+}
+.tv-cert-verify-link:hover { color: var(--tv-purple-soft); }
+
+/* ---------------------------- ALL CERTIFICATES GRID ---------------------------- */
+.tv-cert-all-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--tv-space-3);
+}
+.tv-cert-all-item {
+  padding: var(--tv-space-3);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.tv-cert-all-item__icon {
+  width: 38px; height: 38px;
+  border-radius: var(--tv-radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  background: var(--tv-surface-hover);
+  border: 1px solid var(--tv-border);
+  flex-shrink: 0;
+}
+.tv-cert-all-item__icon--done {
+  background: rgba(61,220,151,0.12);
+  border-color: rgba(61,220,151,0.3);
+  color: var(--tv-success);
+  font-weight: 800;
+}
+.tv-cert-all-item__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.tv-cert-all-item__body h4 { font-size: 0.9rem; }
+.tv-cert-all-item__bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--tv-surface-hover);
+  overflow: hidden;
+}
+.tv-cert-all-item__bar-fill { height: 100%; background: var(--tv-gradient); border-radius: 999px; }
+
+/* ---------------------------- RESPONSIVE ---------------------------- */
+@media (max-width: 860px) {
+  .tv-cert-card { grid-template-columns: 1fr; }
+}

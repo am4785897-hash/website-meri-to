@@ -1,0 +1,78 @@
+/* =========================================================================
+   Public certificate verification page (verify.html). Depends only on
+   design-system.css - this is a standalone page, no dashboard shell.
+   ========================================================================= */
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--tv-space-4);
+}
+
+.tv-verify-shell {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--tv-space-4);
+}
+
+.tv-verify-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--tv-text);
+}
+.tv-verify-brand .tv-brand__mark { color: var(--tv-purple-soft); }
+
+.tv-verify-card {
+  width: 100%;
+  padding: var(--tv-space-5) var(--tv-space-4);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.tv-verify-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.tv-verify-badge .tv-icon { width: 16px; height: 16px; }
+.tv-verify-badge--valid { background: rgba(61,220,151,0.12); border: 1px solid rgba(61,220,151,0.3); color: var(--tv-success); }
+.tv-verify-badge--invalid { background: rgba(255,92,122,0.12); border: 1px solid rgba(255,92,122,0.3); color: var(--tv-danger); }
+
+.tv-verify-card h1 { font-size: 1.3rem; }
+.tv-verify-name { font-size: 1.6rem; font-weight: 800; color: var(--tv-purple-soft); margin: 2px 0 10px; }
+
+.tv-verify-meta {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--tv-space-3);
+  padding: var(--tv-space-3);
+  border-radius: var(--tv-radius-sm);
+  background: var(--tv-surface);
+  border: 1px solid var(--tv-border);
+  text-align: left;
+}
+.tv-verify-meta > div { display: flex; flex-direction: column; gap: 4px; }
+.tv-verify-meta strong { font-size: 0.9rem; }
+
+.tv-verify-footnote {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--tv-text-faint);
+}

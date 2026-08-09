@@ -1,0 +1,85 @@
+/* =========================================================================
+   Daily Challenges (standalone page)
+   Extends the tv-challenge-card / tv-stat-card rules already defined in
+   dashboard.css - only page-specific layout lives here, nothing is
+   redefined or overridden.
+   ========================================================================= */
+
+/* Bigger hero version of the dashboard's challenge card */
+.tv-challenge-card--hero {
+  padding: var(--tv-space-5);
+}
+.tv-challenge-card--hero .tv-challenge-title {
+  font-size: 1.3rem;
+  margin-top: var(--tv-space-2);
+}
+.tv-challenge-card--hero .tv-challenge-desc {
+  font-size: 0.95rem;
+  max-width: 640px;
+  margin-top: var(--tv-space-2);
+}
+.tv-challenge-card--hero .tv-challenge-reward {
+  margin-top: var(--tv-space-3);
+}
+.tv-challenge-card--hero .tv-challenge-btn {
+  width: auto;
+  padding-left: var(--tv-space-5);
+  padding-right: var(--tv-space-5);
+  margin-top: var(--tv-space-4);
+}
+.tv-challenge-card--hero .tv-challenge-header__title > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Recent history list */
+.tv-challenge-history {
+  padding: var(--tv-space-2) var(--tv-space-4);
+}
+.tv-challenge-history__row {
+  display: grid;
+  grid-template-columns: 64px 1fr auto auto 120px;
+  align-items: center;
+  gap: var(--tv-space-3);
+  padding: var(--tv-space-3) 0;
+  border-bottom: 1px solid var(--tv-border);
+}
+.tv-challenge-history__row:last-child { border-bottom: none; }
+
+.tv-challenge-history__date {
+  font-size: 0.78rem;
+  color: var(--tv-text-faint);
+}
+.tv-challenge-history__title {
+  font-size: 0.9rem;
+  color: var(--tv-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tv-challenge-history__xp {
+  font-size: 0.85rem;
+  color: var(--tv-warning);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tv-challenge-history__status {
+  font-size: 0.78rem;
+  text-align: right;
+  white-space: nowrap;
+}
+.tv-challenge-history__status--complete { color: var(--tv-success); }
+.tv-challenge-history__status--started  { color: var(--tv-blue-soft); }
+.tv-challenge-history__status--not_started { color: var(--tv-text-faint); }
+
+@media (max-width: 720px) {
+  .tv-challenge-history__row {
+    grid-template-columns: 1fr auto;
+    row-gap: 4px;
+  }
+  .tv-challenge-history__date { order: 1; }
+  .tv-challenge-history__title { order: 2; grid-column: 1 / -1; white-space: normal; }
+  .tv-challenge-history__xp { order: 3; }
+  .tv-challenge-history__status { order: 4; text-align: left; }
+}

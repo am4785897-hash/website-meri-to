@@ -1,0 +1,54 @@
+/* =========================================================================
+   Coin Shop — page-specific styles
+   Imports design-system.css + dashboard.css + code-battle-arena.css tokens
+   (reuses .tv-card, .tv-pill, .tv-btn, .tv-stat-card--coins from those);
+   adds only the shop-grid/item-card rules that are unique to this page.
+   ========================================================================= */
+
+.tv-shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--tv-space-3);
+}
+
+.tv-shop-item-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--tv-space-3);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.tv-shop-item-card:hover { transform: translateY(-2px); border-color: var(--tv-blue-soft); }
+
+.tv-shop-item-card--owned { opacity: 0.85; }
+
+.tv-shop-item-card__icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.tv-shop-item-card h3 { font-size: 0.95rem; margin: 0; }
+
+.tv-shop-item-card p { font-size: 0.82rem; margin: 0; flex-grow: 1; }
+
+.tv-shop-item-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--tv-border);
+}
+
+.tv-shop-item-card__price {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffd700;
+}
+
+.tv-shop-item-card__cta { width: auto; }
+
+.tv-shop-item-card__footer form {
+  margin: 0;
+}

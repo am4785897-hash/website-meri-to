@@ -1,0 +1,376 @@
+/* ==========================================================
+   Coder Enchanté — About page, v3
+   Same visual language as index.html (glass "grimoire" card,
+   arcane seal, Cormorant Garamond + Space Grotesk) now carrying
+   a fuller story: mission, feature detail, honest stats, and a
+   founder note. Body copy is left-aligned for readability;
+   headings stay centred for the ceremonial feel.
+   ========================================================== */
+
+:root {
+	--gradient: linear-gradient(90deg, #7B61FF 0%, #00E5FF 100%);
+	--tagline-gradient: linear-gradient(90deg, #C4B5FD 0%, #F9A8D4 100%);
+	--accent-gradient: linear-gradient(90deg, #FF4D8D 0%, #FF8E53 100%);
+	--progress-gradient: linear-gradient(90deg, #00E5FF 0%, #6D5BFF 50%, #FF5EA9 100%);
+	--button-gradient: linear-gradient(135deg, #6A11CB 0%, #FF4DFF 100%);
+
+	--pill-bg: #FFD700;
+	--pill-radius: 50px;
+	--nogradient: linear-gradient(to right, #7f00ff, #00E5ff);
+
+	--ink: #07060f;
+	--mist: #E4DEFF;
+	--muted: #B9AEE8;
+	--gold: #FFD700;
+	--card-bg: rgba(13, 10, 28, 0.58);
+	--card-soft: rgba(255, 255, 255, 0.045);
+	--card-border: rgba(255, 255, 255, 0.10);
+	--glow-violet: rgba(123, 97, 255, 0.45);
+	--glow-cyan: rgba(0, 229, 255, 0.35);
+
+	--font-display: 'Cormorant Garamond', Georgia, serif;
+	--font-body: 'Space Grotesk', system-ui, sans-serif;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	min-height: 100vh;
+}
+
+body {
+	font-family: var(--font-body);
+	color: var(--mist);
+	background:
+		radial-gradient(ellipse 900px 500px at 50% -10%, var(--glow-violet), transparent 60%),
+		radial-gradient(ellipse 700px 500px at 90% 100%, var(--glow-cyan), transparent 60%),
+		linear-gradient(rgba(5, 4, 12, 0.74), rgba(5, 4, 12, 0.84)),
+		url("/images/rm373batch13-085.jpg");
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	/* background-attachment: fixed removed — unreliable/buggy on iOS
+	   Safari and many mobile browsers; "scroll" works everywhere */
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: clamp(16px, 4vw, 48px) clamp(12px, 4vw, 32px);
+	gap: clamp(10px, 2.5vh, 24px);
+	text-align: center;
+}
+
+/* ---------- The grimoire card ---------- */
+
+.stage {
+	width: 100%;
+	max-width: 920px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: clamp(22px, 4vh, 40px);
+
+	background: var(--card-bg);
+	border: 1px solid var(--card-border);
+	border-radius: 32px;
+	padding: clamp(28px, 6vw, 60px) clamp(20px, 5vw, 52px);
+	backdrop-filter: blur(18px);
+	-webkit-backdrop-filter: blur(18px);
+	box-shadow:
+		0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+		0 30px 80px rgba(0, 0, 0, 0.45),
+		0 0 60px -10px var(--glow-violet);
+}
+
+/* ---------- Arcane seal ---------- */
+
+.seal {
+	width: clamp(48px, 10vw, 64px);
+	height: clamp(48px, 10vw, 64px);
+	filter: drop-shadow(0 0 10px var(--glow-cyan));
+	animation: seal-spin 50s linear infinite;
+}
+
+.seal svg {
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+
+@keyframes seal-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* ---------- Eyebrow + heading ---------- */
+
+.eyebrow {
+	margin: 0;
+	font-family: var(--font-body);
+	font-size: clamp(0.68rem, 1.6vw, 0.78rem);
+	letter-spacing: 0.32em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+h1 {
+	margin: 0;
+	color: transparent;
+	background: var(--nogradient);
+	background-clip: text;
+	-webkit-background-clip: text;
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: clamp(1.7rem, 5vw, 2.6rem);
+	max-width: 26ch;
+	text-shadow: 0 0 40px var(--glow-violet);
+}
+
+/* ---------- Mission ---------- */
+
+.mission {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 14px;
+	max-width: 70ch;
+}
+
+p.lede {
+	margin: 0;
+	font-family: var(--font-display);
+	font-style: italic;
+	font-weight: 600;
+	font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+	line-height: 1.5;
+	color: transparent;
+	background: var(--tagline-gradient);
+	background-clip: text;
+	-webkit-background-clip: text;
+	max-width: 60ch;
+}
+
+p.body-text {
+	margin: 0;
+	font-size: clamp(0.9rem, 1.8vw, 1rem);
+	line-height: 1.7;
+	color: var(--mist);
+	opacity: 0.88;
+	text-align: left;
+}
+
+/* ---------- Stats ---------- */
+
+.stats {
+	width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: clamp(10px, 2vw, 16px);
+	list-style: none;
+	margin: 0;
+	padding: 18px 0;
+	border-top: 1px solid var(--card-border);
+	border-bottom: 1px solid var(--card-border);
+}
+
+.stat {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	min-width: 140px;
+}
+
+.stat-value {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: clamp(1.6rem, 4vw, 2.1rem);
+	color: transparent;
+	background: var(--gradient);
+	background-clip: text;
+	-webkit-background-clip: text;
+}
+
+.stat-label {
+	font-size: clamp(0.72rem, 1.6vw, 0.82rem);
+	color: var(--muted);
+	letter-spacing: 0.02em;
+}
+
+/* ---------- Section blocks ---------- */
+
+.section-block,
+.founder {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: clamp(14px, 2.4vh, 22px);
+}
+
+.section-title {
+	margin: 0;
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-style: italic;
+	font-size: clamp(1.25rem, 3vw, 1.6rem);
+	color: var(--mist);
+}
+
+/* ---------- Feature grid ---------- */
+
+.features {
+	width: 100%;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: clamp(10px, 1.6vw, 16px);
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.feature-card {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 6px;
+	background: var(--card-soft);
+	border: 1px solid var(--card-border);
+	border-radius: 18px;
+	padding: 16px 18px;
+	text-align: left;
+	transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.feature-card:hover {
+	border-color: rgba(123, 97, 255, 0.55);
+	transform: translateY(-2px);
+}
+
+.icon-badge {
+	font-size: 1.35rem;
+	line-height: 1;
+	margin-bottom: 2px;
+}
+
+.feature-card h3 {
+	margin: 0;
+	font-family: var(--font-body);
+	font-weight: 600;
+	font-size: 0.95rem;
+	color: var(--mist);
+}
+
+.feature-card p {
+	margin: 0;
+	font-size: 0.83rem;
+	line-height: 1.5;
+	color: var(--muted);
+}
+
+/* ---------- Founder ---------- */
+
+.founder-name {
+	margin: 0;
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: clamp(1.3rem, 3.2vw, 1.7rem);
+	color: transparent;
+	background: var(--nogradient);
+	background-clip: text;
+	-webkit-background-clip: text;
+}
+
+.founder-tags {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 8px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.tag {
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	padding: 5px 14px;
+	border-radius: 999px;
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	color: var(--mist);
+	background: rgba(255, 255, 255, 0.06);
+}
+
+.founder-bio {
+	margin: 0;
+	max-width: 62ch;
+	font-size: clamp(0.88rem, 1.8vw, 0.98rem);
+	line-height: 1.7;
+	color: var(--mist);
+	opacity: 0.88;
+	text-align: left;
+}
+
+/* ---------- Back link ---------- */
+
+.back {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	text-decoration: none;
+	color: #241800;
+	background: linear-gradient(135deg, var(--gold), #FF8E53);
+	border-radius: var(--pill-radius);
+	padding: 9px 20px;
+	font-weight: 600;
+	font-size: clamp(0.78rem, 1.6vw, 0.92rem);
+	transition: transform 0.2s ease;
+}
+
+.back:hover,
+.back:focus-visible {
+	transform: translateY(-3px);
+}
+
+.back:focus-visible {
+	outline: 2px solid #fff;
+	outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+	body {
+		gap: 10px;
+		padding: 16px 10px;
+	}
+
+	.stage {
+		border-radius: 24px;
+	}
+
+	.features {
+		grid-template-columns: 1fr;
+	}
+
+	.stats {
+		gap: 20px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.seal {
+		animation: none !important;
+	}
+
+	.back,
+	.feature-card {
+		transition: none !important;
+	}
+}

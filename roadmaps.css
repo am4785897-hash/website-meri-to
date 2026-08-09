@@ -1,0 +1,67 @@
+/* =========================================================================
+   Roadmaps (standalone page)
+   Reuses .tv-filter-pill, .tv-roadmap-card, .tv-progress etc. verbatim
+   from dashboard.css / design-system.css - only page-specific layout
+   lives here.
+   ========================================================================= */
+
+/* Path-switcher tabs: <a> reusing .tv-filter-pill, with icon + % badge */
+.tv-roadmap-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.tv-roadmap-tab__icon { font-size: 1rem; }
+.tv-roadmap-tab__percent {
+  font-size: 0.72rem;
+  opacity: 0.75;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.tv-roadmap-tab.is-active .tv-roadmap-tab__percent { background: rgba(255, 255, 255, 0.22); }
+
+/* Selected path overview strip */
+.tv-roadmap-overview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tv-space-4);
+  flex-wrap: wrap;
+}
+.tv-roadmap-overview__title {
+  display: flex;
+  align-items: center;
+  gap: var(--tv-space-3);
+  font-size: 1.6rem;
+}
+.tv-roadmap-overview__title h3 { font-size: 1.05rem; }
+.tv-roadmap-overview__title p { font-size: 0.82rem; margin-top: 2px; }
+.tv-roadmap-overview__percent {
+  display: flex;
+  align-items: center;
+  gap: var(--tv-space-3);
+  min-width: 220px;
+  flex: 1;
+  max-width: 320px;
+}
+.tv-roadmap-overview__percent .tv-progress { flex: 1; }
+.tv-roadmap-overview__percent span {
+  font-size: 0.78rem;
+  color: var(--tv-text-dim);
+  white-space: nowrap;
+}
+
+/* Full-page roadmap card gets more breathing room than the compact
+   dashboard-widget version */
+.tv-roadmap-card--full {
+  padding: var(--tv-space-5);
+}
+.tv-roadmap-card--full .tv-roadmap-path {
+  margin-top: var(--tv-space-4);
+}
+
+@media (max-width: 600px) {
+  .tv-roadmap-overview { flex-direction: column; align-items: flex-start; }
+  .tv-roadmap-overview__percent { max-width: 100%; }
+}

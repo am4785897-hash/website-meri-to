@@ -1,0 +1,281 @@
+/* =========================================================================
+   Code Battle Arena — page-specific styles
+   Imports design-system.css + dashboard.css tokens; adds arena-only rules.
+   ========================================================================= */
+
+.tv-arena-hero__badge {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #ff5c7a, #ffb84d);
+  box-shadow: 0 4px 16px rgba(255, 92, 122, 0.35);
+}
+
+.tv-arena-admin-link {
+  align-self: flex-start;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--tv-blue-soft);
+  padding: 4px 0;
+}
+.tv-arena-admin-link:hover { text-decoration: underline; }
+
+/* ---------------------------- STAT ROW ---------------------------- */
+.tv-arena-stat-row { margin-top: var(--tv-space-1); }
+
+.tv-stat-card--coins .tv-stat-card__icon {
+  background: rgba(255, 215, 0, 0.12);
+  color: #ffd700;
+}
+.tv-stat-card--coins .tv-stat-card__value { color: #ffd700; }
+
+/* ---------------------------- TOURNAMENT BANNER ---------------------------- */
+.tv-arena-tournament {
+  padding: var(--tv-space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tv-space-3);
+  flex-wrap: wrap;
+  background: linear-gradient(135deg, rgba(255, 184, 77, 0.10), rgba(162, 89, 255, 0.08));
+}
+.tv-arena-tournament__text { display: flex; flex-direction: column; gap: 6px; max-width: 560px; }
+.tv-arena-tournament__text h2 { font-size: 1.15rem; }
+.tv-arena-tournament__text p { font-size: 0.85rem; }
+
+/* ---------------------------- MODE GRID ---------------------------- */
+.tv-arena-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: var(--tv-space-3);
+}
+
+.tv-arena-mode-card {
+  padding: var(--tv-space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+.tv-arena-mode-card h3 { font-size: 1rem; }
+.tv-arena-mode-card p { font-size: 0.82rem; }
+
+.tv-arena-mode-card__icon {
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  background: var(--tv-surface);
+  border: 1px solid var(--tv-border);
+}
+.tv-arena-mode-card__icon--speed      { background: rgba(255, 184, 77, 0.12); }
+.tv-arena-mode-card__icon--bug        { background: rgba(255, 92, 122, 0.12); }
+.tv-arena-mode-card__icon--predict    { background: rgba(162, 89, 255, 0.12); }
+.tv-arena-mode-card__icon--complete   { background: rgba(62, 166, 255, 0.12); }
+.tv-arena-mode-card__icon--blind      { background: rgba(74, 79, 102, 0.20); }
+.tv-arena-mode-card__icon--ai         { background: rgba(61, 220, 151, 0.12); }
+.tv-arena-mode-card__icon--team       { background: rgba(62, 166, 255, 0.12); }
+.tv-arena-mode-card__icon--tournament { background: rgba(255, 215, 0, 0.12); }
+
+.tv-arena-mode-card__meta { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.tv-arena-mode-card__cta {
+  width: 100%;
+  margin-top: auto;
+  text-align: center;
+}
+.tv-arena-mode-card__cta:disabled,
+.tv-arena-mode-card__cta[disabled] {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* ---------------------------- COINS SECTION ---------------------------- */
+.tv-arena-coins-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--tv-space-3);
+}
+@media (max-width: 860px) {
+  .tv-arena-coins-row { grid-template-columns: 1fr; }
+}
+
+.tv-arena-earn-card,
+.tv-arena-shop-card {
+  padding: var(--tv-space-3);
+}
+.tv-arena-earn-card h3,
+.tv-arena-shop-card h3 { font-size: 0.95rem; margin-bottom: var(--tv-space-2); }
+
+.tv-arena-earn-list {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tv-arena-earn-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--tv-border);
+  font-size: 0.85rem;
+}
+.tv-arena-earn-list li:last-child { border-bottom: none; }
+.tv-arena-earn-list li span { color: var(--tv-text-dim); }
+.tv-arena-earn-list li strong { color: #ffd700; }
+
+.tv-arena-shop-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.tv-arena-shop-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 10px;
+  border-radius: var(--tv-radius-md);
+  background: var(--tv-surface);
+  border: 1px solid var(--tv-border);
+  opacity: 0.6;
+}
+.tv-arena-shop-item--owned { border-color: rgba(61, 220, 151, 0.35); }
+.tv-arena-shop-item__icon { font-size: 1.5rem; }
+.tv-arena-shop-item__name { font-size: 0.8rem; font-weight: 600; }
+.tv-arena-shop-item__price {
+  font-size: 0.7rem;
+  color: var(--tv-text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ---------------------------- OUTPUT PREDICTION: QUESTION + RESULT ---------------------------- */
+.tv-battle-question-card { padding: var(--tv-space-3); }
+.tv-battle-question-card__label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tv-text-faint);
+  margin-bottom: 10px;
+}
+.tv-battle-code-block {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.tv-battle-result-card {
+  padding: var(--tv-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-space-3);
+  border-width: 1px;
+  border-style: solid;
+}
+.tv-battle-result-card.is-correct {
+  border-color: rgba(61, 220, 151, 0.35);
+  background: rgba(61, 220, 151, 0.06);
+}
+.tv-battle-result-card.is-incorrect {
+  border-color: rgba(255, 92, 122, 0.35);
+  background: rgba(255, 92, 122, 0.06);
+}
+.tv-battle-result-card h2 { font-size: 1.2rem; }
+.tv-battle-result-card__row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--tv-text-dim);
+}
+.tv-battle-result-card__row pre { margin: 0; }
+.tv-battle-result-card__rewards { display: flex; gap: 8px; }
+
+/* ---------------------------- CODE COMPLETION: PER-TEST RESULTS ---------------------------- */
+.tv-pill--danger { color: var(--tv-danger); border-color: rgba(255, 92, 122, 0.3); background: rgba(255, 92, 122, 0.08); }
+.tv-battle-test-row {
+  padding: var(--tv-space-2) var(--tv-space-3);
+  gap: 6px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+.tv-battle-test-row.is-correct { border-color: rgba(61, 220, 151, 0.3); }
+.tv-battle-test-row.is-incorrect { border-color: rgba(255, 92, 122, 0.3); }
+.tv-battle-test-row p { margin: 0; }
+.tv-battle-test-row code {
+  color: var(--tv-text);
+  word-break: break-word;
+}
+
+/* ---------------------------- TOURNAMENT ---------------------------- */
+.tv-tourney-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+.tv-tourney-card__head h3 { margin: 0; }
+
+.tv-bracket {
+  display: flex;
+  gap: var(--tv-space-4);
+  overflow-x: auto;
+  padding-bottom: var(--tv-space-2);
+}
+.tv-bracket-round {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-space-3);
+  justify-content: center;
+  min-width: 200px;
+  flex: 0 0 auto;
+}
+.tv-bracket-round__title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tv-text-faint);
+  text-align: center;
+}
+.tv-bracket-match {
+  border: 1px solid var(--tv-border);
+  border-radius: var(--tv-radius-md);
+  background: var(--tv-surface);
+  overflow: hidden;
+}
+.tv-bracket-match.is-live { border-color: rgba(255, 184, 77, 0.5); }
+.tv-bracket-match.is-mine { border-color: rgba(62, 166, 255, 0.5); }
+.tv-bracket-match__slot {
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  color: var(--tv-text-dim);
+  border-bottom: 1px solid var(--tv-border);
+}
+.tv-bracket-match__slot:last-of-type { border-bottom: none; }
+.tv-bracket-match__slot.is-winner {
+  color: var(--tv-success);
+  font-weight: 700;
+}
+.tv-bracket-match__link {
+  display: block;
+  text-align: center;
+  padding: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--tv-blue-soft);
+  border-top: 1px solid var(--tv-border);
+}
+.tv-bracket-match__link:hover { background: var(--tv-surface-hover); }

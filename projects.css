@@ -1,0 +1,37 @@
+/* =========================================================================
+   Projects (standalone page)
+   Reuses .tv-project-card / .tv-like-btn / .tv-pill / .tv-filter-pill
+   verbatim from dashboard.css / design-system.css - only the page-specific
+   "full" variant (description text, meta row, wider columns) lives here.
+   ========================================================================= */
+
+.tv-project-grid--full {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.tv-project-card--full {
+  padding: var(--tv-space-4);
+}
+.tv-project-card--full .tv-project-card__icon {
+  width: 52px;
+  height: 52px;
+  font-size: 1.5rem;
+}
+.tv-project-card--full h3 { font-size: 1rem; }
+
+.tv-project-card__desc {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--tv-text-dim);
+  /* Clamp to 2 lines so cards of differing description length still align */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tv-project-card__meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}

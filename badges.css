@@ -1,0 +1,41 @@
+.tv-badges-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tv-space-3);
+  flex-wrap: wrap;
+}
+.tv-badges-summary__count { font-size: 1.1rem; font-weight: 700; }
+.tv-badges-summary .tv-progress { width: 240px; }
+
+.tv-badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--tv-space-3);
+}
+
+.tv-badge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: var(--tv-space-4) var(--tv-space-3);
+  border-radius: var(--tv-radius-md);
+  border: 1px solid var(--tv-border);
+  background: var(--tv-surface);
+  transition: transform var(--tv-transition), border-color var(--tv-transition);
+}
+.tv-badge-card.is-earned {
+  border-color: var(--tv-purple);
+  background: linear-gradient(160deg, rgba(162,89,255,0.12), rgba(62,166,255,0.06));
+  box-shadow: var(--tv-glow-purple);
+}
+.tv-badge-card.is-earned:hover { transform: translateY(-2px); }
+.tv-badge-card.is-locked { opacity: 0.55; }
+
+.tv-badge-card__icon { font-size: 2.2rem; line-height: 1; }
+.tv-badge-card.is-locked .tv-badge-card__icon { filter: grayscale(1); }
+.tv-badge-card__title { font-size: 0.92rem; font-weight: 700; }
+.tv-badge-card__desc { font-size: 0.78rem; color: var(--tv-text-dim); line-height: 1.4; }
+.tv-badge-card__date { font-size: 0.7rem; color: var(--tv-purple-soft); margin-top: 2px; }

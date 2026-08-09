@@ -1,0 +1,163 @@
+/* =========================================================================
+   Admin — Code Battle Arena Question Bank
+   Built on design-system.css + dashboard.css tokens.
+   ========================================================================= */
+
+.tv-admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tv-space-3);
+  flex-wrap: wrap;
+}
+
+/* ---------------------------- TABLE ---------------------------- */
+.tv-admin-table-card { padding: var(--tv-space-3); overflow-x: auto; }
+
+.tv-admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.tv-admin-table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tv-text-faint);
+  border-bottom: 1px solid var(--tv-border);
+}
+.tv-admin-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--tv-border);
+  vertical-align: middle;
+}
+.tv-admin-table tr:last-child td { border-bottom: none; }
+.tv-admin-table tr.is-inactive { opacity: 0.5; }
+
+.tv-admin-table__actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.tv-admin-inline-form { display: inline; }
+.tv-admin-danger { color: var(--tv-danger); border-color: rgba(255,92,122,0.3); }
+.tv-admin-danger:hover { background: rgba(255,92,122,0.1); }
+
+/* ---------------------------- FORM ---------------------------- */
+.tv-admin-form {
+  padding: var(--tv-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tv-space-3);
+}
+
+.tv-admin-form__row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--tv-space-3);
+}
+@media (max-width: 700px) {
+  .tv-admin-form__row { grid-template-columns: 1fr; }
+}
+
+.tv-admin-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--tv-text-dim);
+}
+.tv-admin-form__field--full { grid-column: 1 / -1; }
+
+.tv-admin-form__field input[type="text"],
+.tv-admin-form__field input[type="number"],
+.tv-admin-form__field textarea {
+  background: var(--tv-surface);
+  border: 1px solid var(--tv-border);
+  color: var(--tv-text);
+  font-family: var(--tv-font);
+  font-size: 0.88rem;
+  font-weight: 400;
+  padding: 10px 12px;
+  border-radius: var(--tv-radius-sm);
+  resize: vertical;
+}
+.tv-admin-form__field input:focus,
+.tv-admin-form__field textarea:focus {
+  outline: none;
+  border-color: var(--tv-purple);
+}
+.tv-admin-form__field .tv-admin-code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.tv-admin-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: var(--tv-space-2);
+  border-top: 1px solid var(--tv-border);
+}
+
+/* Admin > Rewards - one row per RewardSetting, label+desc on the left,
+   editable amount on the right. */
+.tv-reward-row {
+  display: flex;
+  align-items: center;
+  gap: var(--tv-space-3);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--tv-border);
+}
+.tv-reward-row:last-of-type { border-bottom: none; }
+
+/* Admin > Economy / Analytics - small stat tiles at the top of the page. */
+.tv-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--tv-space-3);
+}
+.tv-stat-tile {
+  padding: var(--tv-space-3);
+  text-align: center;
+}
+.tv-stat-tile__value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--tv-text);
+}
+.tv-stat-tile__label {
+  font-size: 0.76rem;
+  color: var(--tv-text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Admin toolbar search/filter row (used on Users, and available for
+   other admin list pages). */
+.tv-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tv-filter-row .tv-select { min-width: 220px; }
+
+/* Small inline text input next to an inline action form (e.g. the ban
+   reason field on Admin > Users). */
+.tv-admin-inline-input {
+  display: inline-block;
+  width: 140px;
+  padding: 6px 8px;
+  margin-right: 6px;
+  font-size: 0.78rem;
+  color: var(--tv-text);
+  background: var(--tv-surface);
+  border: 1px solid var(--tv-border);
+  border-radius: var(--tv-radius-sm, 8px);
+}
+.tv-admin-inline-input:focus { outline: none; border-color: var(--tv-purple); }
