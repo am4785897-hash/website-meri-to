@@ -1,0 +1,43 @@
+{
+  "enabled": true,
+  "daily_user_coin_cap": 1000,
+  "weekly_user_coin_cap": 5000,
+  "first_attempt_only": true,
+  "rewards": {
+    "battle_win": {
+      "coins": 100,
+      "xp": 20,
+      "enabled": true
+    },
+    "battle_participation": {
+      "coins": 5,
+      "xp": 0,
+      "enabled": true
+    },
+    "battle_draw": {
+      "coins": 40,
+      "xp": 10,
+      "enabled": true
+    },
+    "tournament_champion": {
+      "coins": 1000,
+      "xp": 200,
+      "enabled": true
+    },
+    "tournament_runner_up": {
+      "coins": 500,
+      "xp": 120,
+      "enabled": true
+    },
+    "tournament_third": {
+      "coins": 250,
+      "xp": 80,
+      "enabled": true
+    },
+    "correct_answer": {
+      "coins": 20,
+      "xp": 20,
+      "enabled": true
+    }
+  }
+}
